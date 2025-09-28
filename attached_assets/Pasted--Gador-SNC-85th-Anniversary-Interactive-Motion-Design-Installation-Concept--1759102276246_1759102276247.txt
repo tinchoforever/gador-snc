@@ -1,0 +1,165 @@
+# **Gador SNC 85th Anniversary – Interactive Motion Design Installation**
+
+---
+
+## **Concept**
+
+A futuristic, interactive audiovisual experience that visualizes *thoughts and inner voices* as illuminated phrases floating within a pulsating, neuron-inspired network. The installation conveys **energy, science, and creativity**, celebrating Gador’s 85-year legacy.
+
+Large-screen projections display the evolving visuals, while a **mobile remote control website** triggers phrases and scene transitions in real time.
+
+---
+
+## **Color Palette (Brand DNA)**
+
+* **Primary Blue** (#0033A0): trust, depth, corporate base
+* **Secondary Teal/Green** (#00A99D): freshness, modernity, vitality
+* **Tertiary Light Blue** (#78C4E6): openness, calm, clarity
+* **Neutral White** (#FFFFFF): contrast, clarity, negative space
+
+Colors apply to backgrounds, neuron pulses, text glows, and HUD containers.
+
+---
+
+## **Typography**
+
+* **Primary Font**: Avenir Next (Variable)
+* **Fallback**: Helvetica Neue
+* Style: Medium–Bold for visibility, glowing edges, subtle pulsations
+
+---
+
+## **Visual & Motion Design Strategy**
+
+* **Background**: Dynamic neuron-inspired network with pulses, using **tsParticles** or custom shaders in Three.js. Motion is organic, like electrical signals traveling.
+* **Foreground Text**: Spanish phrases appear horizontally, with different opacity layers:
+
+  * Front Layer: 100% opacity, glowing teal or blue.
+  * Floating Layer: 80% opacity, drifting left → right.
+  * Mirrored Back Layer: 30–40% opacity, inverted, moving subtly.
+  * Return Layer: 60–70% opacity, re-entering from back to front.
+* **Animation Style**: Mask-and-reveal, glowing transitions, cinematic easing curves. Inspired by *Inside Out* (chaotic thoughts visualized) but adapted to a futuristic UI.
+* **HUD Elements**: Some phrases contained in glowing rectangular boxes, mimicking sci-fi notification overlays.
+
+---
+
+## **Scene Breakdown (Authoritative Script — use exactly, no paraphrasing)**
+
+### **Scene 1 – Chaotic Thoughts**
+
+**All phrases must appear exactly as written below.** Each one triggers its own MP3 and follows the horizontal orbit cycle (enter → front orbit → back mirror → return).
+
+1. “¿Y si me olvido de lo que tengo que decir?”
+2. “Capaz no es suficiente lo que preparé...”
+3. “¿Desenchufé la planchita de pelo?”
+4. “¿Cómo hago para subirlos a todos al barco de Sistema Nervioso Central?“
+5. “¿Por qué no me habré puesto zapatos más cómodos?”
+6. “¿Los chicos estarán haciendo la tarea o viendo youtube?”
+
+### **Scene 2 – Magic Microphone (Manual Trigger)**
+
+**These lines are triggered one by one, in this order, exactly as written.**
+
+1. Participante 1: “Espero que Rocío no me pregunte nada difícil”
+2. Participante 2: “Necesito ese micrófono… ¿estará en Mercado Libre?”
+3. Participante 3 — MARIANO: “Rocío… ¡te olvidaste de presentarme! Tenemos que anunciar mi nueva posición.”
+
+### **Scene 3 – Collective Energy (Affirmations)**
+
+**All phrases appear sequentially and then keep circulating (no replacement). Use exactly this text.**
+
+* “¡Lo vamos a lograr!”
+* “¡Sí, juntos podemos!”
+* “¡Qué bueno estar acá con todos!”
+* “¡Vamos con todo!”
+
+### **Scene 4 – Photo Booth Finale**
+
+Camera countdown and snapshot; no phrases here.
+
+### **Scene 5 – Closing Thoughtscape**
+
+* Background slows to a subtle pulse of the neuron network.
+* All previous phrases remain faintly drifting, integrated into the visual landscape.
+* A final loop of the **affirmation phrases from Scene 3** is reintroduced with higher opacity (70–90%) and more synchronized glow pulses, creating a crescendo effect.
+* Projection ends with all phrases orbiting in depth layers, while the background gradually fades to white/brand blue gradient.
+
+---
+
+### 12) `public/js/photo.js` (camera + countdown + snapshot)
+
+```js
+const layer = document.getElementById("photo-layer");
+const video = document.getElementById("cam");
+const canvas = document.getElementById("shot");
+const count = document.getElementById("count");
+
+let stream = null; let ticking = false;
+
+async function openCam(){
+  try{
+    stream = await navigator.mediaDevices.getUserMedia({ video: { width: 1920, height: 1080 }, audio: false });
+    video.srcObject = stream; layer.hidden = false;
+  }catch(e){
+    alert("Camera blocked. Please allow camera access and try again.");
+  }
+}
+
+async function closeCam(){
+  if(stream){ stream.getTracks().forEach(t=>t.stop()); stream = null; }
+  layer.hidden = true; count.style.display = "none";
+}
+
+export async function startPhoto(){
+  if(ticking) return; ticking = true; await openCam();
+  let n = 10; count.textContent = n; count.style.display = "block";
+  const timer = setInterval(()=>{
+    n--; count.textContent = n;
+    if(n <= 0){ clearInterval(timer); snap(); }
+  }, 1000);
+}
+
+function snap(){
+  const ctx = canvas.getContext("2d"); canvas.hidden = false;
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  const url = canvas.toDataURL("image/jpeg", 0.95);
+  const a = document.createElement("a"); a.href = url; a.download = `gador_sncc_photo_${Date.now()}.jpg`; a.click();
+  // cleanup
+  setTimeout(()=>{ canvas.hidden = true; closeCam(); ticking = false; }, 500);
+}
+
+// export to window so stage.js can call it
+window.startPhoto = startPhoto;
+```
+
+### 13) Timing & Easing (defaults)
+
+* **Phrase entry**: 0.32–0.48s (mask reveal + scale-in, `expo.out`).
+* **Front orbit (L→R)**: 8s, opacity 1→0.8 (`power1.inOut`).
+* **Back orbit (mirror)**: instant layer swap → 8s R→L, opacity 0.35.
+* **Return orbit**: instant swap → 8s L→R, opacity 0.65.
+* **BG pulse spike on trigger**: 0.9s total, ease-out.
+
+### 14) Audio Production Notes
+
+* One **MP3 per phrase** (44.1kHz, 192kbps+, mono ok). Normalize loudness to -14 LUFS.
+* File naming: `sX_YY_slug.mp3` (already mapped in `phrases.json`).
+* Preload all scene MP3s on stage load.
+
+### 15) QA Checklist (Venue)
+
+* Projector: 1080p/2160p, color temp calibrated (D65), brightness ≥ 3000 lm.
+* Browser: latest Chrome; disable energy saver; fullscreen (F11) with cursor hidden.
+* Network: private hotspot backup; test latency (roundtrip < 200ms).
+* Camera permissions tested for Scene 4.
+
+### 16) Run Instructions
+
+1. Upload MP3s into `/public/assets/audio/` using the filenames in `phrases.json`.
+2. `npm install` → `npm start` in Replit (or Run button).
+3. Open the main URL for **Stage**. On mobile, open `/remote` and trigger scenes/phrases.
+4. For low-power fallback, lower particle counts in `bg-net.js` (`number.value`).
+
+---
+
+> ✅ All missing programming pieces have been added above (server, stage/remote pages, neural background, phrase engine, audio, camera, timings). This is now a complete developer manual + runnable scaffold.
