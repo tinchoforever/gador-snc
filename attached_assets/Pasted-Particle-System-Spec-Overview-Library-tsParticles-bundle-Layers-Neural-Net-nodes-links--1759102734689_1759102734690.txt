@@ -1,0 +1,184 @@
+Particle System — Spec
+Overview
+
+Library: tsParticles (bundle)
+
+Layers:
+
+Neural Net (nodes + links, slow drift)
+
+Pulses (bright “spikes” moving faster)
+
+(Optional) Mosaic Squares (brand tiles, very sparse)
+
+Canvas: fixed, full screen, behind stage content
+
+Brand palette: #0033A0 (blue), #00A99D (teal), #78C4E6 (light blue), #FFFFFF bg
+
+DOM & CSS
+<div id="bg-net"></div>
+<div id="bg-pulses"></div>
+<!-- <div id="bg-mosaic"></div> optional -->
+
+#bg-net, #bg-pulses, #bg-mosaic {
+  position: fixed; inset: 0; z-index: -1; background: #fff;
+}
+
+#bg-net canvas {
+  filter: drop-shadow(0 0 4px rgba(0,169,157,.35))
+          drop-shadow(0 0 6px rgba(120,196,230,.25));
+}
+
+#bg-pulses canvas {
+  filter: drop-shadow(0 0 10px rgba(0,169,157,.8))
+          drop-shadow(0 0 16px rgba(120,196,230,.6));
+}
+
+Engine Loading
+<script src="https://cdn.jsdelivr.net/npm/tsparticles-engine@2/tsparticles.engine.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tsparticles@2/tsparticles.bundle.min.js"></script>
+
+Layer 1 — Neural Net (Connections)
+
+Goal: calm, organic network; never distracts from text.
+
+Perf Target: ≤ 1.5 DPR; 60 FPS on modern laptops; >45 FPS fallback.
+
+const BLUE  = "#0033A0";
+const TEAL  = "#00A99D";
+const LBLUE = "#78C4E6";
+
+tsParticles.load("bg-net", {
+  fullScreen: { enable: false },
+  background: { color: "#FFFFFF" },
+  fpsLimit: 60,
+  detectRetina: true,
+  particles: {
+    number: { value: 110, density: { enable: true, area: 1200 } },
+    color:  { value: [TEAL, LBLUE, BLUE] },
+    shape:  { type: "circle" },
+    size:   { value: 2, random: { enable: true, minimumValue: 1 } },
+    opacity:{ value: 0.65,
+              animation: { enable: true, speed: 0.4, minimumValue: 0.35, sync: false } },
+    move:   { enable: true, speed: 0.35, random: true,
+              outModes: { default: "bounce" } },
+    links:  { enable: true, distance: 140, color: TEAL, opacity: 0.40, width: 1.15 }
+  }
+});
+
+Layer 2 — Pulses (Spikes)
+
+Goal: feel like neuron signals; intensify briefly on phrase trigger.
+
+tsParticles.load("bg-pulses", {
+  fullScreen: { enable: false },
+  background: { color: "transparent" },
+  fpsLimit: 60,
+  detectRetina: true,
+  particles: {
+    number: { value: 18, density: { enable: true, area: 1000 } },
+    color:  { value: [TEAL, LBLUE] },
+    shape:  { type: "circle" },
+    size:   { value: { min: 1.5, max: 3.5 } },
+    opacity:{ value: 0.95,
+              animation: { enable: true, speed: 1.2, minimumValue: 0.5, sync: false } },
+    move:   { enable: true, speed: 1.4, random: true, straight: false,
+              angle: { offset: 0, value: { min: -20, max: 20 } },
+              outModes: { default: "bounce" } },
+    links:  { enable: false }
+  }
+});
+
+Trigger API (from Stage)
+
+Purpose: burst pulses when a phrase enters.
+
+export function bgBurst(duration = 900) {
+  const pulses = tsParticles.domItem(1); // second loaded instance
+  if (!pulses) return;
+  const prev = pulses.actualOptions.particles.move.speed;
+  pulses.options.particles.move.speed = 2.8;
+  pulses.refresh();
+  setTimeout(() => {
+    pulses.options.particles.move.speed = prev;
+    pulses.refresh();
+  }, duration);
+}
+
+(Optional) Layer 3 — Mosaic Squares (Brand Tiles)
+
+Goal: sparse, slow drift brand motif; extremely subtle.
+
+// tsParticles.load("bg-mosaic", {
+//   fullScreen: { enable: false },
+//   background: { color: "transparent" },
+//   fpsLimit: 60,
+//   particles: {
+//     number: { value: 8 },
+//     color: { value: [BLUE, TEAL, LBLUE] },
+//     shape: { type: "square" },
+//     size:  { value: { min: 6, max: 14 } },
+//     opacity:{ value: 0.15 },
+//     move:   { enable: true, speed: 0.15, outModes: { default: "out" } },
+//     links:  { enable: false }
+//   }
+// });
+
+Behavior & Tuning
+Defaults
+
+Net speed: 0.35
+
+Pulse speed: 1.4 (burst to 2.8 for ~0.9s on trigger)
+
+Links distance: 140
+
+Opacities: Net 0.65, Links 0.40, Pulses 0.95
+
+Responsive Scaling
+
+4K / high DPI: reduce counts by ~30% (e.g., Net 110 → 80, Pulses 18 → 12)
+
+Low-end laptops: Net 110 → 70, Links distance 140 → 120, disable mosaic layer
+
+Mobile stage (if ever): cap DPR at 1.0; Net 60, Pulses 8
+
+Color Modes
+
+Brand default: TEAL links, TEAL/LBLUE nodes & pulses
+
+Monochrome chalk mode: set all colors to grayscale (e.g., #9AA3AE, #C7CDD4) with lower opacity (0.25–0.4)
+
+Interaction
+
+Stage: no hover interactivity (avoid distraction)
+
+Remote preview (optional): enable onHover: attract for demo purposes only
+
+Ordering & Z-Index
+
+#bg-net (bottom)
+
+#bg-pulses (above)
+
+(optional) #bg-mosaic (above pulses if used)
+
+Stage content (phrases/HUD) above all bg layers
+
+Failure / Fallback
+
+If FPS < 45 for >2s:
+
+reduce net number.value by 25%
+
+reduce links distance by 10%
+
+reduce pulses number.value by 30%
+
+If still < 45: drop #bg-pulses entirely.
+
+Integration Points
+
+Export bgBurst() and call it whenever a phrase is triggered.
+
+Keep text legible: maintain white background; avoid global blurs; glow is applied via canvas filters (CSS) so text remains crisp.
