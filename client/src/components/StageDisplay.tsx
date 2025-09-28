@@ -101,7 +101,10 @@ export default function StageDisplay({ installationState, onStateChange }: Stage
 
   return (
     <div 
-      className="relative w-full h-screen overflow-hidden cursor-none bg-black"
+      className="relative w-full h-screen overflow-hidden cursor-none"
+      style={{ 
+        background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #334155 50%, #475569 75%, #64748b 100%)'
+      }}
       onClick={handleClick}
       data-testid="stage-display"
     >
@@ -147,6 +150,27 @@ export default function StageDisplay({ installationState, onStateChange }: Stage
           </p>
         </div>
       </div>
+      
+      {/* Emergency fallback - always visible test text */}
+      {phrases.length === 0 && (
+        <div className="absolute inset-0 flex items-center justify-center z-40">
+          <div className="text-center">
+            <h1 
+              className="text-6xl font-bold mb-4"
+              style={{ 
+                fontFamily: "'Avenir Next', 'Helvetica Neue', sans-serif",
+                color: '#00A99D',
+                textShadow: '0 0 30px #00A99D, 0 0 60px #00A99D, 0 0 10px rgba(255,255,255,0.8)'
+              }}
+            >
+              Gador SNC 85th Anniversary
+            </h1>
+            <p className="text-2xl text-white font-medium">
+              Click anywhere to see Spanish phrases with neural animations
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -83,6 +83,11 @@ function Home() {
           <p className="text-blue-200/60 text-xs mt-2">
             Celebrating energy, science, and creativity
           </p>
+          <div className="mt-6 p-4 bg-yellow-900/20 border border-yellow-500/30 rounded-lg">
+            <p className="text-yellow-300 text-sm font-medium">
+              🚀 Status: tsParticles neural background + GSAP animations + Avenir Next font LOADED
+            </p>
+          </div>
         </div>
       </div>
     </div>

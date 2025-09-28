@@ -39,7 +39,7 @@ export default function NeuralBackground({
         // Layer 1 - Neural Net (Connections)
         await window.tsParticles.load("bg-net", {
           fullScreen: { enable: false },
-          background: { color: "#FFFFFF" },
+          background: { color: "transparent" },
           fpsLimit: 60,
           detectRetina: true,
           particles: {
@@ -152,7 +152,7 @@ export default function NeuralBackground({
         ref={netRef}
         className="fixed inset-0 z-[-1]"
         style={{
-          background: '#FFFFFF',
+          background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #334155 50%, #475569 75%, #64748b 100%)',
           filter: 'drop-shadow(0 0 4px rgba(0,169,157,.35)) drop-shadow(0 0 6px rgba(120,196,230,.25))'
         }}
         data-testid="neural-background"

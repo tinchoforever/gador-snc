@@ -52,9 +52,10 @@ export default function FloatingPhrase({
       position: 'fixed',
       top: laneY,
       left: '50%',
-      x: '-50%',
+      xPercent: -50,
       opacity: 0,
-      zIndex: 100
+      zIndex: 100,
+      visibility: 'visible'
     });
 
     // ENTRY ANIMATION
@@ -202,7 +203,9 @@ export default function FloatingPhrase({
           style={{ 
             fontFamily: "'Avenir Next', 'Helvetica Neue', sans-serif",
             fontSize: '2.5rem',
-            fontWeight: 600
+            fontWeight: 600,
+            textShadow: '0 0 20px #00A99D, 0 0 40px #00A99D, 0 0 10px rgba(255,255,255,0.8)',
+            color: '#FFFFFF'
           }}
         >
           {phrase.text}
