@@ -83,7 +83,7 @@ export default {
         },
       },
       fontFamily: {
-        sans: ["'Avenir Next'", "'Helvetica Neue'", "system-ui", "sans-serif"],
+        sans: ["'Avenir Next'", "'Helvetica Neue'", "Inter", "system-ui", "sans-serif"],
         serif: ["var(--font-serif)"],
         mono: ["var(--font-mono)"],
       },

@@ -27,51 +27,66 @@ export default function StageDisplay({ installationState, onStateChange }: Stage
     return () => clearTimeout(timer);
   }, [installationState]);
 
+  // Phrase-to-lane mapping as specified in animation document
+  const getPhraseConfig = (text: string, sceneId: number) => {
+    const scenePhraseMappings = {
+      1: [ // Scene 1 - Chaotic Thoughts
+        { text: "¿Y si me olvido de lo que tengo que decir?", lane: 'B' as const, entry: 'draw' as const },
+        { text: "Capaz no es suficiente lo que preparé...", lane: 'A' as const, entry: 'focus' as const },
+        { text: "¿Desenchufé la planchita de pelo?", lane: 'C' as const, entry: 'flash' as const },
+        { text: "¿Cómo hago para subirlos a todos al barco de Sistema Nervioso Central?", lane: 'D' as const, entry: 'mask' as const },
+        { text: "¿Por qué no me habré puesto zapatos más cómodos?", lane: 'B' as const, entry: 'focus' as const },
+        { text: "¿Los chicos estarán haciendo la tarea o viendo youtube?", lane: 'A' as const, entry: 'draw' as const },
+      ],
+      2: [ // Scene 2 - Magic Microphone  
+        { text: "Espero que Rocío no me pregunte nada difícil", lane: 'B' as const, entry: 'mask' as const },
+        { text: "Necesito ese micrófono… ¿estará en Mercado Libre?", lane: 'C' as const, entry: 'flash' as const },
+        { text: "Rocío… ¡te olvidaste de presentarme! Tenemos que anunciar mi nueva posición.", lane: 'A' as const, entry: 'focus' as const },
+      ],
+      3: [ // Scene 3 - Collective Energy
+        { text: "¡Lo vamos a lograr!", lane: 'B' as const, entry: 'flash' as const },
+        { text: "¡Sí, juntos podemos!", lane: 'A' as const, entry: 'focus' as const },
+        { text: "¡Qué bueno estar acá con todos!", lane: 'C' as const, entry: 'mask' as const },
+        { text: "¡Vamos con todo!", lane: 'D' as const, entry: 'flash' as const },
+      ]
+    };
+
+    const sceneMapping = scenePhraseMappings[sceneId as keyof typeof scenePhraseMappings];
+    if (sceneMapping) {
+      const config = sceneMapping.find(p => p.text === text);
+      if (config) return config;
+    }
+
+    // Default fallback
+    return { lane: 'B' as const, entry: 'focus' as const };
+  };
+
   const triggerPhrase = (phraseText: string, sceneId: number) => {
-    const newPhrase: PhraseState = {
+    const config = getPhraseConfig(phraseText, sceneId);
+    
+    const newPhrase: PhraseState & { lane: string; entry: string } = {
       id: `phrase-${Date.now()}-${Math.random()}`,
       text: phraseText,
       layer: 'front',
       opacity: 1,
       position: {
-        x: Math.random() * (window.innerWidth - 400) + 200,
-        y: Math.random() * (window.innerHeight - 200) + 100,
+        x: window.innerWidth / 2, // Start center, GSAP will handle positioning
+        y: window.innerHeight * 0.38, // Default to lane B
         z: 0,
       },
       isActive: true,
       sceneId,
+      lane: config.lane,
+      entry: config.entry,
     };
 
     setPhrases(prev => [...prev, newPhrase]);
+    console.log(`Triggered phrase: "${phraseText}" | Lane: ${config.lane} | Entry: ${config.entry}`);
     
-    // Simulate phrase lifecycle
-    setTimeout(() => {
-      setPhrases(prev => prev.map(p => 
-        p.id === newPhrase.id 
-          ? { ...p, layer: 'floating', opacity: 0.8, position: { ...p.position, x: p.position.x + 300 } }
-          : p
-      ));
-    }, 3000);
-
-    setTimeout(() => {
-      setPhrases(prev => prev.map(p => 
-        p.id === newPhrase.id 
-          ? { ...p, layer: 'mirror', opacity: 0.35, position: { ...p.position, x: window.innerWidth - 200 } }
-          : p
-      ));
-    }, 8000);
-
-    setTimeout(() => {
-      setPhrases(prev => prev.map(p => 
-        p.id === newPhrase.id 
-          ? { ...p, layer: 'return', opacity: 0.65, position: { ...p.position, x: 100 } }
-          : p
-      ));
-    }, 16000);
-
+    // Remove phrase after full cycle (about 35 seconds)
     setTimeout(() => {
       setPhrases(prev => prev.filter(p => p.id !== newPhrase.id));
-    }, 24000);
+    }, 35000);
   };
 
   // Demo functionality for testing
@@ -101,6 +116,8 @@ export default function StageDisplay({ installationState, onStateChange }: Stage
         <FloatingPhrase 
           key={phrase.id}
           phrase={phrase}
+          lane={(phrase as any).lane || 'B'}
+          entryStyle={(phrase as any).entry || 'focus'}
         />
       ))}
       

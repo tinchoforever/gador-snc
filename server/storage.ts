@@ -1,37 +1,41 @@
-import { type User, type InsertUser } from "@shared/schema";
-import { randomUUID } from "crypto";
+import { type InstallationState, type SocketMessage } from "@shared/schema";
 
-// modify the interface with any CRUD methods
-// you might need
-
+// Storage interface for the Gador installation
 export interface IStorage {
-  getUser(id: string): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
+  getInstallationState(): Promise<InstallationState>;
+  updateInstallationState(state: InstallationState): Promise<InstallationState>;
+  addSocketMessage(message: SocketMessage): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
-  private users: Map<string, User>;
+  private installationState: InstallationState;
+  private messages: SocketMessage[];
 
   constructor() {
-    this.users = new Map();
+    this.installationState = {
+      currentScene: 1,
+      activePhrases: [],
+      isConnected: false,
+      volume: 0.8,
+    };
+    this.messages = [];
   }
 
-  async getUser(id: string): Promise<User | undefined> {
-    return this.users.get(id);
+  async getInstallationState(): Promise<InstallationState> {
+    return this.installationState;
   }
 
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+  async updateInstallationState(state: InstallationState): Promise<InstallationState> {
+    this.installationState = { ...state };
+    return this.installationState;
   }
 
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const id = randomUUID();
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
-    return user;
+  async addSocketMessage(message: SocketMessage): Promise<void> {
+    this.messages.push(message);
+    // Keep only last 100 messages
+    if (this.messages.length > 100) {
+      this.messages = this.messages.slice(-100);
+    }
   }
 }
 

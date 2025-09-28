@@ -165,20 +165,24 @@ function Router() {
 }
 
 function App() {
-  const [location] = useLocation();
-  
   // Hide cursor on stage display for projector
   useEffect(() => {
-    if (location === '/stage') {
-      document.body.style.cursor = 'none';
-    } else {
-      document.body.style.cursor = 'auto';
-    }
+    const handleLocationChange = () => {
+      if (window.location.pathname === '/stage') {
+        document.body.style.cursor = 'none';
+      } else {
+        document.body.style.cursor = 'auto';
+      }
+    };
+    
+    handleLocationChange();
+    window.addEventListener('popstate', handleLocationChange);
     
     return () => {
       document.body.style.cursor = 'auto';
+      window.removeEventListener('popstate', handleLocationChange);
     };
-  }, [location]);
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>

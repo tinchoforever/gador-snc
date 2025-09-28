@@ -1,12 +1,9 @@
 import { useEffect, useRef } from 'react';
 
-interface Particle {
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
-  connections: number[];
-}
+// Brand colors as specified
+const BLUE = "#0033A0";
+const TEAL = "#00A99D";
+const LBLUE = "#78C4E6";
 
 interface NeuralBackgroundProps {
   intensity?: number;
@@ -15,128 +12,167 @@ interface NeuralBackgroundProps {
   pulseActive?: boolean;
 }
 
+// Global burst function
+let bgBurstFunction: ((duration?: number) => void) | null = null;
+
+export function bgBurst(duration = 900) {
+  if (bgBurstFunction) {
+    bgBurstFunction(duration);
+  }
+}
+
 export default function NeuralBackground({
-  intensity = 0.5,
-  particleCount = 80,
-  connectionDistance = 150,
+  intensity = 0.7,
+  particleCount = 110,
+  connectionDistance = 140,
   pulseActive = false
 }: NeuralBackgroundProps) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const animationRef = useRef<number>();
-  const particlesRef = useRef<Particle[]>([]);
+  const netRef = useRef<HTMLDivElement>(null);
+  const pulsesRef = useRef<HTMLDivElement>(null);
+  const particlesInitializedRef = useRef(false);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    const resizeCanvas = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    };
-
-    const createParticles = () => {
-      const particles: Particle[] = [];
-      for (let i = 0; i < particleCount; i++) {
-        particles.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height,
-          vx: (Math.random() - 0.5) * 0.5,
-          vy: (Math.random() - 0.5) * 0.5,
-          connections: []
-        });
-      }
-      return particles;
-    };
-
-    const updateParticles = (particles: Particle[]) => {
-      particles.forEach(particle => {
-        particle.x += particle.vx;
-        particle.y += particle.vy;
-
-        // Bounce off edges
-        if (particle.x <= 0 || particle.x >= canvas.width) particle.vx *= -1;
-        if (particle.y <= 0 || particle.y >= canvas.height) particle.vy *= -1;
-
-        // Keep within bounds
-        particle.x = Math.max(0, Math.min(canvas.width, particle.x));
-        particle.y = Math.max(0, Math.min(canvas.height, particle.y));
-      });
-    };
-
-    const drawConnections = (particles: Particle[]) => {
-      particles.forEach((particle, i) => {
-        particles.slice(i + 1).forEach((otherParticle, j) => {
-          const dx = particle.x - otherParticle.x;
-          const dy = particle.y - otherParticle.y;
-          const distance = Math.sqrt(dx * dx + dy * dy);
-
-          if (distance < connectionDistance) {
-            const opacity = (1 - distance / connectionDistance) * intensity;
-            const pulseIntensity = pulseActive ? 1 + Math.sin(Date.now() * 0.005) * 0.3 : 1;
-            
-            ctx.strokeStyle = `hsla(178, 100%, 33%, ${opacity * pulseIntensity})`;
-            ctx.lineWidth = opacity * 2;
-            ctx.beginPath();
-            ctx.moveTo(particle.x, particle.y);
-            ctx.lineTo(otherParticle.x, otherParticle.y);
-            ctx.stroke();
+    if (particlesInitializedRef.current || !window.tsParticles) return;
+    
+    const initParticles = async () => {
+      try {
+        // Layer 1 - Neural Net (Connections)
+        await window.tsParticles.load("bg-net", {
+          fullScreen: { enable: false },
+          background: { color: "#FFFFFF" },
+          fpsLimit: 60,
+          detectRetina: true,
+          particles: {
+            number: { value: particleCount, density: { enable: true, area: 1200 } },
+            color: { value: [TEAL, LBLUE, BLUE] },
+            shape: { type: "circle" },
+            size: { value: 2, random: { enable: true, minimumValue: 1 } },
+            opacity: {
+              value: 0.65,
+              animation: { enable: true, speed: 0.4, minimumValue: 0.35, sync: false }
+            },
+            move: {
+              enable: true,
+              speed: 0.35,
+              random: true,
+              outModes: { default: "bounce" }
+            },
+            links: {
+              enable: true,
+              distance: connectionDistance,
+              color: TEAL,
+              opacity: 0.40,
+              width: 1.15
+            }
           }
         });
-      });
-    };
 
-    const drawParticles = (particles: Particle[]) => {
-      particles.forEach(particle => {
-        const pulseSize = pulseActive ? 1 + Math.sin(Date.now() * 0.008) * 0.5 : 1;
-        
-        ctx.fillStyle = `hsla(219, 100%, 31%, ${intensity})`;
-        ctx.beginPath();
-        ctx.arc(particle.x, particle.y, 2 * pulseSize, 0, Math.PI * 2);
-        ctx.fill();
+        // Layer 2 - Pulses (Spikes)
+        await window.tsParticles.load("bg-pulses", {
+          fullScreen: { enable: false },
+          background: { color: "transparent" },
+          fpsLimit: 60,
+          detectRetina: true,
+          particles: {
+            number: { value: 18, density: { enable: true, area: 1000 } },
+            color: { value: [TEAL, LBLUE] },
+            shape: { type: "circle" },
+            size: { value: { min: 1.5, max: 3.5 } },
+            opacity: {
+              value: 0.95,
+              animation: { enable: true, speed: 1.2, minimumValue: 0.5, sync: false }
+            },
+            move: {
+              enable: true,
+              speed: 1.4,
+              random: true,
+              straight: false,
+              angle: { offset: 0, value: { min: -20, max: 20 } },
+              outModes: { default: "bounce" }
+            },
+            links: { enable: false }
+          }
+        });
 
-        // Glow effect
-        ctx.shadowColor = 'hsl(178, 100%, 33%)';
-        ctx.shadowBlur = pulseActive ? 10 * pulseSize : 5;
-        ctx.beginPath();
-        ctx.arc(particle.x, particle.y, 1 * pulseSize, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.shadowBlur = 0;
-      });
-    };
+        // Setup burst function
+        bgBurstFunction = (duration = 900) => {
+          const pulses = window.tsParticles.domItem(1); // second loaded instance
+          if (!pulses) return;
+          const prev = pulses.actualOptions.particles.move.speed;
+          pulses.options.particles.move.speed = 2.8;
+          pulses.refresh();
+          setTimeout(() => {
+            pulses.options.particles.move.speed = prev;
+            pulses.refresh();
+          }, duration);
+        };
 
-    const animate = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
-      updateParticles(particlesRef.current);
-      drawConnections(particlesRef.current);
-      drawParticles(particlesRef.current);
-      
-      animationRef.current = requestAnimationFrame(animate);
-    };
-
-    resizeCanvas();
-    particlesRef.current = createParticles();
-    animate();
-
-    window.addEventListener('resize', resizeCanvas);
-
-    return () => {
-      window.removeEventListener('resize', resizeCanvas);
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
+        particlesInitializedRef.current = true;
+        console.log('tsParticles neural background initialized');
+      } catch (error) {
+        console.error('Failed to initialize tsParticles:', error);
       }
     };
-  }, [intensity, particleCount, connectionDistance, pulseActive]);
+
+    // Wait for tsParticles to be available
+    if (window.tsParticles) {
+      initParticles();
+    } else {
+      const checkTsParticles = () => {
+        if (window.tsParticles) {
+          initParticles();
+        } else {
+          setTimeout(checkTsParticles, 100);
+        }
+      };
+      checkTsParticles();
+    }
+
+    return () => {
+      // Cleanup particles on unmount
+      if (window.tsParticles) {
+        window.tsParticles.domItem(0)?.destroy();
+        window.tsParticles.domItem(1)?.destroy();
+      }
+      bgBurstFunction = null;
+    };
+  }, [particleCount, connectionDistance]);
+
+  // Trigger pulse when pulseActive changes
+  useEffect(() => {
+    if (pulseActive && bgBurstFunction) {
+      bgBurstFunction(900);
+    }
+  }, [pulseActive]);
 
   return (
-    <canvas
-      ref={canvasRef}
-      className="fixed inset-0 w-full h-full bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900"
-      style={{ zIndex: -1 }}
-      data-testid="neural-background"
-    />
+    <>
+      <div
+        id="bg-net"
+        ref={netRef}
+        className="fixed inset-0 z-[-1]"
+        style={{
+          background: '#FFFFFF',
+          filter: 'drop-shadow(0 0 4px rgba(0,169,157,.35)) drop-shadow(0 0 6px rgba(120,196,230,.25))'
+        }}
+        data-testid="neural-background"
+      />
+      <div
+        id="bg-pulses"
+        ref={pulsesRef}
+        className="fixed inset-0 z-[-1]"
+        style={{
+          background: 'transparent',
+          filter: 'drop-shadow(0 0 10px rgba(0,169,157,.8)) drop-shadow(0 0 16px rgba(120,196,230,.6))'
+        }}
+      />
+    </>
   );
+}
+
+// Type declaration for tsParticles global
+declare global {
+  interface Window {
+    tsParticles: any;
+  }
 }
