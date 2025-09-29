@@ -3,54 +3,74 @@
 @tailwind utilities;
 
 /* DIGITAL ANXIETY BACKGROUND - EXACT FROM USER SPECIFICATION */
-:root { 
-  --deep: #020814; 
-  --cyan: #7DF9FF; 
+:root {
+  --deep: #020814;
+  --cyan: #7DF9FF;
 }
 
-html, body {
+html,
+body {
   height: 100%;
   margin: 0;
   background: var(--deep);
   overflow: hidden;
 }
 
-#bg-base, #bg-formulas, #bg-net, #bg-pulses {
+#bg-base,
+#bg-formulas,
+#bg-net,
+#bg-pulses {
   position: fixed;
   inset: 0;
   pointer-events: none;
 }
 
 #bg-base {
-  z-index: -4;
+  z-index: 4;
   background:
-    radial-gradient(55% 55% at 50% 50%, rgba(0,0,0,0) 0%, var(--deep) 75%),
+    radial-gradient(55% 55% at 50% 50%, rgba(0, 0, 0, 0) 0%, var(--deep) 75%),
     var(--deep);
 }
 
-#bg-formulas { z-index: -3; }
-#bg-net { z-index: -2; background: transparent; }
-#bg-pulses { z-index: -1; background: transparent; }
+#bg-formulas {
+  z-index: 3;
+}
+
+#bg-net {
+  z-index: 1;
+  background: transparent;
+}
+
+#bg-pulses {
+  z-index: 0;
+  background: transparent;
+}
 
 /* Optional glow refinement on the canvases */
-#bg-net canvas { filter: drop-shadow(0 0 4px rgba(125,249,255,.25)); }
-#bg-pulses canvas { filter: drop-shadow(0 0 10px rgba(125,249,255,.55)); }
+#bg-net canvas {
+  filter: drop-shadow(0 0 4px rgba(125, 249, 255, .25));
+}
+
+#bg-pulses canvas {
+  filter: drop-shadow(0 0 10px rgba(125, 249, 255, .55));
+}
 
 /* GADOR SNC 85TH ANNIVERSARY - LIGHT MODE */
 :root {
-  --button-outline: rgba(0,51,160, .10);
-  --badge-outline: rgba(0,51,160, .08);
+  --button-outline: rgba(0, 51, 160, .10);
+  --badge-outline: rgba(0, 51, 160, .08);
 
   /* Automatic computation of border around primary / danger buttons */
-  --opaque-button-border-intensity: -8; /* In terms of percentages */
+  --opaque-button-border-intensity: -8;
+  /* In terms of percentages */
 
   /* Backgrounds applied on top of other backgrounds when hovered/active */
-  --elevate-1: rgba(0,169,157, .06);
-  --elevate-2: rgba(0,169,157, .12);
+  --elevate-1: rgba(0, 169, 157, .06);
+  --elevate-2: rgba(0, 169, 157, .12);
 
   /* GADOR BRAND COLORS (HSL FORMAT) */
   /* Primary Blue: #0033A0 = 219 100% 31% */
-  /* Teal: #00A99D = 178 100% 33% */  
+  /* Teal: #00A99D = 178 100% 33% */
   /* Light Blue: #78C4E6 = 199 68% 69% */
 
   --background: 0 0% 100%;
@@ -76,19 +96,23 @@ html, body {
   --popover-border: 219 100% 82%;
 
   /* CORE GADOR BRAND TOKENS */
-  --primary: 219 100% 31%;            /* Gador Primary Blue */
+  --primary: 219 100% 31%;
+  /* Gador Primary Blue */
   --primary-foreground: 0 0% 100%;
 
-  --secondary: 178 100% 85%;          /* Teal variant for secondary elements */
+  --secondary: 178 100% 85%;
+  /* Teal variant for secondary elements */
   --secondary-foreground: 219 100% 25%;
 
   --muted: 219 20% 92%;
   --muted-foreground: 219 100% 45%;
 
-  --accent: 178 100% 33%;             /* Gador Teal */
+  --accent: 178 100% 33%;
+  /* Gador Teal */
   --accent-foreground: 0 0% 100%;
 
-  --tertiary: 199 68% 69%;            /* Gador Light Blue */
+  --tertiary: 199 68% 69%;
+  /* Gador Light Blue */
   --tertiary-foreground: 219 100% 25%;
 
   --destructive: 0 84% 35%;
@@ -96,30 +120,39 @@ html, body {
 
   --input: 219 100% 88%;
   --ring: 219 100% 31%;
-  
+
   /* GADOR BRAND CHART COLORS */
-  --chart-1: 219 100% 31%;            /* Primary Blue */
-  --chart-2: 178 100% 33%;            /* Teal */
-  --chart-3: 199 68% 69%;             /* Light Blue */
-  --chart-4: 219 100% 45%;            /* Blue variant */
-  --chart-5: 178 100% 45%;            /* Teal variant */
+  --chart-1: 219 100% 31%;
+  /* Primary Blue */
+  --chart-2: 178 100% 33%;
+  /* Teal */
+  --chart-3: 199 68% 69%;
+  /* Light Blue */
+  --chart-4: 219 100% 45%;
+  /* Blue variant */
+  --chart-5: 178 100% 45%;
+  /* Teal variant */
 
   /* TYPOGRAPHY SYSTEM - AVENIR NEXT */
   --font-display: 'Avenir Next', 'Helvetica Neue', system-ui, sans-serif;
   --font-sans: 'Avenir Next', 'Helvetica Neue', system-ui, sans-serif;
-  
+
   /* BRAND COLOR VARIABLES - EXACT from your spec */
   --blue: #0033A0;
-  --teal: #00A99D; 
+  --teal: #00A99D;
   --lblue: #78C4E6;
   --font-serif: Georgia, serif;
   --font-mono: 'Menlo', 'Monaco', 'Cascadia Code', monospace;
 
   /* TEXT HIERARCHY */
-  --text-default: 219 100% 15%;       /* Primary text */
-  --text-secondary: 219 100% 35%;     /* Secondary text */
-  --text-tertiary: 219 100% 55%;      /* Tertiary text */
-  --radius: .5rem; /* 8px */
+  --text-default: 219 100% 15%;
+  /* Primary text */
+  --text-secondary: 219 100% 35%;
+  /* Secondary text */
+  --text-tertiary: 219 100% 55%;
+  /* Tertiary text */
+  --radius: .5rem;
+  /* 8px */
   --shadow-2xs: 0px 2px 0px 0px hsl(219 20% 20% / 0.02);
   --shadow-xs: 0px 2px 0px 0px hsl(219 20% 20% / 0.03);
   --shadow-sm: 0px 2px 0px 0px hsl(219 20% 20% / 0.04), 0px 1px 2px -1px hsl(219 20% 20% / 0.06);
@@ -164,17 +197,20 @@ html, body {
 
 /* GADOR SNC 85TH ANNIVERSARY - DARK MODE */
 .dark {
-  --button-outline: rgba(0,169,157, .15);
-  --badge-outline: rgba(0,169,157, .10);
+  --button-outline: rgba(0, 169, 157, .15);
+  --badge-outline: rgba(0, 169, 157, .10);
 
-  --opaque-button-border-intensity: 12;  /* In terms of percentages */
+  --opaque-button-border-intensity: 12;
+  /* In terms of percentages */
 
   /* Backgrounds applied on top of other backgrounds when hovered/active */
-  --elevate-1: rgba(0,169,157, .08);
-  --elevate-2: rgba(0,169,157, .15);
+  --elevate-1: rgba(0, 169, 157, .08);
+  --elevate-2: rgba(0, 169, 157, .15);
 
-  --background: 219 100% 4%;           /* Deep space blue-black */
-  --foreground: 0 0% 95%;              /* Pure white text */
+  --background: 219 100% 4%;
+  /* Deep space blue-black */
+  --foreground: 0 0% 95%;
+  /* Pure white text */
 
   --border: 219 100% 15%;
 
@@ -185,7 +221,8 @@ html, body {
   --sidebar: 219 100% 6%;
   --sidebar-foreground: 0 0% 95%;
   --sidebar-border: 219 100% 20%;
-  --sidebar-primary: 219 100% 45%;     /* Brighter blue for dark mode */
+  --sidebar-primary: 219 100% 45%;
+  /* Brighter blue for dark mode */
   --sidebar-primary-foreground: 0 0% 100%;
   --sidebar-accent: 178 100% 15%;
   --sidebar-accent-foreground: 0 0% 90%;
@@ -196,19 +233,23 @@ html, body {
   --popover-border: 219 100% 22%;
 
   /* CORE GADOR BRAND TOKENS - DARK MODE */
-  --primary: 219 100% 45%;             /* Brighter blue for dark backgrounds */
+  --primary: 219 100% 45%;
+  /* Brighter blue for dark backgrounds */
   --primary-foreground: 0 0% 100%;
 
-  --secondary: 178 100% 20%;           /* Darker teal for secondary elements */
+  --secondary: 178 100% 20%;
+  /* Darker teal for secondary elements */
   --secondary-foreground: 0 0% 90%;
 
   --muted: 219 100% 12%;
   --muted-foreground: 219 20% 70%;
 
-  --accent: 178 100% 40%;              /* Vibrant teal for dark mode */
+  --accent: 178 100% 40%;
+  /* Vibrant teal for dark mode */
   --accent-foreground: 0 0% 100%;
 
-  --tertiary: 199 68% 75%;             /* Brighter light blue for dark mode */
+  --tertiary: 199 68% 75%;
+  /* Brighter light blue for dark mode */
   --tertiary-foreground: 219 100% 15%;
 
   --destructive: 0 84% 50%;
@@ -216,18 +257,26 @@ html, body {
 
   --input: 219 100% 18%;
   --ring: 219 100% 45%;
-  
+
   /* GADOR BRAND CHART COLORS - DARK MODE */
-  --chart-1: 219 100% 55%;             /* Bright Primary Blue */
-  --chart-2: 178 100% 50%;             /* Bright Teal */
-  --chart-3: 199 68% 75%;              /* Bright Light Blue */
-  --chart-4: 219 100% 65%;             /* Blue variant */
-  --chart-5: 178 100% 60%;             /* Teal variant */
+  --chart-1: 219 100% 55%;
+  /* Bright Primary Blue */
+  --chart-2: 178 100% 50%;
+  /* Bright Teal */
+  --chart-3: 199 68% 75%;
+  /* Bright Light Blue */
+  --chart-4: 219 100% 65%;
+  /* Blue variant */
+  --chart-5: 178 100% 60%;
+  /* Teal variant */
 
   /* TEXT HIERARCHY - DARK MODE */
-  --text-default: 0 0% 95%;            /* Primary white text */
-  --text-secondary: 0 0% 75%;          /* Secondary gray text */
-  --text-tertiary: 0 0% 55%;           /* Tertiary muted text */
+  --text-default: 0 0% 95%;
+  /* Primary white text */
+  --text-secondary: 0 0% 75%;
+  /* Secondary gray text */
+  --text-tertiary: 0 0% 55%;
+  /* Tertiary muted text */
 
   --shadow-2xs: 0px 2px 0px 0px hsl(0 0% 0% / 0.15);
   --shadow-xs: 0px 2px 0px 0px hsl(0 0% 0% / 0.20);
@@ -311,21 +360,21 @@ html, body {
 
   /* GLOW EFFECTS FOR NEURAL INTERFACE */
   .text-glow-primary {
-    text-shadow: 
+    text-shadow:
       0 0 10px hsl(var(--primary) / 0.5),
       0 0 20px hsl(var(--primary) / 0.3),
       0 0 30px hsl(var(--primary) / 0.2);
   }
 
   .text-glow-accent {
-    text-shadow: 
+    text-shadow:
       0 0 10px hsl(var(--accent) / 0.6),
       0 0 20px hsl(var(--accent) / 0.4),
       0 0 30px hsl(var(--accent) / 0.2);
   }
 
   .text-glow-tertiary {
-    text-shadow: 
+    text-shadow:
       0 0 8px hsl(var(--tertiary) / 0.5),
       0 0 16px hsl(var(--tertiary) / 0.3),
       0 0 24px hsl(var(--tertiary) / 0.2);
@@ -447,59 +496,69 @@ html, body {
 /* ===== GADOR 85TH ANNIVERSARY - STAGE DISPLAY FIXES ===== */
 
 /* SAFE AREA + CENTER POSITIONING - EXACT from your spec */
-#stage, #phrases-layer { 
-  position: relative; 
-  width: 100%; 
-  height: 100%; 
+#stage,
+#phrases-layer {
+  position: relative;
+  width: 100%;
+  height: 100%;
 }
 
-#phrases-layer { 
-  padding: 7% 10%;           /* action/title safe area */
-  overflow: hidden; 
+#phrases-layer {
+  padding: 7% 10%;
+  /* action/title safe area */
+  overflow: hidden;
 }
 
 /* PHRASE TYPOGRAPHY RESET - EXACT from your spec */
 .phrase {
-  position: absolute; 
-  left: 50%; 
-  transform: translateX(-50%);      /* CENTER START - exactly as specified */
-  white-space: nowrap; 
-  font-weight: 700; 
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  /* CENTER START - exactly as specified */
+  white-space: nowrap;
+  font-weight: 700;
   letter-spacing: .2px;
-  color: #fff; 
-  filter: none;                     /* eliminates blur - EXACT from spec */
+  color: #fff;
+  filter: none;
+  /* eliminates blur - EXACT from spec */
 }
 
 /* HUD CONTAINER - EXACT from your spec (not chat-bubble) */
 .phrase.hud {
-  padding: 14px 20px; 
+  padding: 14px 20px;
   border-radius: 14px;
-  border: 2px solid rgba(0,169,157,.65);              /* borde teal */
-  background: rgba(0,51,160,.18);                     /* relleno azul translúcido */
-  backdrop-filter: blur(6px);                         /* sutil */
-  text-shadow: 0 0 10px rgba(0,169,157,.8), 0 0 18px rgba(120,196,230,.6);
+  border: 2px solid rgba(0, 169, 157, .65);
+  /* borde teal */
+  background: rgba(0, 51, 160, .18);
+  /* relleno azul translúcido */
+  backdrop-filter: blur(6px);
+  /* sutil */
+  text-shadow: 0 0 10px rgba(0, 169, 157, .8), 0 0 18px rgba(120, 196, 230, .6);
 }
 
 /* ===== CRITICAL FIXES - DEEP SPACE NEURAL NETWORK ===== */
 
 /* 1. DEEP SPACE BACKGROUND - EXACT from user spec */
-html, body {
+html,
+body {
   height: 100% !important;
   margin: 0 !important;
-  background: #020814 !important;  /* Deep Space - EXACT from spec */
+  background: #020814 !important;
+  /* Deep Space - EXACT from spec */
 }
 
 /* 2. PARTICLE LAYERS - EXACT transparency from spec */
-#bg-net, #bg-pulses { 
-  position: fixed !important; 
-  inset: 0 !important; 
-  z-index: -2 !important; 
-  background: transparent !important; /* NOT white - EXACT from spec */
+#bg-net,
+#bg-pulses {
+  position: fixed !important;
+  inset: 0 !important;
+  background: transparent !important;
+  /* NOT white - EXACT from spec */
 }
 
 /* 3. PARTICLE GLOW REDUCTION - EXACT from spec */
-#bg-pulses canvas { 
-  filter: drop-shadow(0 0 8px rgba(125,249,255,.45)) !important; 
+#bg-pulses canvas {
+  filter: drop-shadow(0 0 8px rgba(125, 249, 255, .45)) !important;
 }
 
 /* 4. STAGE - EXACT 100vh from spec */
@@ -511,29 +570,49 @@ html, body {
 }
 
 /* 5. PHRASES LAYER - EXACT safe area from spec */
-#phrases-layer { 
-  position: absolute !important; 
-  inset: 0 !important; 
-  padding: 7% 10% !important; /* safe area - EXACT from spec */
+#phrases-layer {
+  position: absolute !important;
+  inset: 0 !important;
+  padding: 7% 10% !important;
+  /* safe area - EXACT from spec */
 }
 
 /* 6. HIDE DEBUG BADGES - EXACT from spec */
-#fps, #dpr, .debug-badge { 
-  display: none !important; 
+#fps,
+#dpr,
+.debug-badge {
+  display: none !important;
 }
 
 /* 7. DEEP SPACE BASE WITH VIGNETTE - EXACT from spec */
-#bg-base { 
-  position: fixed !important; 
-  inset: 0 !important; 
+#bg-base {
+  position: fixed !important;
+  inset: 0 !important;
   z-index: -3 !important;
   background:
-    radial-gradient(55% 55% at 50% 50%, rgba(0,0,0,0) 0%, #020814 75%),
+    radial-gradient(55% 55% at 50% 50%, rgba(0, 0, 0, 0) 0%, #020814 75%),
     #020814 !important;
 }
 
 /* OPACITY LAYERS - EXACT from your spec */
-.layer-front  { opacity: 1.0;  transform: translateX(-50%) scale(1);    color: #fff; }
-.layer-float  { opacity: .8;    }
-.layer-back   { opacity: .35;   transform: translateX(-50%) scale(.85); color: #78C4E6; }
-.layer-return { opacity: .65;   transform: translateX(-50%) scale(.80); color: #fff; }
+.layer-front {
+  opacity: 1.0;
+  transform: translateX(-50%) scale(1);
+  color: #fff;
+}
+
+.layer-float {
+  opacity: .8;
+}
+
+.layer-back {
+  opacity: .35;
+  transform: translateX(-50%) scale(.85);
+  color: #78C4E6;
+}
+
+.layer-return {
+  opacity: .65;
+  transform: translateX(-50%) scale(.80);
+  color: #fff;
+}
