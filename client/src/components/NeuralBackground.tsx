@@ -302,8 +302,8 @@ export default function NeuralBackground({
       <div
         id="bg-net"
         ref={netRef}
-        className="fixed inset-0 z-[-2]"
-        style={{ background: 'transparent' }}
+        className="absolute inset-0 z-10"
+        style={{ background: 'transparent', pointerEvents: 'none' }}
         data-testid="neural-network-layer"
       />
       
@@ -311,8 +311,8 @@ export default function NeuralBackground({
       <div
         id="bg-pulses"
         ref={pulsesRef}
-        className="fixed inset-0 z-[-2]"
-        style={{ background: 'transparent' }}
+        className="absolute inset-0 z-20"
+        style={{ background: 'transparent', pointerEvents: 'none' }}
         data-testid="neural-pulse-layer"
       />
       
@@ -320,8 +320,8 @@ export default function NeuralBackground({
       <div
         id="bg-bursts"
         ref={burstRef}
-        className="fixed inset-0 z-[-2]"
-        style={{ background: 'transparent' }}
+        className="absolute inset-0 z-30"
+        style={{ background: 'transparent', pointerEvents: 'none' }}
         data-testid="neural-burst-layer"
       />
     </>
