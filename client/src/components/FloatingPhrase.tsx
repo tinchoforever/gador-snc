@@ -80,12 +80,13 @@ export default function FloatingPhrase({
 
   const initializeAnimation = () => {
     const container = containerRef.current;
-    const motionElement = motionRef.current;
     const textElement = textRef.current;
-    if (!container || !motionElement || !textElement) return;
+    if (!container || !textElement) return;
 
-    // Trigger neural burst effect (bgBurst from spec)
-    triggerNeuralBurst(0.8);
+    // Trigger bgBurst effect - EXACT from your spec
+    if ((window as any).bgBurst) {
+      (window as any).bgBurst();
+    }
 
     // EXACT GSAP TIMELINE TEMPLATE FROM YOUR SPECIFICATION DOCUMENT
     const vw = window.innerWidth;
