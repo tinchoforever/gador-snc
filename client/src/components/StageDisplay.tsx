@@ -84,13 +84,18 @@ export default function StageDisplay({ installationState, onStateChange }: Stage
     console.log(`Triggered phrase: "${phraseText}" | Lane: ${config.lane} | Entry: ${config.entry}`);
   };
 
-  // Demo functionality for testing
+  // Demo functionality for testing (with cooldown to prevent rapid triggers)
+  const [lastTrigger, setLastTrigger] = useState(0);
   const handleClick = () => {
+    const now = Date.now();
+    if (now - lastTrigger < 2000) return; // 2 second cooldown
+    
     const currentScene = SCENES.find(s => s.id === installationState.currentScene);
     if (currentScene && currentScene.phrases.length > 0) {
       const randomPhrase = currentScene.phrases[Math.floor(Math.random() * currentScene.phrases.length)];
       triggerPhrase(randomPhrase, currentScene.id);
       console.log('Phrase triggered:', randomPhrase);
+      setLastTrigger(now);
     }
   };
 

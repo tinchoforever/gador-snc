@@ -176,19 +176,36 @@ export default function FloatingPhrase({
       className="pointer-events-none select-none"
       data-testid={`floating-phrase-${phrase.id}`}
     >
-      <p 
-        ref={textRef}
-        className="text-heading-2 text-glow-accent font-semibold leading-tight whitespace-nowrap"
-        style={{ 
-          fontFamily: 'var(--font-display)',
-          color: '#FFFFFF',
-          textShadow: '0 0 20px #00A99D, 0 0 40px #00A99D',
-          userSelect: 'none'
+      {/* HUD Container with glowing border (exactly like your image) */}
+      <div
+        className="relative px-6 py-4 rounded-2xl backdrop-blur-sm max-w-md"
+        style={{
+          background: 'rgba(0, 51, 160, 0.15)',
+          border: '2px solid #00A99D',
+          borderRadius: '20px',
+          boxShadow: `
+            0 0 25px rgba(0, 169, 157, 0.5),
+            0 0 50px rgba(0, 169, 157, 0.3),
+            inset 0 0 15px rgba(0, 169, 157, 0.1)
+          `,
+          backdropFilter: 'blur(10px)',
         }}
-        data-testid={`phrase-text-${phrase.id}`}
+        data-testid={`phrase-container-${phrase.id}`}
       >
-        {phrase.text}
-      </p>
+        <p 
+          ref={textRef}
+          className="text-lg font-medium leading-relaxed"
+          style={{ 
+            fontFamily: 'var(--font-display)',
+            color: '#FFFFFF',
+            textShadow: '0 0 8px rgba(255,255,255,0.4)',
+            userSelect: 'none'
+          }}
+          data-testid={`phrase-text-${phrase.id}`}
+        >
+          {phrase.text}
+        </p>
+      </div>
     </div>
   );
 }
