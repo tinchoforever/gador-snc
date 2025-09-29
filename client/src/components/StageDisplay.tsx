@@ -34,6 +34,10 @@ export default function StageDisplay({ installationState, onStateChange }: Stage
     const currentScene = SCENES.find(s => s.id === installationState.currentScene);
     setShowPhotoMode(currentScene?.name === 'Photo Booth');
     
+    // CLEAN UP ALL ACTIVE PHRASES on scene change - prevent accumulation
+    setPhrases([]);
+    console.log(`🔄 Scene changed to ${installationState.currentScene}, cleared all phrases`);
+    
     // Activate pulse on scene changes
     setPulseActive(true);
     const timer = setTimeout(() => setPulseActive(false), 900);
@@ -75,6 +79,13 @@ export default function StageDisplay({ installationState, onStateChange }: Stage
   };
 
   const triggerPhrase = (phraseText: string, sceneId: number) => {
+    // PREVENT DUPLICATES - Don't add if same phrase is already active
+    const existingPhrase = phrases.find(p => p.text === phraseText && p.isActive);
+    if (existingPhrase) {
+      console.log(`⚠️ Phrase already active, skipping: "${phraseText}"`);
+      return;
+    }
+
     const config = getPhraseConfig(phraseText, sceneId);
     
     const newPhrase: PhraseState & { lane: string; entry: string } = {
@@ -94,7 +105,13 @@ export default function StageDisplay({ installationState, onStateChange }: Stage
     };
 
     setPhrases(prev => [...prev, newPhrase]);
-    console.log(`Triggered phrase: "${phraseText}" | Lane: ${config.lane} | Entry: ${config.entry}`);
+    console.log(`✅ Triggered phrase: "${phraseText}" | Lane: ${config.lane} | Entry: ${config.entry}`);
+    
+    // AUTO-CLEANUP after animation cycle (30 seconds total per user spec)
+    setTimeout(() => {
+      setPhrases(prev => prev.filter(p => p.id !== newPhrase.id));
+      console.log(`🗑️ Removed completed phrase: "${phraseText}"`);
+    }, 30000);
     
     // Play audio for this phrase - EXACT from user document
     playAudio(newPhrase.id);

@@ -1,0 +1,198 @@
+Locked on the background animation only. Here’s the exact build spec + copy-paste code for the “Digital Anxiety” background: Deep-Space base, vignette, ghost formulas, neural net (nodes+links), pulses, and reactive bursts. Vanilla JS + tsParticles + a tiny canvas script. No React.
+
+1) Layer stack (z-order)
+[L0] Base + vignette  (#020814)
+[L1] Ghost formulas (canvas, 15% white, slow drift)
+[L2] Neural NET (tsParticles: nodes + links, 30–40% cyan)
+[L3] Pulses (tsParticles: bright blips, speed-boost on events)
+
+HTML
+<div id="bg-base"></div>
+<canvas id="bg-formulas"></canvas>
+<div id="bg-net"></div>
+<div id="bg-pulses"></div>
+
+CSS
+:root{ --deep:#020814; --cyan:#7DF9FF; }
+
+html,body{height:100%;margin:0;background:var(--deep); overflow:hidden;}
+#bg-base,#bg-formulas,#bg-net,#bg-pulses{position:fixed; inset:0; pointer-events:none;}
+#bg-base{ z-index:-4;
+  background:
+    radial-gradient(55% 55% at 50% 50%, rgba(0,0,0,0) 0%, var(--deep) 75%),
+    var(--deep);
+}
+#bg-formulas{ z-index:-3; }
+#bg-net     { z-index:-2; background:transparent; }
+#bg-pulses  { z-index:-1; background:transparent; }
+
+/* optional glow refinement on the canvases */
+#bg-net canvas{ filter: drop-shadow(0 0 4px rgba(125,249,255,.25)); }
+#bg-pulses canvas{ filter: drop-shadow(0 0 10px rgba(125,249,255,.55)); }
+
+2) Neural NET (nodes + links)
+JS (tsParticles config)
+<script src="https://cdn.jsdelivr.net/npm/tsparticles-engine@2/tsparticles.engine.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tsparticles@2/tsparticles.bundle.min.js"></script>
+<script>
+const CYAN = "#7DF9FF";
+
+// NET: subtle, slow, connected
+tsParticles.load("bg-net", {
+  fullScreen:{ enable:false },
+  background:{ color:"transparent" },
+  fpsLimit: 60,
+  detectRetina: true,
+  particles:{
+    number:{ value: 120, density:{ enable:true, area: 1200 } },
+    color:{ value: CYAN },
+    shape:{ type:"circle" },
+    size:{ value: 2, random:{ enable:true, minimumValue: 1 } },
+    opacity:{ value: 0.40, animation:{ enable:true, speed:0.3, minimumValue:0.25, sync:false } },
+    move:{ enable:true, speed:0.35, random:true, outModes:{ default:"bounce" } },
+    links:{ enable:true, distance:140, color: CYAN, opacity:0.30, width:1.05 }
+  }
+});
+</script>
+
+
+Tuning notes
+
+Increase or decrease number.value (80–140) for performance.
+
+For denser meshes use distance:120; for airy, use 160.
+
+3) Pulses (energy blips + reactive “burst”)
+JS
+<script>
+tsParticles.load("bg-pulses", {
+  fullScreen:{ enable:false },
+  background:{ color:"transparent" },
+  fpsLimit:60,
+  detectRetina:true,
+  particles:{
+    number:{ value: 18, density:{ enable:true, area: 1000 } },
+    color:{ value: CYAN }, shape:{ type:"circle" },
+    size:{ value:{ min:1.5, max:3.5 } },
+    opacity:{ value: 0.95, animation:{ enable:true, speed: 1.2, minimumValue: 0.5, sync:false } },
+    move:{ enable:true, speed:1.4, random:true, straight:false,
+           angle:{ offset:0, value:{ min:-20, max:20 } },
+           outModes:{ default:"bounce" } },
+    links:{ enable:false }
+  }
+});
+
+// Call this whenever a phrase enters or on “beats”
+function bgBurst(ms=900){
+  const pulses = tsParticles.domItem(1); // second instance
+  if(!pulses) return;
+  const prev = pulses.actualOptions.particles.move.speed;
+  pulses.options.particles.move.speed = 2.8;
+  pulses.refresh();
+  setTimeout(()=>{ pulses.options.particles.move.speed = prev; pulses.refresh(); }, ms);
+}
+</script>
+
+
+When to call bgBurst()
+
+On every phrase Entry.
+
+On scene transitions.
+
+On remote “MIC” trigger.
+
+4) Ghost formulas layer (very subtle depth)
+JS (single canvas, ultra light)
+<script>
+(function formulas(){
+  const cv = document.getElementById("bg-formulas");
+  const ctx = cv.getContext("2d");
+  function fit(){ cv.width = innerWidth; cv.height = innerHeight; }
+  fit(); addEventListener("resize", fit);
+
+  const glyphs = ["x","y","∑","≈","→","sin","cos","∂","α","β","γ","π","Δ","θ","ln","ƒ"];
+  const items = Array.from({length: 60}).map(()=>({
+    x: Math.random()*cv.width,
+    y: Math.random()*cv.height,
+    s: 0.8 + Math.random()*1.4,     // scale
+    v: 0.12 + Math.random()*0.22,    // vertical drift
+    a: Math.random()*Math.PI*2,      // small lateral sway
+    w: 0.15 + Math.random()*0.25,    // sway speed
+    g: glyphs[(Math.random()*glyphs.length)|0]
+  }));
+
+  function tick(t){
+    ctx.clearRect(0,0,cv.width,cv.height);
+    ctx.fillStyle = "rgba(255,255,255,0.15)"; // 15% white
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    items.forEach(it=>{
+      it.y += it.v; if(it.y>cv.height+20) it.y = -20;
+      it.a += it.w*0.016;
+      const x = it.x + Math.sin(it.a)*8;  // gentle sway
+      ctx.save();
+      ctx.globalAlpha = 0.15;
+      ctx.translate(x, it.y);
+      ctx.scale(it.s, it.s);
+      ctx.font = "16px Helvetica, Arial, sans-serif";
+      ctx.fillText(it.g, 0, 0);
+      ctx.restore();
+    });
+    requestAnimationFrame(tick);
+  }
+  tick();
+})();
+</script>
+
+5) Optional: parallax on mouse (subtle, background only)
+document.addEventListener("mousemove", e=>{
+  const kx = (e.clientX / innerWidth  - 0.5);
+  const ky = (e.clientY / innerHeight - 0.5);
+  // shift layers a touch for depth
+  document.getElementById("bg-net").style.transform    = `translate(${kx*6}px, ${ky*4}px)`;
+  document.getElementById("bg-pulses").style.transform = `translate(${kx*10}px, ${ky*6}px)`;
+  document.getElementById("bg-formulas").style.transform = `translate(${kx*14}px, ${ky*10}px)`;
+});
+
+
+Keep the multipliers small; you want presence, not seasickness.
+
+6) Performance guardrails
+
+FPS target 60. If you dip <48:
+
+Net number.value → 90 or 80.
+
+Net links.distance → 120 (fewer connections).
+
+Pulses number.value → 12.
+
+Avoid giant CSS blurs; we use mild drop-shadows only on canvases.
+
+On 4K screens, consider reducing effects when devicePixelRatio > 1.5:
+
+if (devicePixelRatio > 1.5) {
+  const net = tsParticles.domItem(0);
+  if (net) { net.options.particles.number.value = 90; net.refresh(); }
+}
+
+7) Troubleshooting (fast)
+
+White block appears → some layer has background:white. Ensure #bg-net and #bg-pulses have background:transparent and the tsParticles background.color:"transparent".
+
+Particles only dots, no lines → links.enable:true missing.
+
+Background doesn’t fill screen → container not position:fixed; inset:0 or canvas not resized on resize.
+
+Too bright / “snowy” → lower node opacity to 0.35–0.40, reduce drop-shadow on the pulses canvas.
+
+8) How to hook into foreground events
+
+Whenever a foreground phrase enters (or any “beat”), call:
+
+bgBurst(900); // boosts BG for ~0.9s
+
+
+That’s all you need for the background to feel alive with the content.
