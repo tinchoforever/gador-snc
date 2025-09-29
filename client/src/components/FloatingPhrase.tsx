@@ -109,16 +109,22 @@ export default function FloatingPhrase({
       force3D: true   // Ensure proper compositing
     });
 
-    // GLOW BOOST EFFECT (on container, separate from motion) - from your spec
+    // GLOW PULSE ON ENTRY - EXACT as spec (pulse then settle, not constant neon)
     const glowBoost = gsap.timeline();
-    glowBoost.to(container, {
-      filter: 'brightness(1.4) contrast(1.2) drop-shadow(0 0 30px #00A99D)',
-      duration: 0.22,
-      ease: "power2.out"
-    }).to(container, {
-      filter: 'brightness(1.1) contrast(1.1)',
-      duration: 0.8,
-      ease: "power2.inOut"
+    
+    // Entry brightness pulse - EXACT from your spec
+    glowBoost.fromTo(motionElement, 
+      { filter: "brightness(1.25)" },
+      { filter: "brightness(1)", duration: 0.25, ease: "power2.out" }
+    );
+    
+    // Idle pulse every ~3s (subtle, eye doesn't tire) - EXACT from your spec
+    gsap.to(textElement, { 
+      repeat: -1, 
+      yoyo: true, 
+      duration: 3.2, 
+      ease: "sine.inOut",
+      textShadow: '0 0 12px rgba(0,169,157,.9), 0 0 20px rgba(120,196,230,.7)'
     });
 
     // ENTRY TIMELINE - EXACT from your specification (on motion element)
@@ -203,48 +209,25 @@ export default function FloatingPhrase({
     // HOLD - EXACT duration from spec
     entry.to(motionElement, { duration: 1.2 });
 
-    // MAIN CYCLE - EXACT from your specification template (on motion element)
-    const tl = gsap.timeline({ 
-      repeat: -1, 
-      defaults: { ease: "power1.inOut" }
-    });
-
-    // FRONT ORBIT L→R (1.00→0.80) - EXACT from spec
-    tl.to(motionElement, { 
-      x: vw * 0.35, 
-      opacity: 0.8, 
-      duration: 8
-    });
-
-    // BACK MIRROR R→L (swap instantly, 0.35) - EXACT from spec
-    tl.to(textElement, { 
-      color: "#78C4E6", 
-      duration: 0.01 
-    });
-    tl.to(motionElement, { 
-      scale: 0.85,
-      duration: 0.01 
-    }, "<");
-    tl.to(motionElement, { 
-      x: -vw * 0.70, 
-      opacity: 0.35, 
-      duration: 8
-    });
-
-    // RETURN L→R (smaller, 0.65) - EXACT from spec
-    tl.to(textElement, { 
-      color: "#0033A0", 
-      duration: 0.01 
-    });
-    tl.to(motionElement, { 
-      scale: 0.80, 
-      duration: 0.01 
-    }, "<");
-    tl.to(motionElement, { 
-      x: -vw * 0.15, 
-      opacity: 0.65, 
-      duration: 8
-    });
+    // DEPTH/OPACITY CYCLE - YOUR EXACT CODE (front 100%→80%, back mirror 35%, return 65%)
+    const tl = gsap.timeline({ repeat: -1 });
+    
+    // Front L→R - EXACT from your spec
+    tl.to(motionElement, { x: vw*0.35, opacity: 0.8, duration: 8, ease:"power1.inOut" })
+    
+    // Swap back - EXACT from your spec  
+    tl.to(textElement, { color:"#78C4E6", duration:0.01 })
+    tl.to(motionElement, { scale:0.85, duration:0.01 }, "<")
+    
+    // Back R→L - EXACT from your spec
+    tl.to(motionElement, { x:-vw*0.70, opacity:0.35, duration: 8, ease:"power1.inOut" })
+    
+    // Return front - EXACT from your spec
+    tl.to(textElement, { color:"#0033A0", duration:0.01 })
+    tl.to(motionElement, { scale:0.80, duration:0.01 }, "<")
+    
+    // Front L→R - EXACT from your spec  
+    tl.to(motionElement, { x:-vw*0.15, opacity:0.65, duration: 8, ease:"power1.inOut" });
 
     // Create master timeline - EXACT as your template
     masterTimeline.current = gsap.timeline()
@@ -271,21 +254,15 @@ export default function FloatingPhrase({
         className="relative"
         style={{ willChange: 'transform, opacity' }}
       >
-        {/* THREE.JS-STYLE HUD Container with ENHANCED glow (exactly like your spec) */}
+        {/* FUTURISTIC HUD Container - EXACT SPEC (not chat bubble) */}
         <div
-          className="relative px-6 py-4 rounded-2xl backdrop-blur-sm max-w-2xl"
+          className="relative max-w-4xl"
           style={{
-            background: 'linear-gradient(135deg, rgba(0, 51, 160, 0.2), rgba(0, 169, 157, 0.1))',
-            border: '2px solid #00A99D',
-            borderRadius: '20px',
-            boxShadow: `
-              0 0 30px rgba(0, 169, 157, 0.8),
-              0 0 60px rgba(0, 169, 157, 0.5),
-              0 0 100px rgba(0, 169, 157, 0.3),
-              inset 0 0 20px rgba(0, 169, 157, 0.15),
-              inset 0 1px 1px rgba(255, 255, 255, 0.1)
-            `,
-            backdropFilter: 'blur(15px)',
+            padding: '14px 20px',               // bigger padding as spec
+            borderRadius: '14px',               // tighter radius as spec  
+            border: '2px solid rgba(0,169,157,.65)',  // teal outline
+            background: 'rgba(0,51,160,.18)',         // blue translucent fill
+            backdropFilter: 'blur(6px)',
           }}
           data-testid={`phrase-container-${phrase.id}`}
         >
@@ -300,17 +277,15 @@ export default function FloatingPhrase({
           />
           <p 
             ref={textRef}
-            className="relative text-xl font-semibold leading-relaxed"
+            className="relative leading-relaxed"
             style={{ 
               fontFamily: 'var(--font-display)',
-              color: '#FFFFFF',
-              textShadow: `
-                0 0 10px rgba(255, 255, 255, 0.6),
-                0 0 20px rgba(0, 169, 157, 0.4),
-                0 0 30px rgba(0, 169, 157, 0.2)
-              `,
-              userSelect: 'none',
-              letterSpacing: '0.025em'
+              fontWeight: '700',                        // heavier for distance
+              fontSize: 'clamp(28px, 3.2vw, 68px)',   // EXACT as spec
+              color: '#FFFFFF',                        // white text
+              letterSpacing: '.2px',                   // EXACT as spec
+              textShadow: '0 0 10px rgba(0,169,157,.8), 0 0 18px rgba(120,196,230,.6)', // EXACT glow
+              userSelect: 'none'
             }}
             data-testid={`phrase-text-${phrase.id}`}
           >

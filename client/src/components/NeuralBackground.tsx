@@ -108,15 +108,11 @@ export default function NeuralBackground({
             },
             links: {
               enable: true,
-              distance: connectionDistance,
-              color: "hsl(178, 100%, 33%)", // Gador Teal
-              opacity: 0.25,
-              width: 1.2,
-              triangles: { 
-                enable: true, 
-                opacity: 0.03,
-                color: "hsl(199, 68%, 69%)" // Light Blue triangles
-              }
+              distance: 140,                    // EXACT from your spec
+              color: "#00A99D",                 // EXACT teal from your spec
+              opacity: 0.4,                     // EXACT from your spec  
+              width: 1.15                       // EXACT from your spec
+              // NO triangles - pure nodes+links network as specified
             },
             move: {
               enable: true,

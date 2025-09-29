@@ -1,0 +1,181 @@
+0) Qué está mal en tu captura (resumen)
+
+Triángulos de fondo → no es el look (debe ser red con nodos+links y pulsos).
+
+Frases borrosas (filtro blur) y cortadas (sin safe area).
+
+Cajas parecen “chat” y no HUD (falta borde neon, relleno sutil azul, glow bien calibrado).
+
+Sin ciclo de opacidades/profundidad (front→back mirror→return).
+
+Vamos a corregir en 9 pasos.
+
+1) Safe area (para que no se corte texto)
+
+Pega esto en tu CSS:
+
+#stage, #phrases-layer { position: relative; width:100%; height:100%; }
+#phrases-layer { padding: 7% 10%; overflow: hidden; }  /* action/title safe */
+
+2) Tipografía + reset (nada de blur en texto)
+:root{ --blue:#0033A0; --teal:#00A99D; --lblue:#78C4E6; }
+body{ font-family:"Avenir Next", Helvetica, system-ui, sans-serif; }
+.phrase {
+  position:absolute; left:50%; transform:translateX(-50%);
+  white-space:nowrap; font-weight:700; letter-spacing:.2px;
+  color:#fff; filter:none;  /* elimina blur */
+}
+
+3) Caja HUD correcta (no chat-bubble)
+.phrase.hud {
+  padding:14px 20px; border-radius:14px;
+  border:2px solid rgba(0,169,157,.65);              /* borde teal */
+  background: rgba(0,51,160,.18);                    /* relleno azul translúcido */
+  backdrop-filter: blur(6px);                        /* sutil */
+  text-shadow: 0 0 10px rgba(0,169,157,.8), 0 0 18px rgba(120,196,230,.6);
+}
+
+4) Fondo: reemplazá triángulos por tsParticles net + pulses
+
+HTML (dos capas):
+
+<div id="bg-net"></div>
+<div id="bg-pulses"></div>
+
+
+CSS (glow del canvas):
+
+#bg-net, #bg-pulses { position:fixed; inset:0; z-index:-1; background:#fff; }
+#bg-net canvas { filter: drop-shadow(0 0 4px rgba(0,169,157,.35)) drop-shadow(0 0 6px rgba(120,196,230,.25)); }
+#bg-pulses canvas { filter: drop-shadow(0 0 10px rgba(0,169,157,.8)) drop-shadow(0 0 16px rgba(120,196,230,.6)); }
+
+
+JS (copia tal cual):
+
+<script src="https://cdn.jsdelivr.net/npm/tsparticles-engine@2/tsparticles.engine.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tsparticles@2/tsparticles.bundle.min.js"></script>
+<script>
+const BLUE="#0033A0", TEAL="#00A99D", LBLUE="#78C4E6";
+
+// NET
+tsParticles.load("bg-net", {
+  fullScreen:{enable:false}, background:{color:"#FFFFFF"}, fpsLimit:60, detectRetina:true,
+  particles:{
+    number:{value:110, density:{enable:true, area:1200}},
+    color:{value:[TEAL, LBLUE, BLUE]},
+    shape:{type:"circle"},
+    size:{value:2, random:{enable:true, minimumValue:1}},
+    opacity:{value:.65, animation:{enable:true, speed:.4, minimumValue:.35, sync:false}},
+    move:{enable:true, speed:.35, random:true, outModes:{default:"bounce"}},
+    links:{enable:true, distance:140, color:TEAL, opacity:.4, width:1.15}
+  }
+});
+
+// PULSES
+tsParticles.load("bg-pulses", {
+  fullScreen:{enable:false}, background:{color:"transparent"}, fpsLimit:60, detectRetina:true,
+  particles:{
+    number:{value:18, density:{enable:true, area:1000}},
+    color:{value:[TEAL, LBLUE]}, shape:{type:"circle"},
+    size:{value:{min:1.5,max:3.5}},
+    opacity:{value:.95, animation:{enable:true, speed:1.2, minimumValue:.5, sync:false}},
+    move:{enable:true, speed:1.4, random:true, straight:false,
+          angle:{offset:0, value:{min:-20,max:20}}, outModes:{default:"bounce"}},
+    links:{enable:false}
+  }
+});
+function bgBurst(ms=900){
+  const pulses = tsParticles.domItem(1); if(!pulses) return;
+  const prev = pulses.actualOptions.particles.move.speed;
+  pulses.options.particles.move.speed = 2.8; pulses.refresh();
+  setTimeout(()=>{ pulses.options.particles.move.speed = prev; pulses.refresh(); }, ms);
+}
+</script>
+
+5) Lanes definidos (y=…)
+
+Usá estas alturas (1080p referencia):
+
+Lane A: 22% — Lane B: 38% — Lane C: 54% — Lane D: 70%
+
+6) Entrada de frase (horizontal, sin blur)
+
+GSAP timeline para una frase:
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>
+<script>
+function animatePhrase(el, laneY, entry="focus"){
+  const vw = innerWidth;
+  el.style.top = laneY; el.classList.add("hud");
+  el.style.left="50%"; el.style.transform="translateX(-50%)"; el.style.opacity=0;
+
+  // ENTRY (todos horizontales)
+  const t = gsap.timeline();
+  if(entry==="focus"){ t.fromTo(el, {filter:"blur(8px)", opacity:0},
+                                   {filter:"blur(0px)", opacity:1, duration:.45, ease:"power2.out"}); }
+  else if(entry==="flash"){ t.set(el,{opacity:0}).to(el,{opacity:1,duration:.28,ease:"power2.out"}); }
+  else { t.to(el,{opacity:1,duration:.6,ease:"expo.out"}); } // fallback
+
+  t.to(el,{duration:1.2});  // hold legible
+
+  // MAIN CYCLE  (Front → Back mirror → Return)  opacidades exactas
+  t.to(el,{ x: vw*0.35, opacity:.8, duration:8, ease:"power1.inOut"})        // FRONT L→R
+   .to(el,{ color:"#78C4E6", scale:.85, duration:.01 })                      // swap back
+   .to(el,{ x:-vw*0.70, opacity:.35, duration:8, ease:"power1.inOut"})       // BACK R→L
+   .to(el,{ color:"#FFFFFF", scale:.80, duration:.01 })                       // return front (color texto)
+   .to(el,{ x:-vw*0.15, opacity:.65, duration:8, ease:"power1.inOut"});      // FRONT L→R (fondo)
+  return t;
+}
+</script>
+
+7) Trigger real (cuando empuja el remoto)
+function pushPhrase(text, lane="B", entry="focus"){
+  const lanes = {A:"22%",B:"38%",C:"54%",D:"70%"};
+  const el = document.createElement("div");
+  el.className = "phrase"; el.textContent = text;
+  document.getElementById("phrases-layer").appendChild(el);
+
+  // audio + burst
+  // audio.play(mappedMp3);  // si usás módulo de audio
+  bgBurst();
+
+  animatePhrase(el, lanes[lane], entry);
+}
+
+
+Prueba rápida:
+
+pushPhrase("¿Los chicos estarán haciendo la tarea o viendo youtube?", "A", "focus");
+pushPhrase("¿Y si me olvido de lo que tengo que decir?", "B", "flash");
+
+8) Opacidad de capas (si ya tenés elementos puestos)
+
+Si no querés rehacer timelines todavía, definí clases rápidas:
+
+.layer-front  { opacity:1.0;  transform:translateX(-50%) scale(1);    color:#fff; }
+.layer-float  { opacity:.8;    }
+.layer-back   { opacity:.35;   transform:translateX(-50%) scale(.85); color:#78C4E6; }
+.layer-return { opacity:.65;   transform:translateX(-50%) scale(.80); color:#fff; }
+
+
+y alterná clases con JS mientras vuele.
+
+9) Ajustes de legibilidad
+
+Tamaño: clamp(28px, 3.2vw, 68px) para frases normales; hero 110–132px.
+
+Evitar blur en texto (solo glow con text-shadow).
+
+Contraste: fondo blanco recomendado; si insistís con claro/teal, subí background: #fff y baja opacidad de nodos.
+
+Lista de verificación (minutos)
+
+ Pegar CSS de HUD y safe area.
+
+ Reemplazar tu fondo por tsParticles net+pulses (código arriba).
+
+ Quitar blur del texto y usar .phrase.hud.
+
+ Usar lanes y el timeline GSAP (paso 6).
+
+ Llamar pushPhrase(text, lane, entry) cuando llega el socket → boom.

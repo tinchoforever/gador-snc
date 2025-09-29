@@ -73,6 +73,11 @@
   /* TYPOGRAPHY SYSTEM - AVENIR NEXT */
   --font-display: 'Avenir Next', 'Helvetica Neue', system-ui, sans-serif;
   --font-sans: 'Avenir Next', 'Helvetica Neue', system-ui, sans-serif;
+  
+  /* BRAND COLOR VARIABLES - EXACT from your spec */
+  --blue: #0033A0;
+  --teal: #00A99D; 
+  --lblue: #78C4E6;
   --font-serif: Georgia, serif;
   --font-mono: 'Menlo', 'Monaco', 'Cascadia Code', monospace;
 
@@ -404,3 +409,61 @@
     inset: -1px;
   }
 }
+
+/* ===== GADOR 85TH ANNIVERSARY - STAGE DISPLAY FIXES ===== */
+
+/* SAFE AREA + CENTER POSITIONING - EXACT from your spec */
+#stage, #phrases-layer { 
+  position: relative; 
+  width: 100%; 
+  height: 100%; 
+}
+
+#phrases-layer { 
+  padding: 7% 10%;           /* action/title safe area */
+  overflow: hidden; 
+}
+
+/* PHRASE TYPOGRAPHY RESET - EXACT from your spec */
+.phrase {
+  position: absolute; 
+  left: 50%; 
+  transform: translateX(-50%);      /* CENTER START - exactly as specified */
+  white-space: nowrap; 
+  font-weight: 700; 
+  letter-spacing: .2px;
+  color: #fff; 
+  filter: none;                     /* eliminates blur - EXACT from spec */
+}
+
+/* HUD CONTAINER - EXACT from your spec (not chat-bubble) */
+.phrase.hud {
+  padding: 14px 20px; 
+  border-radius: 14px;
+  border: 2px solid rgba(0,169,157,.65);              /* borde teal */
+  background: rgba(0,51,160,.18);                     /* relleno azul translúcido */
+  backdrop-filter: blur(6px);                         /* sutil */
+  text-shadow: 0 0 10px rgba(0,169,157,.8), 0 0 18px rgba(120,196,230,.6);
+}
+
+/* BACKGROUND LAYERS - EXACT from your spec */
+#bg-net, #bg-pulses { 
+  position: fixed; 
+  inset: 0; 
+  z-index: -1; 
+  background: #fff; 
+}
+
+#bg-net canvas { 
+  filter: drop-shadow(0 0 4px rgba(0,169,157,.35)) drop-shadow(0 0 6px rgba(120,196,230,.25)); 
+}
+
+#bg-pulses canvas { 
+  filter: drop-shadow(0 0 10px rgba(0,169,157,.8)) drop-shadow(0 0 16px rgba(120,196,230,.6)); 
+}
+
+/* OPACITY LAYERS - EXACT from your spec */
+.layer-front  { opacity: 1.0;  transform: translateX(-50%) scale(1);    color: #fff; }
+.layer-float  { opacity: .8;    }
+.layer-back   { opacity: .35;   transform: translateX(-50%) scale(.85); color: #78C4E6; }
+.layer-return { opacity: .65;   transform: translateX(-50%) scale(.80); color: #fff; }

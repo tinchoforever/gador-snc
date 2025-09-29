@@ -211,7 +211,7 @@ export default function StageDisplay({ installationState, onStateChange }: Stage
     <div 
       className="relative w-full h-screen overflow-hidden cursor-none"
       style={{ 
-        background: 'linear-gradient(135deg, #001a66 0%, #003399 25%, #0033A0 50%, #006b66 75%, #00A99D 100%)'
+        background: '#FFFFFF'  // WHITE STAGE as specced - phrases pop, brand colors become accents
       }}
       onClick={handleManualTrigger}
       data-testid="stage-display"
@@ -223,18 +223,25 @@ export default function StageDisplay({ installationState, onStateChange }: Stage
         pulseActive={pulseActive}
       />
       
-      {phrases.map(phrase => (
-        <FloatingPhrase 
-          key={phrase.id}
-          phrase={phrase}
-          lane={(phrase as any).lane || 'B'}
-          entryStyle={(phrase as any).entry || 'focus'}
-          onAnimationComplete={() => {
-            // Remove phrase when animation completes
-            setPhrases(prev => prev.filter(p => p.id !== phrase.id));
-          }}
-        />
-      ))}
+      {/* Safe areas - 7% 10% padding as specced */}
+      <div 
+        className="absolute inset-0 pointer-events-none"
+        style={{ padding: '7% 10%' }}
+        data-testid="safe-area"
+      >
+        {phrases.map(phrase => (
+          <FloatingPhrase 
+            key={phrase.id}
+            phrase={phrase}
+            lane={(phrase as any).lane || 'B'}
+            entryStyle={(phrase as any).entry || 'focus'}
+            onAnimationComplete={() => {
+              // Remove phrase when animation completes
+              setPhrases(prev => prev.filter(p => p.id !== phrase.id));
+            }}
+          />
+        ))}
+      </div>
       
       {showPhotoMode && (
         <PhotoBooth 
