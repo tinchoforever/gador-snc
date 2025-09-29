@@ -82,11 +82,6 @@ export default function StageDisplay({ installationState, onStateChange }: Stage
 
     setPhrases(prev => [...prev, newPhrase]);
     console.log(`Triggered phrase: "${phraseText}" | Lane: ${config.lane} | Entry: ${config.entry}`);
-    
-    // Remove phrase after full cycle (about 35 seconds)
-    setTimeout(() => {
-      setPhrases(prev => prev.filter(p => p.id !== newPhrase.id));
-    }, 35000);
   };
 
   // Demo functionality for testing
@@ -121,6 +116,10 @@ export default function StageDisplay({ installationState, onStateChange }: Stage
           phrase={phrase}
           lane={(phrase as any).lane || 'B'}
           entryStyle={(phrase as any).entry || 'focus'}
+          onAnimationComplete={() => {
+            // Remove phrase when animation completes
+            setPhrases(prev => prev.filter(p => p.id !== phrase.id));
+          }}
         />
       ))}
       

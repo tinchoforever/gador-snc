@@ -335,9 +335,12 @@ export const bgBurst = (duration: number = 900) => {
   }
 };
 
-// Export enhanced burst controller
+// Export enhanced burst controller - consistent naming
 export const triggerNeuralBurst = (intensity: number = 1.0) => {
   if ((window as any).neuralBurst) {
     (window as any).neuralBurst(intensity);
+  } else {
+    // Fallback for when neural system isn't ready
+    console.warn('Neural burst system not initialized yet');
   }
 };

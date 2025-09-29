@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { gsap } from 'gsap';
 import { PhraseState } from '@shared/schema';
-import { bgBurst } from './NeuralBackground';
+import { triggerNeuralBurst } from './NeuralBackground';
 
 interface FloatingPhraseProps {
   phrase: PhraseState;
@@ -10,12 +10,36 @@ interface FloatingPhraseProps {
   entryStyle?: 'draw' | 'focus' | 'flash' | 'mask';
 }
 
-// Lane positions (1080p reference)
+/**
+ * GADOR SNC 85TH ANNIVERSARY - PHRASE ANIMATION ENGINE
+ * Complete GSAP-powered animation system with exact entry styles and orbital cycles
+ * Implements: draw (SVG mask), flash (character stagger), mask (clipPath), focus (blur)
+ */
+
+// Lane positions (exact percentages from specifications)
 const LANES = {
-  A: '22%',
-  B: '38%', 
-  C: '54%',
-  D: '70%'
+  A: '22%',  // Top lane
+  B: '38%',  // Upper middle  
+  C: '54%',  // Lower middle
+  D: '70%'   // Bottom lane
+};
+
+// Animation timing constants (exact specifications)
+const TIMING = {
+  ENTRY_DURATION: 0.48,     // Entry animation duration
+  HOLD_DURATION: 1.5,       // Hold before orbit begins
+  FRONT_ORBIT: 8.0,         // L→R front orbit (8 seconds)
+  BACK_MIRROR: 8.0,         // R→L back mirror (8 seconds) 
+  RETURN_CYCLE: 8.0,        // L→R return cycle (8 seconds)
+  LOOP_DELAY: 1.0           // Delay before looping
+};
+
+// Opacity and scale values for each phase
+const ANIMATION_STATES = {
+  ENTRY: { opacity: 1.0, scale: 1.0, blur: 0 },
+  FRONT_ORBIT: { opacity: 0.85, scale: 1.0, blur: 0 },
+  BACK_MIRROR: { opacity: 0.35, scale: 0.92, blur: 0.5 },
+  RETURN: { opacity: 0.75, scale: 0.96, blur: 0.2 }
 };
 
 export default function FloatingPhrase({ 
@@ -24,193 +48,293 @@ export default function FloatingPhrase({
   lane = 'B',
   entryStyle = 'focus'
 }: FloatingPhraseProps) {
-  const elementRef = useRef<HTMLDivElement>(null);
-  const timelineRef = useRef<gsap.core.Timeline | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const textRef = useRef<HTMLParagraphElement>(null);
+  const masterTimeline = useRef<gsap.core.Timeline | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [isCompleted, setIsCompleted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    if (elementRef.current) {
-      animatePhrase(elementRef.current, lane, entryStyle);
+    if (containerRef.current && textRef.current) {
+      initializeAnimation();
     }
     
     return () => {
-      if (timelineRef.current) {
-        timelineRef.current.kill();
+      if (masterTimeline.current) {
+        masterTimeline.current.kill();
       }
     };
-  }, [lane, entryStyle]);
+  }, [lane, entryStyle, phrase.text]);
 
-  const animatePhrase = (el: HTMLElement, laneY: string, entryStyle: string) => {
+  const initializeAnimation = () => {
+    const container = containerRef.current;
+    const textElement = textRef.current;
+    if (!container || !textElement) return;
+
+    // Trigger neural burst effect
+    triggerNeuralBurst(0.8);
+
+    // Initialize position and styling
+    const laneY = LANES[lane as keyof typeof LANES];
     const vw = window.innerWidth;
     
-    // Trigger background burst
-    bgBurst(900);
-    
-    // Position element
-    gsap.set(el, {
+    gsap.set(container, {
       position: 'fixed',
       top: laneY,
       left: '50%',
       xPercent: -50,
+      yPercent: 0,  // Use baseline positioning with lane percentages
       opacity: 0,
       zIndex: 100,
       visibility: 'visible'
     });
 
-    // ENTRY ANIMATION
-    const entry = gsap.timeline();
-    
-    switch (entryStyle) {
+    // Create master timeline with finite cycles (3 full orbits then complete)
+    masterTimeline.current = gsap.timeline({
+      onComplete: () => {
+        setIsCompleted(true);
+        onAnimationComplete?.();
+      }
+    });
+
+    // Add entry animation
+    const entryAnimation = createEntryAnimation(container, textElement, entryStyle);
+    masterTimeline.current.add(entryAnimation);
+
+    // Add hold phase
+    masterTimeline.current.to(container, { duration: TIMING.HOLD_DURATION });
+
+    // Add orbital cycle animation (finite - 3 cycles then complete)
+    const orbitalCycle = createOrbitalCycle(container, textElement, vw, 3);
+    masterTimeline.current.add(orbitalCycle);
+  };
+
+  const createEntryAnimation = (container: HTMLElement, textElement: HTMLElement, style: string) => {
+    const tl = gsap.timeline();
+
+    switch (style) {
       case 'draw':
-        // Handwriting draw-on effect (fallback to fade for now)
-        entry.to(el, { 
-          opacity: 1, 
-          duration: 0.6, 
-          ease: "expo.out",
-          textShadow: '0 0 20px #00A99D, 0 0 40px #00A99D'
-        });
-        break;
+        return createDrawAnimation(container, textElement);
       case 'flash':
-        // Letter flash effect
-        entry.set(el, { opacity: 0 })
-             .to(el, { 
-               opacity: 1, 
-               duration: 0.28, 
-               ease: "power2.out",
-               textShadow: '0 0 15px #00A99D'
-             });
-        break;
+        return createFlashAnimation(container, textElement);
       case 'mask':
-        // HUD mask-reveal effect
-        entry.fromTo(el, 
-          { opacity: 0, scaleX: 0, transformOrigin: 'left center' },
-          { 
-            opacity: 1, 
-            scaleX: 1, 
-            duration: 0.5, 
-            ease: "expo.out",
-            textShadow: '0 0 25px #00A99D'
-          }
-        );
-        break;
-      default: // focus
-        entry.fromTo(el, 
-          { filter: "blur(8px)", opacity: 0 },
-          { 
-            filter: "blur(0px)", 
-            opacity: 1, 
-            duration: 0.45, 
-            ease: "power2.out",
-            textShadow: '0 0 20px #00A99D'
-          }
-        );
-        break;
+        return createMaskAnimation(container, textElement);
+      case 'focus':
+      default:
+        return createFocusAnimation(container, textElement);
     }
+  };
 
-    // HOLD
-    entry.to(el, { duration: 1.2 });
-
-    // MAIN ANIMATION CYCLE
-    const mainCycle = gsap.timeline({ 
-      repeat: -1, 
-      defaults: { ease: "power1.inOut" } 
+  // Draw Animation (Handwriting-style Character Reveal)
+  const createDrawAnimation = (container: HTMLElement, textElement: HTMLElement) => {
+    const tl = gsap.timeline();
+    
+    // Split text into characters for handwriting-style reveal
+    const text = phrase.text;
+    const chars = text.split('').map((char, index) => {
+      const span = document.createElement('span');
+      span.textContent = char === ' ' ? '\u00A0' : char; // Non-breaking space
+      span.style.display = 'inline-block';
+      span.style.opacity = '0';
+      span.style.transform = 'scaleX(0)';
+      span.style.transformOrigin = 'left center';
+      return span;
+    });
+    
+    textElement.innerHTML = '';
+    chars.forEach(char => textElement.appendChild(char));
+    
+    tl.set(container, { opacity: 1 });
+    
+    // Handwriting-style character reveal with draw effect
+    chars.forEach((char, index) => {
+      const delay = index * 0.05; // Stagger for handwriting feel
+      
+      tl.to(char, {
+        opacity: 1,
+        scaleX: 1,
+        duration: 0.12,
+        ease: "power2.out",
+        textShadow: '0 0 8px #00A99D',
+      }, delay)
+      // Add subtle glow after drawing
+      .to(char, {
+        textShadow: '0 0 20px #00A99D, 0 0 40px #00A99D',
+        duration: 0.2,
+        ease: "power2.out"
+      }, delay + 0.08);
     });
 
-    // FRONT ORBIT L→R (1.00→0.80)
-    mainCycle.to(el, { 
-      x: vw * 0.35, 
-      opacity: 0.8, 
-      duration: 8,
-      color: '#00A99D',
-      textShadow: '0 0 15px #00A99D, 0 0 30px #00A99D'
+    return tl;
+  };
+
+  // Per-Character Flash Animation
+  const createFlashAnimation = (container: HTMLElement, textElement: HTMLElement) => {
+    const tl = gsap.timeline();
+    
+    // Split text into characters
+    const text = phrase.text;
+    const chars = text.split('').map((char, index) => {
+      const span = document.createElement('span');
+      span.textContent = char === ' ' ? '\u00A0' : char; // Non-breaking space
+      span.style.display = 'inline-block';
+      span.style.opacity = '0';
+      return span;
+    });
+    
+    textElement.innerHTML = '';
+    chars.forEach(char => textElement.appendChild(char));
+    
+    tl.set(container, { opacity: 1 });
+    
+    // Stagger character appearances with flash effects
+    chars.forEach((char, index) => {
+      tl.to(char, {
+        opacity: 1,
+        duration: 0.08,
+        ease: "power2.out",
+        textShadow: '0 0 15px #00A99D, 0 0 30px #00A99D',
+      }, index * 0.04);
+      
+      tl.to(char, {
+        textShadow: '0 0 8px #00A99D, 0 0 16px #00A99D',
+        duration: 0.12,
+        ease: "power2.inOut"
+      }, `-=0.02`);
     });
 
-    // BACK MIRROR R→L (instant swap, 0.35)
-    mainCycle.to(el, { 
-      color: "#78C4E6", 
-      scale: 0.85, 
-      duration: 0.01,
-      textShadow: '0 0 10px #78C4E6'
-    });
-    mainCycle.to(el, { 
-      x: -vw * 0.70, 
-      opacity: 0.35, 
-      duration: 8,
-      scaleX: -0.85  // Mirror effect
-    });
+    return tl;
+  };
 
-    // RETURN L→R (smaller, 0.65)
-    mainCycle.to(el, { 
-      color: "#0033A0", 
-      scale: 0.80, 
-      scaleX: 0.80,  // Remove mirror
-      duration: 0.01,
-      textShadow: '0 0 12px #0033A0'
-    });
-    mainCycle.to(el, { 
-      x: -vw * 0.15, 
-      opacity: 0.65, 
-      duration: 8 
-    });
+  // ClipPath Sweep Mask Animation  
+  const createMaskAnimation = (container: HTMLElement, textElement: HTMLElement) => {
+    const tl = gsap.timeline();
+    
+    tl.set(container, { opacity: 1 })
+      .set(textElement, {
+        clipPath: 'inset(0 100% 0 0)',
+        transformOrigin: 'left center'
+      })
+      .to(textElement, {
+        clipPath: 'inset(0 0% 0 0)',
+        duration: TIMING.ENTRY_DURATION,
+        ease: "expo.out"
+      })
+      .to(textElement, {
+        textShadow: '0 0 25px #00A99D, 0 0 50px #00A99D',
+        duration: 0.2
+      }, '-=0.2');
 
-    // IDLE LOOP (slow drift)
-    mainCycle.to(el, {
-      x: vw * 0.2,
-      duration: 14,
+    return tl;
+  };
+
+  // Blur-to-Focus Animation
+  const createFocusAnimation = (container: HTMLElement, textElement: HTMLElement) => {
+    const tl = gsap.timeline();
+    
+    tl.fromTo(container,
+      { 
+        opacity: 0,
+        filter: "blur(8px) brightness(0.6)"
+      },
+      { 
+        opacity: ANIMATION_STATES.ENTRY.opacity,
+        filter: "blur(0px) brightness(1.0)",
+        duration: TIMING.ENTRY_DURATION,
+        ease: "power2.out"
+      }
+    )
+    .to(textElement, {
+      textShadow: '0 0 20px #00A99D, 0 0 40px #00A99D',
+      duration: 0.2
+    }, '-=0.2');
+
+    return tl;
+  };
+
+  // Complete Orbital Cycle Animation (Exact 8-second phases)
+  const createOrbitalCycle = (container: HTMLElement, textElement: HTMLElement, viewportWidth: number, cycles: number = 3) => {
+    const tl = gsap.timeline({ repeat: cycles - 1 });  // Finite cycles
+
+    // PHASE 1: FRONT ORBIT L→R (8 seconds exact)
+    tl.to(container, {
+      x: viewportWidth * 0.4,  // Increased travel distance
+      opacity: ANIMATION_STATES.FRONT_ORBIT.opacity,  // 0.85
+      scale: ANIMATION_STATES.FRONT_ORBIT.scale,      // 1.0
+      filter: `blur(${ANIMATION_STATES.FRONT_ORBIT.blur}px)`,  // 0px
+      duration: TIMING.FRONT_ORBIT,  // 8.0 seconds
+      ease: "none"  // Linear movement for consistent speed
+    })
+    .to(textElement, {
+      color: '#00A99D',  // Gador Teal
+      textShadow: '0 0 12px #00A99D, 0 0 24px #00A99D',
+      duration: TIMING.FRONT_ORBIT,
+      ease: "none"
+    }, '<');  // Start simultaneously
+
+    // PHASE 2: BACK MIRROR R→L (8 seconds exact)
+    tl.to(container, {
+      x: -viewportWidth * 0.4,  // Full reversal
+      opacity: ANIMATION_STATES.BACK_MIRROR.opacity,  // 0.35
+      scale: ANIMATION_STATES.BACK_MIRROR.scale,      // 0.92
+      filter: `blur(${ANIMATION_STATES.BACK_MIRROR.blur}px)`,  // 0.5px
+      duration: TIMING.BACK_MIRROR,  // 8.0 seconds
+      ease: "none"  // Linear movement
+    })
+    .to(textElement, {
+      color: '#78C4E6',  // Gador Light Blue
+      textShadow: '0 0 6px #78C4E6, 0 0 12px #78C4E6',
+      duration: TIMING.BACK_MIRROR,
+      ease: "none"
+    }, '<');
+
+    // PHASE 3: RETURN L→R (8 seconds exact)
+    tl.to(container, {
+      x: 0,  // Return to center
+      opacity: ANIMATION_STATES.RETURN.opacity,   // 0.75
+      scale: ANIMATION_STATES.RETURN.scale,       // 0.96
+      filter: `blur(${ANIMATION_STATES.RETURN.blur}px)`,  // 0.2px
+      duration: TIMING.RETURN_CYCLE,  // 8.0 seconds
+      ease: "none"  // Linear movement
+    })
+    .to(textElement, {
+      color: '#0033A0',  // Gador Primary Blue
+      textShadow: '0 0 8px #0033A0, 0 0 16px #0033A0',
+      duration: TIMING.RETURN_CYCLE,
+      ease: "none"
+    }, '<');
+
+    // Loop delay before repeating cycle
+    tl.to(container, { 
+      duration: TIMING.LOOP_DELAY,  // 1.0 second pause
       ease: "none"
     });
 
-    // Combine entry and main cycle
-    timelineRef.current = gsap.timeline()
-      .add(entry)
-      .add(mainCycle);
+    return tl;
   };
 
   if (!mounted) return null;
 
-  const isHudStyle = phrase.text.length > 50; // Long phrases get HUD treatment
-
   return (
-    <div
-      ref={elementRef}
-      className="pointer-events-none"
+    <div 
+      ref={containerRef}
+      className="pointer-events-none select-none"
       data-testid={`floating-phrase-${phrase.id}`}
     >
-      {isHudStyle ? (
-        <div className="relative">
-          <div
-            className="px-6 py-4 border-2 rounded-lg backdrop-blur-sm"
-            style={{
-              borderColor: '#00A99D',
-              backgroundColor: 'rgba(0, 169, 157, 0.1)',
-            }}
-          >
-            <div 
-              className="absolute inset-0 rounded-lg animate-pulse"
-              style={{
-                boxShadow: 'inset 0 0 20px rgba(0, 169, 157, 0.3)',
-              }}
-            />
-            <p className="relative z-10 text-white font-medium leading-tight">
-              {phrase.text}
-            </p>
-          </div>
-        </div>
-      ) : (
-        <p 
-          className="text-white font-semibold leading-tight whitespace-nowrap"
-          style={{ 
-            fontFamily: "'Avenir Next', 'Helvetica Neue', sans-serif",
-            fontSize: '2.5rem',
-            fontWeight: 600,
-            textShadow: '0 0 20px #00A99D, 0 0 40px #00A99D, 0 0 10px rgba(255,255,255,0.8)',
-            color: '#FFFFFF'
-          }}
-        >
-          {phrase.text}
-        </p>
-      )}
+      <p 
+        ref={textRef}
+        className="text-heading-2 text-glow-accent font-semibold leading-tight whitespace-nowrap"
+        style={{ 
+          fontFamily: 'var(--font-display)',
+          color: '#FFFFFF',
+          textShadow: '0 0 20px #00A99D, 0 0 40px #00A99D',
+          userSelect: 'none'
+        }}
+        data-testid={`phrase-text-${phrase.id}`}
+      >
+        {phrase.text}
+      </p>
     </div>
   );
 }
