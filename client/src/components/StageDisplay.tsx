@@ -98,7 +98,7 @@ export default function StageDisplay({ installationState, onStateChange }: Stage
     <div 
       className="relative w-full h-screen overflow-hidden cursor-none"
       style={{ 
-        background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #334155 50%, #475569 75%, #64748b 100%)'
+        background: 'linear-gradient(135deg, #001a66 0%, #003399 25%, #0033A0 50%, #006b66 75%, #00A99D 100%)'
       }}
       onClick={handleClick}
       data-testid="stage-display"
@@ -170,6 +170,54 @@ export default function StageDisplay({ installationState, onStateChange }: Stage
           </div>
         </div>
       )}
+
+      {/* HUD Border Containers - Top */}
+      <div 
+        className="absolute top-4 left-4 right-4 h-16 pointer-events-none"
+        style={{
+          border: '2px solid #00A99D',
+          borderRadius: '8px',
+          background: 'rgba(0, 169, 157, 0.08)',
+          boxShadow: '0 0 20px rgba(0, 169, 157, 0.3), inset 0 0 20px rgba(0, 169, 157, 0.1)',
+        }}
+        data-testid="hud-top-border"
+      />
+
+      {/* HUD Border Containers - Bottom */}
+      <div 
+        className="absolute bottom-4 left-4 right-4 h-16 pointer-events-none"
+        style={{
+          border: '2px solid #0033A0',
+          borderRadius: '8px', 
+          background: 'rgba(0, 51, 160, 0.08)',
+          boxShadow: '0 0 20px rgba(0, 51, 160, 0.3), inset 0 0 20px rgba(0, 51, 160, 0.1)',
+        }}
+        data-testid="hud-bottom-border"
+      />
+
+      {/* HUD Border Containers - Left */}
+      <div 
+        className="absolute top-24 bottom-24 left-4 w-16 pointer-events-none"
+        style={{
+          border: '2px solid #78C4E6',
+          borderRadius: '8px',
+          background: 'rgba(120, 196, 230, 0.08)',
+          boxShadow: '0 0 20px rgba(120, 196, 230, 0.3), inset 0 0 20px rgba(120, 196, 230, 0.1)',
+        }}
+        data-testid="hud-left-border"
+      />
+
+      {/* HUD Border Containers - Right */}
+      <div 
+        className="absolute top-24 bottom-24 right-4 w-16 pointer-events-none"
+        style={{
+          border: '2px solid #78C4E6',
+          borderRadius: '8px',
+          background: 'rgba(120, 196, 230, 0.08)',
+          boxShadow: '0 0 20px rgba(120, 196, 230, 0.3), inset 0 0 20px rgba(120, 196, 230, 0.1)',
+        }}
+        data-testid="hud-right-border"
+      />
     </div>
   );
 }
