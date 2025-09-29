@@ -33,8 +33,11 @@ export default function NeuralBackground({
     const initDigitalAnxietyBackground = () => {
       const CYAN = "#7DF9FF";
       
+      console.log('🔍 Checking tsParticles availability:', !!window.tsParticles);
+      
       // LAYER 2: Neural NET (nodes + links) - EXACT from user spec
       if (window.tsParticles) {
+        console.log('✅ tsParticles found, initializing neural network...');
         window.tsParticles.load("bg-net", {
           fullScreen: { enable: false },
           background: { color: "transparent" },
@@ -87,6 +90,11 @@ export default function NeuralBackground({
             pulses.refresh(); 
           }, ms);
         };
+        
+        console.log('🎆 Neural network and pulse system initialized successfully!');
+      } else {
+        console.error('❌ tsParticles not found! Scripts may not have loaded yet.');
+        return false;
       }
 
       // LAYER 1: Ghost formulas (canvas) - EXACT from user spec
@@ -141,17 +149,32 @@ export default function NeuralBackground({
       initializedRef.current = true;
     };
 
-    // Wait for tsParticles to load
-    if (window.tsParticles) {
-      initDigitalAnxietyBackground();
-    } else {
-      const timer = setTimeout(() => {
-        if (window.tsParticles) {
-          initDigitalAnxietyBackground();
+    // AGGRESSIVE RETRY MECHANISM - Wait for tsParticles to load
+    let retryCount = 0;
+    const maxRetries = 10;
+    
+    const tryInit = () => {
+      console.log(`🔄 Attempt ${retryCount + 1}/${maxRetries} to initialize tsParticles...`);
+      
+      if (window.tsParticles) {
+        const success = initDigitalAnxietyBackground();
+        if (success !== false) {
+          console.log('🎯 Background initialization successful!');
+          return;
         }
-      }, 1000);
-      return () => clearTimeout(timer);
-    }
+      }
+      
+      retryCount++;
+      if (retryCount < maxRetries) {
+        console.log(`⏳ tsParticles not ready, retrying in ${retryCount * 500}ms...`);
+        setTimeout(tryInit, retryCount * 500);
+      } else {
+        console.error('💥 FAILED: tsParticles never loaded after 10 attempts!');
+        console.error('Check if scripts are blocked or failed to load from CDN.');
+      }
+    };
+    
+    tryInit();
   }, []);
 
   return (
@@ -188,9 +211,4 @@ export default function NeuralBackground({
   );
 }
 
-// Export burst controller for external use
-export const bgBurst = (duration: number = 900) => {
-  if (window.bgBurst) {
-    window.bgBurst(duration);
-  }
-};
+// Burst controller available via window.bgBurst
