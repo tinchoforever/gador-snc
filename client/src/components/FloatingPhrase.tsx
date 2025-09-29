@@ -62,11 +62,16 @@ export default function FloatingPhrase({
 
   useEffect(() => {
     setMounted(true);
-    if (containerRef.current && motionRef.current && textRef.current) {
-      initializeAnimation();
-    }
+    
+    // Delay to ensure refs are ready
+    const timer = setTimeout(() => {
+      if (containerRef.current && motionRef.current && textRef.current) {
+        initializeAnimation();
+      }
+    }, 100);
     
     return () => {
+      clearTimeout(timer);
       if (masterTimeline.current) {
         masterTimeline.current.kill();
       }
@@ -81,7 +86,6 @@ export default function FloatingPhrase({
 
     // Trigger neural burst effect (bgBurst from spec)
     triggerNeuralBurst(0.8);
-    console.log(`🎬 INITIALIZING ANIMATION for "${phrase.text}" | Lane: ${lane} | Entry: ${entryStyle}`);
 
     // EXACT GSAP TIMELINE TEMPLATE FROM YOUR SPECIFICATION DOCUMENT
     const vw = window.innerWidth;
@@ -121,15 +125,74 @@ export default function FloatingPhrase({
     const entry = gsap.timeline();
     
     if (entryStyle === 'draw') {
-      // Handwriting draw-on (stroke mask), 0.6s - EXACT from spec
-      entry.to(motionElement, { opacity: 1, duration: 0.6, ease: "expo.out" });
+      // Handwriting draw-on (SVG stroke), 0.6s - EXACT from spec
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      const svgText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      
+      svg.style.position = 'absolute';
+      svg.style.top = '0';
+      svg.style.left = '0';
+      svg.style.width = '100%';
+      svg.style.height = '100%';
+      svg.style.pointerEvents = 'none';
+      
+      svgText.textContent = phrase.text;
+      svgText.setAttribute('x', '50%');
+      svgText.setAttribute('y', '50%');
+      svgText.setAttribute('text-anchor', 'middle');
+      svgText.setAttribute('dominant-baseline', 'middle');
+      svgText.setAttribute('fill', 'none');
+      svgText.setAttribute('stroke', '#00A99D');
+      svgText.setAttribute('stroke-width', '2');
+      svgText.setAttribute('stroke-dasharray', '1000');
+      svgText.setAttribute('stroke-dashoffset', '1000');
+      svgText.style.fontFamily = 'var(--font-display)';
+      svgText.style.fontSize = '1.25rem';
+      svgText.style.fontWeight = '600';
+      
+      svg.appendChild(svgText);
+      textElement.parentElement?.appendChild(svg);
+      textElement.style.opacity = '0';
+      
+      entry.set(motionElement, { opacity: 1 })
+           .to(svgText, { 
+             strokeDashoffset: 0, 
+             duration: 0.5, 
+             ease: "expo.out" 
+           })
+           .to(svgText, { fill: '#FFFFFF', stroke: 'none', duration: 0.1 })
+           .set(textElement, { opacity: 1 })
+           .set(svg, { display: 'none' });
     } else if (entryStyle === 'flash') {
-      // Letter flash (each character 0.03s; total ~0.28s) - EXACT from spec
-      entry.set(motionElement, { opacity: 0 })
-           .to(motionElement, { opacity: 1, duration: 0.28, ease: "power2.out" });
+      // Letter flash (each character 0.03s stagger) - EXACT from spec
+      const text = phrase.text;
+      textElement.textContent = ''; // Clear safely
+      
+      text.split('').forEach(char => {
+        const span = document.createElement('span');
+        span.textContent = char === ' ' ? '\u00A0' : char; // Non-breaking space
+        span.style.opacity = '0';
+        span.style.display = 'inline-block';
+        textElement.appendChild(span);
+      });
+      
+      const charElements = textElement.querySelectorAll('span');
+      entry.set(motionElement, { opacity: 1 })
+           .to(charElements, { 
+             opacity: 1, 
+             stagger: 0.03,
+             duration: 0.01, // Minimal duration per char
+             ease: "power2.out" 
+           });
     } else if (entryStyle === 'mask') {
       // HUD mask-reveal (rect slides to reveal, 0.5s) - EXACT from spec
-      entry.to(motionElement, { opacity: 1, duration: 0.5, ease: "expo.out" });
+      textElement.style.clipPath = 'inset(0 100% 0 0)';
+      entry.set(motionElement, { opacity: 1 })
+           .to(textElement, { 
+             clipPath: 'inset(0 0% 0 0)', 
+             duration: 0.5, 
+             ease: "expo.out" 
+           });
     } else { // focus - Blur → Focus (0.45s) - EXACT from spec
       entry.fromTo(motionElement, 
         { filter: "blur(8px)", opacity: 0 },
@@ -143,19 +206,14 @@ export default function FloatingPhrase({
     // MAIN CYCLE - EXACT from your specification template (on motion element)
     const tl = gsap.timeline({ 
       repeat: -1, 
-      defaults: { ease: "power1.inOut" },
-      onUpdate: () => {
-        const currentX = gsap.getProperty(motionElement, "x");
-        console.log(`🔄 Motion progress: ${Math.round(tl.progress() * 100)}% | X: ${currentX}`);
-      }
+      defaults: { ease: "power1.inOut" }
     });
 
     // FRONT ORBIT L→R (1.00→0.80) - EXACT from spec
     tl.to(motionElement, { 
       x: vw * 0.35, 
       opacity: 0.8, 
-      duration: 8,
-      onStart: () => console.log(`📍 FRONT ORBIT started for "${phrase.text}"`)
+      duration: 8
     });
 
     // BACK MIRROR R→L (swap instantly, 0.35) - EXACT from spec
@@ -170,8 +228,7 @@ export default function FloatingPhrase({
     tl.to(motionElement, { 
       x: -vw * 0.70, 
       opacity: 0.35, 
-      duration: 8,
-      onStart: () => console.log(`📍 BACK MIRROR started for "${phrase.text}"`)
+      duration: 8
     });
 
     // RETURN L→R (smaller, 0.65) - EXACT from spec
@@ -186,8 +243,7 @@ export default function FloatingPhrase({
     tl.to(motionElement, { 
       x: -vw * 0.15, 
       opacity: 0.65, 
-      duration: 8,
-      onStart: () => console.log(`📍 RETURN PHASE started for "${phrase.text}"`)
+      duration: 8
     });
 
     // Create master timeline - EXACT as your template
@@ -198,8 +254,6 @@ export default function FloatingPhrase({
 
     // EXPLICITLY START THE TIMELINE
     masterTimeline.current.play();
-    
-    console.log(`✅ Master timeline created for "${phrase.text}" - STARTING PLAYBACK NOW`);
   };
 
 
