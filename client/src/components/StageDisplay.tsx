@@ -209,9 +209,10 @@ export default function StageDisplay({ installationState, onStateChange }: Stage
 
   return (
     <div 
+      id="stage"
       className="relative w-full h-screen overflow-hidden cursor-none"
       style={{ 
-        background: 'transparent'  // Let neural background show through
+        background: 'linear-gradient(160deg, #041d3c, #01233d)'  // EXACT gradient from spec
       }}
       onClick={handleManualTrigger}
       data-testid="stage-display"
@@ -223,8 +224,9 @@ export default function StageDisplay({ installationState, onStateChange }: Stage
         pulseActive={pulseActive}
       />
       
-      {/* Safe areas - 7% 10% padding as specced */}
+      {/* Phrases layer with safe areas - EXACT 7% 10% padding from spec */}
       <div 
+        id="phrases-layer"
         className="absolute inset-0 pointer-events-none"
         style={{ padding: '7% 10%' }}
         data-testid="safe-area"

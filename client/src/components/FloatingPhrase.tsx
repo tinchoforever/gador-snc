@@ -79,166 +79,57 @@ export default function FloatingPhrase({
   }, [lane, entryStyle, phrase.text]);
 
   const initializeAnimation = () => {
-    const container = containerRef.current;
-    const motionElement = motionRef.current;  // FIX: Define motionElement from ref
     const textElement = textRef.current;
-    if (!container || !motionElement || !textElement) return;
+    if (!textElement) return;
 
-    // Trigger neural burst effect - FIX: Correct hook name
-    if ((window as any).neuralBurst) {
-      (window as any).neuralBurst(1.0);
-    }
-
-    // EXACT GSAP TIMELINE TEMPLATE FROM YOUR SPECIFICATION DOCUMENT
+    // EXACT PHRASE CYCLE FROM USER DOCUMENT
     const vw = window.innerWidth;
-    const laneYPercent = parseFloat(LANES[lane as keyof typeof LANES]) / 100;
-    const laneY = window.innerHeight * laneYPercent;
+    const laneY = LANES[lane as keyof typeof LANES];
     
-    // CENTER POSITIONING - FIX: Proper centering
-    container.style.position = 'fixed';
-    container.style.top = `${laneY}px`;
-    container.style.left = '50%';           // FIX: Center properly
-    container.style.zIndex = '100';
-    
-    // CLEAR ANY RESIDUAL TRANSFORMS
-    gsap.set([container, motionElement], { clearProps: 'transform' });
-    
-    // MOTION ELEMENT: Proper center positioning 
-    gsap.set(motionElement, {
-      x: 0,
-      xPercent: -50,  // Center from 50% left position
-      opacity: 0,
-      force3D: true   
-    });
+    // Position the phrase element directly - EXACT from user spec
+    textElement.style.position = 'absolute';
+    textElement.style.top = laneY;
+    textElement.style.left = '50%';
+    textElement.style.transform = 'translateX(-50%)';
+    textElement.style.opacity = '0';
+    textElement.style.zIndex = '100';
 
-    // GLOW PULSE ON ENTRY - EXACT as spec (pulse then settle, not constant neon)
-    const glowBoost = gsap.timeline();
+    // ENTRY ANIMATION - EXACT from user document
+    const entryTl = gsap.timeline();
     
-    // Entry brightness pulse - EXACT from your spec
-    glowBoost.fromTo(motionElement, 
-      { filter: "brightness(1.25)" },
-      { filter: "brightness(1)", duration: 0.25, ease: "power2.out" }
-    );
-    
-    // Idle pulse every ~3s (subtle, eye doesn't tire) - EXACT from your spec
-    gsap.to(textElement, { 
-      repeat: -1, 
-      yoyo: true, 
-      duration: 3.2, 
-      ease: "sine.inOut",
-      textShadow: '0 0 12px rgba(0,169,157,.9), 0 0 20px rgba(120,196,230,.7)'
-    });
-
-    // ENTRY TIMELINE - EXACT from your specification (on motion element)
-    const entry = gsap.timeline();
-    
-    if (entryStyle === 'draw') {
-      // Handwriting draw-on (SVG stroke), 0.6s - EXACT from spec
-      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-      const svgText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      
-      svg.style.position = 'absolute';
-      svg.style.top = '0';
-      svg.style.left = '0';
-      svg.style.width = '100%';
-      svg.style.height = '100%';
-      svg.style.pointerEvents = 'none';
-      
-      svgText.textContent = phrase.text;
-      svgText.setAttribute('x', '50%');
-      svgText.setAttribute('y', '50%');
-      svgText.setAttribute('text-anchor', 'middle');
-      svgText.setAttribute('dominant-baseline', 'middle');
-      svgText.setAttribute('fill', 'none');
-      svgText.setAttribute('stroke', '#00A99D');
-      svgText.setAttribute('stroke-width', '2');
-      svgText.setAttribute('stroke-dasharray', '1000');
-      svgText.setAttribute('stroke-dashoffset', '1000');
-      svgText.style.fontFamily = 'var(--font-display)';
-      svgText.style.fontSize = '1.25rem';
-      svgText.style.fontWeight = '600';
-      
-      svg.appendChild(svgText);
-      textElement.parentElement?.appendChild(svg);
-      textElement.style.opacity = '0';
-      
-      entry.set(motionElement, { opacity: 1 })
-           .to(svgText, { 
-             strokeDashoffset: 0, 
-             duration: 0.5, 
-             ease: "expo.out" 
-           })
-           .to(svgText, { fill: '#FFFFFF', stroke: 'none', duration: 0.1 })
-           .set(textElement, { opacity: 1 })
-           .set(svg, { display: 'none' });
-    } else if (entryStyle === 'flash') {
-      // Letter flash (each character 0.03s stagger) - EXACT from spec
-      const text = phrase.text;
-      textElement.textContent = ''; // Clear safely
-      
-      text.split('').forEach(char => {
-        const span = document.createElement('span');
-        span.textContent = char === ' ' ? '\u00A0' : char; // Non-breaking space
-        span.style.opacity = '0';
-        span.style.display = 'inline-block';
-        textElement.appendChild(span);
-      });
-      
-      const charElements = textElement.querySelectorAll('span');
-      entry.set(motionElement, { opacity: 1 })
-           .to(charElements, { 
-             opacity: 1, 
-             stagger: 0.03,
-             duration: 0.01, // Minimal duration per char
-             ease: "power2.out" 
-           });
-    } else if (entryStyle === 'mask') {
-      // HUD mask-reveal (rect slides to reveal, 0.5s) - EXACT from spec
-      textElement.style.clipPath = 'inset(0 100% 0 0)';
-      entry.set(motionElement, { opacity: 1 })
-           .to(textElement, { 
-             clipPath: 'inset(0 0% 0 0)', 
-             duration: 0.5, 
-             ease: "expo.out" 
-           });
-    } else { // focus - Blur → Focus (0.45s) - EXACT from spec
-      entry.fromTo(motionElement, 
-        { filter: "blur(8px)", opacity: 0 },
-        { filter: "blur(0px)", opacity: 1, duration: 0.45, ease: "power2.out" }
-      );
+    if (entryStyle === 'flash') {
+      // EXACT flash sequence from user document
+      entryTl.to(textElement, { opacity: 1, duration: .18, ease: "power2.out" })
+             .to(textElement, { opacity: .4, duration: .08 })
+             .to(textElement, { opacity: 1, duration: .18 });
+    } else {
+      // Default entry - EXACT from user document
+      entryTl.fromTo(textElement, { opacity: 0 }, { opacity: 1, duration: .45, ease: "power2.out" });
     }
 
-    // HOLD - EXACT duration from spec
-    entry.to(motionElement, { duration: 1.2 });
+    // HOLD readable - EXACT from user document
+    entryTl.to(textElement, { duration: 1.0 });
 
-    // DEPTH/OPACITY CYCLE - YOUR EXACT CODE (front 100%→80%, back mirror 35%, return 65%)
-    const tl = gsap.timeline({ repeat: -1 });
-    
-    // Front L→R - EXACT from your spec
-    tl.to(motionElement, { x: vw*0.35, opacity: 0.8, duration: 8, ease:"power1.inOut" })
-    
-    // Swap back - EXACT from your spec  
-    tl.to(textElement, { color:"#78C4E6", duration:0.01 })
-    tl.to(motionElement, { scale:0.85, duration:0.01 }, "<")
-    
-    // Back R→L - EXACT from your spec
-    tl.to(motionElement, { x:-vw*0.70, opacity:0.35, duration: 8, ease:"power1.inOut" })
-    
-    // Return front - EXACT from your spec
-    tl.to(textElement, { color:"#0033A0", duration:0.01 })
-    tl.to(motionElement, { scale:0.80, duration:0.01 }, "<")
-    
-    // Front L→R - EXACT from your spec  
-    tl.to(motionElement, { x:-vw*0.15, opacity:0.65, duration: 8, ease:"power1.inOut" });
+    // MAIN CYCLE: front → back mirror → return - EXACT from user document
+    const mainCycle = gsap.timeline({ 
+      repeat: -1, 
+      defaults: { ease: "power1.inOut" } 
+    })
+    .to(textElement, { x: vw * 0.35, opacity: .8, duration: 8 })          // FRONT L→R
+    .to(textElement, { color: "#bdefff", scale: .85, duration: .01 })     // swap to BACK
+    .to(textElement, { x: -vw * 0.70, opacity: .35, duration: 8 })       // BACK R→L
+    .to(textElement, { color: "#dffaff", scale: .80, duration: .01 })     // swap to FRONT
+    .to(textElement, { x: -vw * 0.15, opacity: .65, duration: 8 });      // RETURN L→R
 
-    // Create master timeline - EXACT as your template
+    // Create master timeline - EXACT from user document
     masterTimeline.current = gsap.timeline()
-      .add(glowBoost, 0)
-      .add(entry, 0)
-      .add(tl);
+      .add(entryTl, 0)
+      .add(mainCycle);
 
-    // EXPLICITLY START THE TIMELINE
-    masterTimeline.current.play();
+    // Background reaction - call bgBurst function from user document
+    if ((window as any).neuralBurst) {
+      (window as any).neuralBurst(900);
+    }
   };
 
 
@@ -256,39 +147,31 @@ export default function FloatingPhrase({
         className="relative"
         style={{ willChange: 'transform, opacity' }}
       >
-        {/* PROFESSIONAL HUD Container - EXACT GADOR SPECS */}
+        {/* SCI-FI NEON FRAME - EXACT SPEC FROM DOCUMENT */}
         <div
-          className="relative"
+          ref={textRef}
+          className="phrase"
           style={{
-            padding: '14px 20px',                    // EXACT padding from spec
-            borderRadius: '14px',                    // EXACT radius from spec  
-            border: '2px solid rgba(0,169,157,0.65)', // Teal outline EXACT
-            backgroundColor: 'rgba(0,51,160,0.18)',   // Blue fill EXACT
-            backdropFilter: 'blur(8px)',             // Glass effect for projection
-            boxShadow: '0 0 20px rgba(0,169,157,0.3)', // Subtle glow
-            maxWidth: '80vw',                        // Responsive width
-            minWidth: '300px',                       // Minimum readable size
+            position: 'absolute',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            whiteSpace: 'pre-wrap',
+            color: '#dffaff',                           // EXACT color from spec
+            fontWeight: '600',                          // EXACT weight from spec  
+            lineHeight: '1.15',                         // EXACT line height from spec
+            padding: '14px 22px',                       // EXACT padding from spec
+            borderRadius: '10px',                       // EXACT radius from spec
+            background: 'rgba(0,230,255,.06)',          // EXACT background from spec
+            border: '1.6px solid rgba(0,230,255,.9)',   // EXACT border from spec
+            textShadow: '0 0 12px #00E6FF, 0 0 24px rgba(0,230,255,.85)', // EXACT text shadow from spec
+            boxShadow: '0 0 16px rgba(0,230,255,.85), inset 0 0 18px rgba(0,230,255,.12)', // EXACT box shadow from spec
+            fontSize: 'clamp(22px, 2.6vw, 36px)',      // Satellite size (default)
+            userSelect: 'none',
+            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
           }}
           data-testid={`phrase-container-${phrase.id}`}
         >
-          <p 
-            ref={textRef}
-            className="relative leading-tight text-center"
-            style={{ 
-              fontFamily: '"Avenir Next", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-              fontWeight: '700',                        // Bold for projection distance
-              fontSize: 'clamp(24px, 2.8vw, 52px)',   // Professional readable size
-              color: '#FFFFFF',                        // Pure white text
-              letterSpacing: '0.5px',                  // Improved spacing for readability
-              textShadow: '0 2px 4px rgba(0,0,0,0.3), 0 0 8px rgba(0,169,157,0.6)', // Professional glow
-              userSelect: 'none',
-              margin: 0,                               // Remove default margins
-              lineHeight: 1.2,                         // Tighter line height
-            }}
-            data-testid={`phrase-text-${phrase.id}`}
-          >
-            {phrase.text}
-          </p>
+          {phrase.text}
         </div>
       </div>
     </div>

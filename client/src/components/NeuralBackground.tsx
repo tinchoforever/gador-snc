@@ -29,33 +29,28 @@ export default function NeuralBackground({
   const burstRef = useRef<HTMLDivElement>(null);
   const initializedRef = useRef(false);
 
-  // Global burst controller for phrase synchronization
-  const triggerGlobalBurst = useCallback((burstIntensity: number = 1.0) => {
+  // BURST SYSTEM - EXACT bgBurst function from user document
+  const triggerGlobalBurst = useCallback((ms: number = 900) => {
     if (!window.tsParticles) return;
 
     try {
-      const burstContainer = window.tsParticles.domItem(2); // Burst layer
-      if (burstContainer) {
-        const burstCount = Math.floor(8 * burstIntensity);
-        const positions = [
-          { x: 25, y: 25 }, { x: 75, y: 25 }, { x: 50, y: 50 },
-          { x: 25, y: 75 }, { x: 75, y: 75 }, { x: 10, y: 50 },
-          { x: 90, y: 50 }, { x: 50, y: 10 }
-        ];
-
-        for (let i = 0; i < burstCount; i++) {
-          const pos = positions[i % positions.length];
-          burstContainer.particles.addParticle({
-            x: (pos.x / 100) * window.innerWidth,
-            y: (pos.y / 100) * window.innerHeight,
-            color: { value: ["hsl(178, 100%, 33%)", "hsl(199, 68%, 69%)", "hsl(219, 100%, 45%)"] },
-            size: { value: Math.random() * 12 + 8 },
-            opacity: { value: 0.9 }
-          });
-        }
+      const pulses = window.tsParticles.domItem(1); // Pulse layer
+      if (!pulses) return;
+      
+      const prev = pulses.actualOptions?.particles?.move?.speed || 1.4;
+      if (pulses.options?.particles?.move) {
+        pulses.options.particles.move.speed = 2.8;
+        pulses.refresh();
+        
+        setTimeout(() => {
+          if (pulses.options?.particles?.move) {
+            pulses.options.particles.move.speed = prev;
+            pulses.refresh();
+          }
+        }, ms);
       }
     } catch (error) {
-      console.error('Error triggering global burst:', error);
+      console.error('Error triggering burst:', error);
     }
   }, []);
 
@@ -74,20 +69,20 @@ export default function NeuralBackground({
 
     const initNeuralSystem = async () => {
       try {
-        // LAYER 1: NEURAL NETWORK - EXACT from your spec (pure nodes+links, NO triangles)
+        // LAYER 1: NEURAL NETWORK - EXACT from user document
         await window.tsParticles.load("bg-net", {
           fullScreen: { enable: false }, 
-          background: { color: "#FFFFFF" },                    // WHITE background - EXACT from spec
+          background: { color: "transparent" },               // Transparent - stage has gradient
           fpsLimit: 60, 
           detectRetina: true,
           particles: {
-            number: { value: 110, density: { enable: true, area: 1200 } },  // EXACT from spec
-            color: { value: ["#00A99D", "#78C4E6", "#0033A0"] },            // EXACT colors from spec
+            number: { value: 120, density: { enable: true, area: 1200 } },  // EXACT from spec
+            color: { value: ["#00E6FF", "#00A99D", "#78C4E6"] },            // EXACT colors from spec
             shape: { type: "circle" },
             size: { value: 2, random: { enable: true, minimumValue: 1 } },   // EXACT from spec
             opacity: { 
-              value: .65, 
-              animation: { enable: true, speed: .4, minimumValue: .35, sync: false } 
+              value: .55, 
+              animation: { enable: true, speed: .35, minimumValue: .3, sync: false } 
             },
             move: { 
               enable: true, 
@@ -98,15 +93,14 @@ export default function NeuralBackground({
             links: { 
               enable: true, 
               distance: 140, 
-              color: "#00A99D", 
-              opacity: .4, 
-              width: 1.15 
-              // NO TRIANGLES - pure nodes+links network as specified
+              color: "#00E6FF", 
+              opacity: .35, 
+              width: 1.1 
             }
           }
         });
 
-        // LAYER 2: PULSE SYSTEM - EXACT from your spec (no links/triangles)
+        // LAYER 2: PULSE SYSTEM - EXACT from user document  
         await window.tsParticles.load("bg-pulses", {
           fullScreen: { enable: false }, 
           background: { color: "transparent" }, 
@@ -114,7 +108,7 @@ export default function NeuralBackground({
           detectRetina: true,
           particles: {
             number: { value: 18, density: { enable: true, area: 1000 } },    // EXACT from spec
-            color: { value: ["#00A99D", "#78C4E6"] },                       // EXACT colors from spec
+            color: { value: ["#00E6FF", "#78C4E6"] },                       // EXACT colors from spec
             shape: { type: "circle" },
             size: { value: { min: 1.5, max: 3.5 } },                        // EXACT from spec
             opacity: { 
@@ -125,11 +119,8 @@ export default function NeuralBackground({
               enable: true, 
               speed: 1.4, 
               random: true, 
-              straight: false,
-              angle: { offset: 0, value: { min: -20, max: 20 } }, 
               outModes: { default: "bounce" } 
-            },
-            links: { enable: false }                                        // NO LINKS - EXACT from spec
+            }
           }
         });
 
@@ -185,8 +176,9 @@ export default function NeuralBackground({
           }
         });
 
-        // Expose global burst controller
+        // Expose global burst controller - EXACT bgBurst function from user document
         (window as any).neuralBurst = triggerGlobalBurst;
+        (window as any).bgBurst = triggerGlobalBurst;
         initializedRef.current = true;
 
         console.log('tsParticles neural background initialized with all layers');
