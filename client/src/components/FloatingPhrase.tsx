@@ -82,13 +82,22 @@ export default function FloatingPhrase({
     const textElement = textRef.current;
     if (!textElement) return;
 
-    // EXACT PHRASE CYCLE FROM USER DOCUMENT
+    // FIXED Y POSITIONING - Calculate proper lane positions within safe area
     const vw = window.innerWidth;
-    const laneY = LANES[lane as keyof typeof LANES];
+    const vh = window.innerHeight;
     
-    // Position the phrase element directly - EXACT from user spec
+    // Safe area: 7% top/bottom, 10% left/right
+    const safeAreaTop = vh * 0.07;
+    const safeAreaHeight = vh * 0.86; // 100% - 7% top - 7% bottom
+    
+    // Lane positions within safe area
+    const lanePercents = { A: 0.22, B: 0.38, C: 0.54, D: 0.70 };
+    const lanePercent = lanePercents[lane as keyof typeof lanePercents] || 0.38;
+    const actualY = safeAreaTop + (safeAreaHeight * lanePercent);
+    
+    // Position the phrase element directly - FIXED positioning
     textElement.style.position = 'absolute';
-    textElement.style.top = laneY;
+    textElement.style.top = `${actualY}px`;  // Use calculated pixel position
     textElement.style.left = '50%';
     textElement.style.transform = 'translateX(-50%)';
     textElement.style.opacity = '0';
