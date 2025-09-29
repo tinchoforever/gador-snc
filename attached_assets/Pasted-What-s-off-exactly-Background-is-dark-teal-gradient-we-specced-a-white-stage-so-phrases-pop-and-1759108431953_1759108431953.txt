@@ -1,0 +1,114 @@
+What’s off (exactly)
+
+Background is dark/teal gradient → we specced a white stage so phrases pop and the brand blue/teal become accents. On dark, the cyan glow bleeds and kills legibility.
+
+Phrase box is too small & rounded → looks like a chat bubble, not a futuristic HUD. Padding and stroke are off-brand.
+
+Glow is uniform → you need pulse-on-entry then settle; now it’s constant neon so the eye tires and text looks blurry.
+
+Typography weight/size → too thin for the distance. At 1080p stage, you need heavier weight and more tracking control.
+
+Lane / safe areas → left phrase is cut off (out of title-safe). We defined 7–10% inset; honor it.
+
+Particles style → you’re using triangulated polys; our spec is nodes + links (network) + separate pulse layer. Polys read as generic “low-poly” background, not neurons.
+
+Depth/opacity cycle missing → everything sits at the same z-layer/opacity; we need front (100%) → back mirror (35%) → return (65%).
+
+Color balance → phrase box uses teal glow on teal-ish background → low contrast. The text should be white on blue, with teal as glow only.
+
+Exact fixes
+A) Stage background
+
+Switch to white (spec) or add a white wash over your gradient:
+
+/* fastest band-aid if you keep the gradient */
+#stage::before{
+  content:""; position:fixed; inset:0; z-index:-1;
+  background: linear-gradient(0deg, rgba(255,255,255,.85), rgba(255,255,255,.85));
+}
+
+
+Better: switch to the tsParticles net + pulses on pure white (from the spec). Ditch the triangle mesh.
+
+B) Phrase box styling (HUD, not chat)
+.phrase {
+  font-family: "Avenir Next", Helvetica, system-ui;
+  font-weight: 700;
+  font-size: clamp(28px, 3.2vw, 68px);
+  color: #fff;
+  letter-spacing: .2px;
+  padding: 14px 20px;             /* bigger padding */
+  border-radius: 14px;            /* tighter radius */
+  border: 2px solid rgba(0,169,157,.65);   /* teal outline */
+  background: rgba(0,51,160,.18);          /* blue translucent fill */
+  backdrop-filter: blur(6px);
+  text-shadow: 0 0 10px rgba(0,169,157,.8), 0 0 18px rgba(120,196,230,.6); /* glow */
+}
+
+C) Glow behavior (pulse on entry, then calm)
+// on phrase entry
+gsap.fromTo(el, { filter:"brightness(1.25)" },
+                { filter:"brightness(1)", duration:0.25, ease:"power2.out" });
+// idle pulse every ~3s
+gsap.to(el, { repeat:-1, yoyo:true, duration:3.2, ease:"sine.inOut",
+  "--glow": 1, onUpdate(){ /* or animate text-shadow strength if you store as var */ }
+});
+
+D) Safe areas & lanes
+#phrases-layer{ padding: 7% 10%; }  /* action/title safe */
+
+
+Lane Y positions (1080p): 22%, 38%, 54%, 70%. Never place text so it can be cropped like your left bubble.
+
+E) Particles: replace triangles with net + pulses
+
+Your screenshot shows polygons. Use tsParticles config from our spec (nodes/links + pulse layer). Two layers:
+
+bg-net: nodes + teal links, slow drift
+
+bg-pulses: brighter small particles, faster, burst on phrase
+
+Key bits:
+
+// Net
+links: { enable: true, distance: 140, color:"#00A99D", opacity:0.4, width:1.15 }
+// Pulses
+move: { speed: 1.4 } // and use bgBurst() to 2.8 on triggers
+
+F) Depth/opacity cycle (missing)
+
+Make every phrase run the front → back mirror → return cycle:
+
+const vw = innerWidth;
+gsap.timeline()
+ .to(el,{ x: vw*0.35, opacity: 0.8, duration: 8, ease:"power1.inOut" })     // front L→R
+ .to(el,{ color:"#78C4E6", scale:0.85, duration:0.01 })                      // swap back
+ .to(el,{ x:-vw*0.70, opacity:0.35, duration: 8, ease:"power1.inOut" })      // back R→L
+ .to(el,{ color:"#0033A0", scale:0.80, duration:0.01 })                       // return front
+ .to(el,{ x:-vw*0.15, opacity:0.65, duration: 8, ease:"power1.inOut" });      // front L→R
+
+G) Color/contrast for readability
+
+Text: #FFFFFF
+
+Box stroke / glow: teal #00A99D
+
+Fill: transparent brand blue (rgba(0,51,160,.18))
+
+Background: white (preferred) OR lighten any gradients with a white overlay (see A).
+
+H) Performance sanity
+
+Clamp DPR ≤ 1.5.
+
+Reduce particles if FPS < 50: Net 110→80, Pulses 18→12.
+
+Avoid heavy CSS blurs on huge canvases; keep glow via text-shadow / drop-shadow filters only on particle canvases (as we did).
+
+TL;DR
+
+Switch to white background + tsParticles net & pulses (not triangles).
+
+Make phrases bigger, heavier, whiter, with teal outline and pulsed glow (on entry only).
+
+Respect safe areas and run the front/back/return cycle with the exact opacities.

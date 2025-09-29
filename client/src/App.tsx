@@ -21,17 +21,17 @@ function Home() {
           <div className="flex items-center justify-center gap-3 mb-4">
             <Sparkles className="w-12 h-12 text-teal-400" />
             <h1 
-              className="text-6xl font-bold text-teal-300"
+              className="text-display text-teal-300"
               style={{ textShadow: '0 0 30px hsl(178, 100%, 33%)' }}
             >
               Gador SNC
             </h1>
             <Sparkles className="w-12 h-12 text-teal-400" />
           </div>
-          <h2 className="text-3xl font-semibold text-blue-300 mb-2">
+          <h2 className="text-heading-1 text-blue-300 mb-2">
             85th Anniversary
           </h2>
-          <p className="text-xl text-blue-200 opacity-80">
+          <p className="text-body-large text-secondary opacity-80">
             Interactive Motion Design Installation
           </p>
         </div>
@@ -41,9 +41,9 @@ function Home() {
             <CardHeader className="pb-4">
               <div className="flex items-center justify-center gap-3 mb-2">
                 <Monitor className="w-8 h-8 text-teal-400" />
-                <CardTitle className="text-teal-300 text-2xl">Stage Display</CardTitle>
+                <CardTitle className="text-heading-2 text-teal-300">Stage Display</CardTitle>
               </div>
-              <p className="text-blue-200 text-sm opacity-80">
+              <p className="text-body-small text-secondary opacity-80">
                 Fullscreen projection with neural network background and floating Spanish phrases
               </p>
             </CardHeader>
@@ -60,9 +60,9 @@ function Home() {
             <CardHeader className="pb-4">
               <div className="flex items-center justify-center gap-3 mb-2">
                 <Smartphone className="w-8 h-8 text-blue-400" />
-                <CardTitle className="text-blue-300 text-2xl">Remote Control</CardTitle>
+                <CardTitle className="text-heading-2 text-blue-300">Remote Control</CardTitle>
               </div>
-              <p className="text-blue-200 text-sm opacity-80">
+              <p className="text-body-small text-secondary opacity-80">
                 Mobile interface for triggering scenes, phrases, and controlling the installation
               </p>
             </CardHeader>
@@ -77,14 +77,14 @@ function Home() {
         </div>
         
         <div className="mt-12 text-center">
-          <p className="text-blue-200/60 text-sm">
+          <p className="text-body-small text-tertiary">
             A futuristic audiovisual experience visualizing thoughts and inner voices
           </p>
-          <p className="text-blue-200/60 text-xs mt-2">
+          <p className="text-body-small text-tertiary mt-2">
             Celebrating energy, science, and creativity
           </p>
           <div className="mt-6 p-4 bg-yellow-900/20 border border-yellow-500/30 rounded-lg">
-            <p className="text-yellow-300 text-sm font-medium">
+            <p className="text-body-small text-yellow-300 font-medium">
               🚀 Status: tsParticles neural background + GSAP animations + Avenir Next font LOADED
             </p>
           </div>
