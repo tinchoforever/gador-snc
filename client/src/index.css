@@ -616,3 +616,8 @@ body {
   transform: translateX(-50%) scale(.80);
   color: #fff;
 }
+
+/* glow for the pulses canvas only (NOT the text) */
+#bg-pulses canvas {
+  filter: drop-shadow(0 0 10px rgba(125, 249, 255, .55)) drop-shadow(0 0 18px rgba(125, 249, 255, .35));
+}
