@@ -24,22 +24,27 @@ const LANES = {
   D: '70%'   // Bottom lane
 };
 
-// Animation timing constants (exact specifications)
+// EXACT ANIMATION TIMING FROM SPECIFICATION DOCUMENT
 const TIMING = {
-  ENTRY_DURATION: 0.48,     // Entry animation duration
-  HOLD_DURATION: 1.5,       // Hold before orbit begins
-  FRONT_ORBIT: 8.0,         // L→R front orbit (8 seconds)
-  BACK_MIRROR: 8.0,         // R→L back mirror (8 seconds) 
-  RETURN_CYCLE: 8.0,        // L→R return cycle (8 seconds)
-  LOOP_DELAY: 1.0           // Delay before looping
+  // Entry durations by style (from specification)
+  DRAW_ENTRY: 0.6,         // Handwriting draw-on (stroke mask), 0.6s
+  FOCUS_ENTRY: 0.45,       // Blur → Focus (0.45s)
+  FLASH_ENTRY: 0.28,       // Letter flash (each character 0.03s; total ~0.28s)
+  MASK_ENTRY: 0.5,         // HUD mask-reveal (rect slides to reveal, 0.5s)
+  HOLD_DURATION: 1.2,      // Hold at 1.00 opacity
+  FRONT_ORBIT: 8.0,        // Front orbit L→R (8s) → fade to 0.80
+  BACK_MIRROR: 8.0,        // Back mirror R→L (8s), scale 0.85, color #78C4E6 → 0.35
+  RETURN_CYCLE: 8.0,       // Return L→R (8s), scale 0.80, color #0033A0 → 0.65
+  IDLE_DRIFT: 14.0,        // Loop idle: drift L→R slowly (12–16s), hold 0.65
 };
 
-// Opacity and scale values for each phase
+// EXACT ANIMATION STATES FROM SPECIFICATION
 const ANIMATION_STATES = {
-  ENTRY: { opacity: 1.0, scale: 1.0, blur: 0 },
-  FRONT_ORBIT: { opacity: 0.85, scale: 1.0, blur: 0 },
-  BACK_MIRROR: { opacity: 0.35, scale: 0.92, blur: 0.5 },
-  RETURN: { opacity: 0.75, scale: 0.96, blur: 0.2 }
+  ENTRY: { opacity: 1.0, scale: 1.0 },               // Entry → 100% opacity
+  FRONT_ORBIT: { opacity: 0.80, scale: 1.0 },        // Front orbit L→R → 0.80
+  BACK_MIRROR: { opacity: 0.35, scale: 0.85 },       // Back mirror → 0.35, scale 0.85
+  RETURN: { opacity: 0.65, scale: 0.80 },            // Return → 0.65, scale 0.80
+  IDLE: { opacity: 0.65, scale: 0.80 },              // Idle drift → hold 0.65
 };
 
 export default function FloatingPhrase({ 
@@ -75,244 +80,93 @@ export default function FloatingPhrase({
     // Trigger neural burst effect
     triggerNeuralBurst(0.8);
 
-    // Initialize position and styling
-    const laneY = LANES[lane as keyof typeof LANES];
+    // EXACT IMPLEMENTATION FROM SPECIFICATION DOCUMENT
     const vw = window.innerWidth;
+    const laneY = LANES[lane as keyof typeof LANES];
     
-    gsap.set(container, {
-      position: 'fixed',
-      top: laneY,
-      left: '50%',
-      xPercent: -50,
-      yPercent: 0,  // Use baseline positioning with lane percentages
-      opacity: 0,
-      zIndex: 100,
-      visibility: 'visible'
-    });
+    // Position at lane center (exact from spec)
+    container.style.position = 'fixed';
+    container.style.top = laneY;
+    container.style.left = '50%';
+    container.style.transform = 'translateX(-50%)';
+    container.style.opacity = '0';
+    container.style.zIndex = '100';
 
-    // Create master timeline with finite cycles (3 full orbits then complete)
-    masterTimeline.current = gsap.timeline({
-      onComplete: () => {
-        setIsCompleted(true);
-        onAnimationComplete?.();
-      }
-    });
-
-    // Add entry animation
-    const entryAnimation = createEntryAnimation(container, textElement, entryStyle);
-    masterTimeline.current.add(entryAnimation);
-
-    // Add hold phase
-    masterTimeline.current.to(container, { duration: TIMING.HOLD_DURATION });
-
-    // Add orbital cycle animation (finite - 3 cycles then complete)
-    const orbitalCycle = createOrbitalCycle(container, textElement, vw, 3);
-    masterTimeline.current.add(orbitalCycle);
-  };
-
-  const createEntryAnimation = (container: HTMLElement, textElement: HTMLElement, style: string) => {
-    const tl = gsap.timeline();
-
-    switch (style) {
-      case 'draw':
-        return createDrawAnimation(container, textElement);
-      case 'flash':
-        return createFlashAnimation(container, textElement);
-      case 'mask':
-        return createMaskAnimation(container, textElement);
-      case 'focus':
-      default:
-        return createFocusAnimation(container, textElement);
+    // ENTRY ANIMATION (based on style from specification)
+    const entry = gsap.timeline();
+    
+    if (entryStyle === 'draw') {
+      // Handwriting draw-on (0.6s) - from spec
+      entry.to(container, { opacity: 1, duration: TIMING.DRAW_ENTRY, ease: "expo.out" });
+    } else if (entryStyle === 'flash') {
+      // Letter flash (0.28s) - from spec
+      entry.set(container, { opacity: 0 })
+           .to(container, { opacity: 1, duration: TIMING.FLASH_ENTRY, ease: "power2.out" });
+    } else if (entryStyle === 'mask') {
+      // HUD mask-reveal (0.5s) - from spec
+      entry.to(container, { opacity: 1, duration: TIMING.MASK_ENTRY, ease: "expo.out" });
+    } else { // focus
+      // Blur → Focus (0.45s) - from spec
+      entry.fromTo(container, 
+        { filter: "blur(8px)", opacity: 0 },
+        { filter: "blur(0px)", opacity: 1, duration: TIMING.FOCUS_ENTRY, ease: "power2.out" }
+      );
     }
-  };
 
-  // Draw Animation (Handwriting-style Character Reveal)
-  const createDrawAnimation = (container: HTMLElement, textElement: HTMLElement) => {
-    const tl = gsap.timeline();
-    
-    // Split text into characters for handwriting-style reveal
-    const text = phrase.text;
-    const chars = text.split('').map((char, index) => {
-      const span = document.createElement('span');
-      span.textContent = char === ' ' ? '\u00A0' : char; // Non-breaking space
-      span.style.display = 'inline-block';
-      span.style.opacity = '0';
-      span.style.transform = 'scaleX(0)';
-      span.style.transformOrigin = 'left center';
-      return span;
-    });
-    
-    textElement.innerHTML = '';
-    chars.forEach(char => textElement.appendChild(char));
-    
-    tl.set(container, { opacity: 1 });
-    
-    // Handwriting-style character reveal with draw effect
-    chars.forEach((char, index) => {
-      const delay = index * 0.05; // Stagger for handwriting feel
-      
-      tl.to(char, {
-        opacity: 1,
-        scaleX: 1,
-        duration: 0.12,
-        ease: "power2.out",
-        textShadow: '0 0 8px #00A99D',
-      }, delay)
-      // Add subtle glow after drawing
-      .to(char, {
-        textShadow: '0 0 20px #00A99D, 0 0 40px #00A99D',
-        duration: 0.2,
-        ease: "power2.out"
-      }, delay + 0.08);
+    // HOLD at 1.0 opacity (1.2s from spec)
+    entry.to(container, { duration: TIMING.HOLD_DURATION });
+
+    // MAIN CYCLE (infinite loop as specified in document)
+    const mainCycle = gsap.timeline({ 
+      repeat: -1, 
+      defaults: { ease: "power1.inOut" } 
     });
 
-    return tl;
-  };
-
-  // Per-Character Flash Animation
-  const createFlashAnimation = (container: HTMLElement, textElement: HTMLElement) => {
-    const tl = gsap.timeline();
-    
-    // Split text into characters
-    const text = phrase.text;
-    const chars = text.split('').map((char, index) => {
-      const span = document.createElement('span');
-      span.textContent = char === ' ' ? '\u00A0' : char; // Non-breaking space
-      span.style.display = 'inline-block';
-      span.style.opacity = '0';
-      return span;
-    });
-    
-    textElement.innerHTML = '';
-    chars.forEach(char => textElement.appendChild(char));
-    
-    tl.set(container, { opacity: 1 });
-    
-    // Stagger character appearances with flash effects
-    chars.forEach((char, index) => {
-      tl.to(char, {
-        opacity: 1,
-        duration: 0.08,
-        ease: "power2.out",
-        textShadow: '0 0 15px #00A99D, 0 0 30px #00A99D',
-      }, index * 0.04);
-      
-      tl.to(char, {
-        textShadow: '0 0 8px #00A99D, 0 0 16px #00A99D',
-        duration: 0.12,
-        ease: "power2.inOut"
-      }, `-=0.02`);
+    // FRONT ORBIT L→R (8s) → 0.80 opacity
+    mainCycle.to(container, { 
+      x: vw * 0.35, 
+      opacity: ANIMATION_STATES.FRONT_ORBIT.opacity, 
+      scale: ANIMATION_STATES.FRONT_ORBIT.scale,
+      duration: TIMING.FRONT_ORBIT 
     });
 
-    return tl;
-  };
-
-  // ClipPath Sweep Mask Animation  
-  const createMaskAnimation = (container: HTMLElement, textElement: HTMLElement) => {
-    const tl = gsap.timeline();
-    
-    tl.set(container, { opacity: 1 })
-      .set(textElement, {
-        clipPath: 'inset(0 100% 0 0)',
-        transformOrigin: 'left center'
-      })
-      .to(textElement, {
-        clipPath: 'inset(0 0% 0 0)',
-        duration: TIMING.ENTRY_DURATION,
-        ease: "expo.out"
-      })
-      .to(textElement, {
-        textShadow: '0 0 25px #00A99D, 0 0 50px #00A99D',
-        duration: 0.2
-      }, '-=0.2');
-
-    return tl;
-  };
-
-  // Blur-to-Focus Animation
-  const createFocusAnimation = (container: HTMLElement, textElement: HTMLElement) => {
-    const tl = gsap.timeline();
-    
-    tl.fromTo(container,
-      { 
-        opacity: 0,
-        filter: "blur(8px) brightness(0.6)"
-      },
-      { 
-        opacity: ANIMATION_STATES.ENTRY.opacity,
-        filter: "blur(0px) brightness(1.0)",
-        duration: TIMING.ENTRY_DURATION,
-        ease: "power2.out"
-      }
-    )
-    .to(textElement, {
-      textShadow: '0 0 20px #00A99D, 0 0 40px #00A99D',
-      duration: 0.2
-    }, '-=0.2');
-
-    return tl;
-  };
-
-  // Complete Orbital Cycle Animation (Exact 8-second phases)
-  const createOrbitalCycle = (container: HTMLElement, textElement: HTMLElement, viewportWidth: number, cycles: number = 3) => {
-    const tl = gsap.timeline({ repeat: cycles - 1 });  // Finite cycles
-
-    // PHASE 1: FRONT ORBIT L→R (8 seconds exact)
-    tl.to(container, {
-      x: viewportWidth * 0.4,  // Increased travel distance
-      opacity: ANIMATION_STATES.FRONT_ORBIT.opacity,  // 0.85
-      scale: ANIMATION_STATES.FRONT_ORBIT.scale,      // 1.0
-      filter: `blur(${ANIMATION_STATES.FRONT_ORBIT.blur}px)`,  // 0px
-      duration: TIMING.FRONT_ORBIT,  // 8.0 seconds
-      ease: "none"  // Linear movement for consistent speed
-    })
-    .to(textElement, {
-      color: '#00A99D',  // Gador Teal
-      textShadow: '0 0 12px #00A99D, 0 0 24px #00A99D',
-      duration: TIMING.FRONT_ORBIT,
-      ease: "none"
-    }, '<');  // Start simultaneously
-
-    // PHASE 2: BACK MIRROR R→L (8 seconds exact)
-    tl.to(container, {
-      x: -viewportWidth * 0.4,  // Full reversal
-      opacity: ANIMATION_STATES.BACK_MIRROR.opacity,  // 0.35
-      scale: ANIMATION_STATES.BACK_MIRROR.scale,      // 0.92
-      filter: `blur(${ANIMATION_STATES.BACK_MIRROR.blur}px)`,  // 0.5px
-      duration: TIMING.BACK_MIRROR,  // 8.0 seconds
-      ease: "none"  // Linear movement
-    })
-    .to(textElement, {
-      color: '#78C4E6',  // Gador Light Blue
-      textShadow: '0 0 6px #78C4E6, 0 0 12px #78C4E6',
-      duration: TIMING.BACK_MIRROR,
-      ease: "none"
-    }, '<');
-
-    // PHASE 3: RETURN L→R (8 seconds exact)
-    tl.to(container, {
-      x: 0,  // Return to center
-      opacity: ANIMATION_STATES.RETURN.opacity,   // 0.75
-      scale: ANIMATION_STATES.RETURN.scale,       // 0.96
-      filter: `blur(${ANIMATION_STATES.RETURN.blur}px)`,  // 0.2px
-      duration: TIMING.RETURN_CYCLE,  // 8.0 seconds
-      ease: "none"  // Linear movement
-    })
-    .to(textElement, {
-      color: '#0033A0',  // Gador Primary Blue
-      textShadow: '0 0 8px #0033A0, 0 0 16px #0033A0',
-      duration: TIMING.RETURN_CYCLE,
-      ease: "none"
-    }, '<');
-
-    // Loop delay before repeating cycle
-    tl.to(container, { 
-      duration: TIMING.LOOP_DELAY,  // 1.0 second pause
-      ease: "none"
+    // BACK MIRROR R→L (instant swap then 8s movement) → 0.35 opacity, scale 0.85, color #78C4E6
+    mainCycle.to([container, textElement], { 
+      color: "#78C4E6", 
+      scale: ANIMATION_STATES.BACK_MIRROR.scale, 
+      duration: 0.01 
+    });
+    mainCycle.to(container, { 
+      x: -vw * 0.70, 
+      opacity: ANIMATION_STATES.BACK_MIRROR.opacity, 
+      duration: TIMING.BACK_MIRROR 
     });
 
-    return tl;
+    // RETURN L→R (instant swap then 8s movement) → 0.65 opacity, scale 0.80, color #0033A0
+    mainCycle.to([container, textElement], { 
+      color: "#0033A0", 
+      scale: ANIMATION_STATES.RETURN.scale, 
+      duration: 0.01 
+    });
+    mainCycle.to(container, { 
+      x: -vw * 0.15, 
+      opacity: ANIMATION_STATES.RETURN.opacity, 
+      duration: TIMING.RETURN_CYCLE 
+    });
+
+    // IDLE DRIFT L→R slowly (12-16s) → hold 0.65
+    mainCycle.to(container, { 
+      x: vw * 0.20, 
+      opacity: ANIMATION_STATES.IDLE.opacity,
+      duration: TIMING.IDLE_DRIFT 
+    });
+
+    // Create master timeline - entry then infinite main cycle
+    masterTimeline.current = gsap.timeline()
+      .add(entry)
+      .add(mainCycle);
   };
+
 
   if (!mounted) return null;
 
