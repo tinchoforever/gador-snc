@@ -30,15 +30,15 @@
       }
 
       #bg-base {
-        z-index: 0;
+        z-index: -4;
         background:
           radial-gradient(55% 55% at 50% 50%, rgba(0,0,0,0) 0%, var(--deep) 75%),
           var(--deep);
       }
 
-      #bg-formulas { z-index: 1; }
-      #bg-net { z-index: 2; background: transparent; }
-      #bg-pulses { z-index: 3; background: transparent; }
+      #bg-formulas { z-index: -3; }
+      #bg-net { z-index: -2; background: transparent; }
+      #bg-pulses { z-index: -1; background: transparent; }
 
       /* Optional glow refinement on the canvases */
       #bg-net canvas { filter: drop-shadow(0 0 4px rgba(125,249,255,.25)); }
