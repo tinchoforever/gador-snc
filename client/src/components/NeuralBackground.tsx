@@ -64,136 +64,62 @@ export default function NeuralBackground({
 
     const initNeuralSystem = async () => {
       try {
-        // LAYER 1: NEURAL NETWORK (Nodes + Connections)
+        // LAYER 1: NEURAL NETWORK - EXACT from your spec (pure nodes+links, NO triangles)
         await window.tsParticles.load("bg-net", {
-          fullScreen: { enable: false },
-          background: { color: "transparent" },
-          fpsLimit: 60,
+          fullScreen: { enable: false }, 
+          background: { color: "#FFFFFF" },                    // WHITE background - EXACT from spec
+          fpsLimit: 60, 
           detectRetina: true,
           particles: {
-            number: { 
-              value: particleCount,
-              density: { enable: true, area: 1000 }
+            number: { value: 110, density: { enable: true, area: 1200 } },  // EXACT from spec
+            color: { value: ["#00A99D", "#78C4E6", "#0033A0"] },            // EXACT colors from spec
+            shape: { type: "circle" },
+            size: { value: 2, random: { enable: true, minimumValue: 1 } },   // EXACT from spec
+            opacity: { 
+              value: .65, 
+              animation: { enable: true, speed: .4, minimumValue: .35, sync: false } 
             },
-            color: { 
-              value: [
-                "hsl(219, 100%, 31%)", // Gador Primary Blue
-                "hsl(178, 100%, 33%)", // Gador Teal
-                "hsl(199, 68%, 69%)"   // Gador Light Blue
-              ]
+            move: { 
+              enable: true, 
+              speed: .35, 
+              random: true, 
+              outModes: { default: "bounce" } 
             },
-            shape: { 
-              type: "circle",
-              options: {
-                circle: { radius: 1 }
-              }
-            },
-            opacity: {
-              value: { min: 0.15, max: 0.7 },
-              animation: { 
-                enable: true, 
-                speed: 1.2, 
-                sync: false,
-                destroy: "none"
-              }
-            },
-            size: {
-              value: { min: 0.8, max: 3.5 },
-              animation: { 
-                enable: true, 
-                speed: 2, 
-                sync: false,
-                destroy: "none"
-              }
-            },
-            links: {
-              enable: true,
-              distance: 140,                    // EXACT from your spec
-              color: "#00A99D",                 // EXACT teal from your spec
-              opacity: 0.4,                     // EXACT from your spec  
-              width: 1.15                       // EXACT from your spec
-              // NO triangles - pure nodes+links network as specified
-            },
-            move: {
-              enable: true,
-              speed: { min: 0.3, max: 0.8 },
-              direction: "none",
-              random: true,
-              straight: false,
-              outModes: { default: "bounce" },
-              attract: { enable: false }
-            }
-          },
-          interactivity: {
-            detectsOn: "canvas",
-            events: {
-              onHover: { 
-                enable: true, 
-                mode: ["connect", "bubble"],
-                parallax: { enable: true, force: 8, smooth: 15 }
-              },
-              resize: { enable: true }
-            },
-            modes: {
-              connect: { distance: 220, links: { opacity: 0.4 } },
-              bubble: { distance: 180, size: 6, duration: 0.8, opacity: 0.6 }
+            links: { 
+              enable: true, 
+              distance: 140, 
+              color: "#00A99D", 
+              opacity: .4, 
+              width: 1.15 
+              // NO TRIANGLES - pure nodes+links network as specified
             }
           }
         });
 
-        // LAYER 2: PULSE SYSTEM (Neural Impulses)
+        // LAYER 2: PULSE SYSTEM - EXACT from your spec (no links/triangles)
         await window.tsParticles.load("bg-pulses", {
-          fullScreen: { enable: false },
-          background: { color: "transparent" },
-          fpsLimit: 60,
+          fullScreen: { enable: false }, 
+          background: { color: "transparent" }, 
+          fpsLimit: 60, 
           detectRetina: true,
           particles: {
-            number: { value: 0 }, // Emitter-based generation
-            color: { 
-              value: [
-                "hsl(178, 100%, 40%)", // Bright Teal pulses
-                "hsl(199, 68%, 75%)"   // Bright Light Blue pulses
-              ]
-            },
+            number: { value: 18, density: { enable: true, area: 1000 } },    // EXACT from spec
+            color: { value: ["#00A99D", "#78C4E6"] },                       // EXACT colors from spec
             shape: { type: "circle" },
-            opacity: {
-              value: { min: 0.2, max: 0.8 },
-              animation: { 
-                enable: true, 
-                speed: 4, 
-                sync: false,
-                startValue: "max",
-                destroy: "min"
-              }
+            size: { value: { min: 1.5, max: 3.5 } },                        // EXACT from spec
+            opacity: { 
+              value: .95, 
+              animation: { enable: true, speed: 1.2, minimumValue: .5, sync: false } 
             },
-            size: {
-              value: { min: 3, max: 12 },
-              animation: { 
-                enable: true, 
-                speed: 6, 
-                sync: false,
-                startValue: "min",
-                destroy: "none"
-              }
-            },
-            move: {
-              enable: true,
-              speed: { min: 1.5, max: 4 },
-              direction: "none",
-              random: true,
+            move: { 
+              enable: true, 
+              speed: 1.4, 
+              random: true, 
               straight: false,
-              outModes: { default: "destroy" }
-            }
-          },
-          emitters: {
-            direction: "none",
-            life: { count: 0, duration: 0.2, delay: { min: 2, max: 5 } },
-            rate: { delay: { min: 0.8, max: 2 }, quantity: { min: 1, max: 3 } },
-            size: { width: 100, height: 100 },
-            position: { 
-              x: { min: 10, max: 90 }, 
-              y: { min: 10, max: 90 } 
-            }
+              angle: { offset: 0, value: { min: -20, max: 20 } }, 
+              outModes: { default: "bounce" } 
+            },
+            links: { enable: false }                                        // NO LINKS - EXACT from spec
           }
         });
 
