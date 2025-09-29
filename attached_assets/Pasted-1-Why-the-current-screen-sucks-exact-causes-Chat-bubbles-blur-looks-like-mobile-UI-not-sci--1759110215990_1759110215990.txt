@@ -1,0 +1,160 @@
+1) Why the current screen sucks (exact causes)
+
+Chat bubbles + blur → looks like mobile UI, not sci-fi. Blur on text kills sharpness; your references are crisp text with glow, not blur.
+
+Wrong background → triangles/flat gradients read “generic web visual.” We need a neural network (nodes + thin links) + pulses layer.
+
+Low contrast → teal-on-teal + translucent fills make text hard to read. References use neon cyan text on dark blue.
+
+No depth cycle → phrases all sit in the same layer/opacity; the vibe requires front (100%) → back mirror (35%) → return (65%).
+
+Layout collisions → no safe area or lanes; phrases get cropped and overlap.
+
+Typography → weights/sizes inconsistent; hero shouldn’t equal satellites.
+
+Glow misuse → constant heavy glow everywhere = fuzzy. We need pulse on entry, then calm idle.
+
+Particles feel static → no burst on events; the background should react to a phrase.
+
+2) What “good” looks like (target spec)
+
+Background: dark blue sci-fi (#041d3c → #01233d) + tsParticles: nodes/links (#00E6FF/#00A99D) + a pulses layer that speeds up on triggers.
+
+Phrase box: thin neon cyan frame (1.6–2px), tiny corner ticks, very light inner fill (rgba(0,230,255,.06)), no text blur.
+
+Text: cyan #00E6FF, medium/semibold (500–600), crisp with text-shadow halo (not blur).
+
+Layout: 7%/10% safe area; lanes at 22% / 38% / 54% / 70%; one hero (center) + satellites.
+
+Motion: entry (0.3–0.6s) → front L→R (8s, 1.0→0.8) → back mirror R→L (8s, 0.35, scale .85) → return L→R (8s, 0.65, scale .8); background bursts on each entry.
+
+3) Fix plan (do this in order)
+Step 1 — Kill blur + chat bubbles
+
+Remove all filter: blur(...) from phrases.
+
+Replace bubble CSS with neon frame:
+
+.phrase{
+  position:absolute; left:50%; transform:translateX(-50%); white-space:pre-wrap;
+  color:#dffaff; font-weight:600; line-height:1.15;
+  padding:14px 22px; border-radius:10px;
+  background:rgba(0,230,255,.06);
+  border:1.6px solid rgba(0,230,255,.9);
+  text-shadow:0 0 12px #00E6FF, 0 0 24px rgba(0,230,255,.85);
+  box-shadow:0 0 16px rgba(0,230,255,.85), inset 0 0 18px rgba(0,230,255,.12);
+}
+.phrase.hero{ font-size:clamp(40px,6vw,132px); }
+.phrase.sat { font-size:clamp(22px,2.6vw,36px); }
+
+Step 2 — Set stage & lanes (no more cut text)
+#stage{position:relative;width:100%;height:100vh;overflow:hidden;
+  background:linear-gradient(160deg,#041d3c,#01233d);}
+#phrases-layer{position:absolute;inset:0;padding:7% 10%;}
+
+
+Use these Y lanes (1080p ref): 22%, 38%, 54%, 70%.
+
+Step 3 — Replace background with neural + pulses (tsParticles)
+<div id="bg-net"></div>
+<div id="bg-pulses"></div>
+<script src="https://cdn.jsdelivr.net/npm/tsparticles-engine@2/tsparticles.engine.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tsparticles@2/tsparticles.bundle.min.js"></script>
+<script>
+tsParticles.load("bg-net",{
+  fullScreen:{enable:false}, background:{color:"transparent"}, fpsLimit:60, detectRetina:true,
+  particles:{
+    number:{value:120, density:{enable:true, area:1200}},
+    color:{value:["#00E6FF","#00A99D","#78C4E6"]},
+    shape:{type:"circle"},
+    size:{value:2, random:{enable:true, minimumValue:1}},
+    opacity:{value:.55, animation:{enable:true, speed:.35, minimumValue:.3}},
+    move:{enable:true, speed:.35, random:true, outModes:{default:"bounce"}},
+    links:{enable:true, distance:140, color:"#00E6FF", opacity:.35, width:1.1}
+  }
+});
+tsParticles.load("bg-pulses",{
+  fullScreen:{enable:false}, background:{color:"transparent"}, fpsLimit:60, detectRetina:true,
+  particles:{
+    number:{value:18, density:{enable:true, area:1000}},
+    color:{value:["#00E6FF","#78C4E6"]}, shape:{type:"circle"},
+    size:{value:{min:1.5,max:3.5}},
+    opacity:{value:.95, animation:{enable:true, speed:1.2, minimumValue:.5}},
+    move:{enable:true, speed:1.4, random:true, outModes:{default:"bounce"}}
+  }
+});
+function bgBurst(ms=900){
+  const pulses = tsParticles.domItem(1); if(!pulses) return;
+  const prev = pulses.actualOptions.particles.move.speed;
+  pulses.options.particles.move.speed = 2.8; pulses.refresh();
+  setTimeout(()=>{ pulses.options.particles.move.speed = prev; pulses.refresh(); }, ms);
+}
+</script>
+
+Step 4 — Implement the phrase cycle (GSAP)
+<script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>
+<script>
+const LANES = {A:"22%",B:"38%",C:"54%",D:"70%"};
+
+function addPhrase(text, lane="B", size="sat", entry="flash"){
+  const L = document.getElementById("phrases-layer");
+  const el = document.createElement("div");
+  el.className = `phrase ${size}`; el.textContent = text;
+  el.style.top = LANES[lane]; el.style.opacity = 0; L.appendChild(el);
+
+  // ENTRY (glitch/flash)
+  const entryTl = gsap.timeline();
+  if(entry==="flash"){
+    entryTl.to(el,{opacity:1, duration:.18, ease:"power2.out"})
+           .to(el,{opacity:.4, duration:.08})
+           .to(el,{opacity:1, duration:.18});
+  } else {
+    entryTl.fromTo(el,{opacity:0},{opacity:1,duration:.45,ease:"power2.out"});
+  }
+
+  // HOLD readable
+  entryTl.to(el,{duration:1.0});
+
+  // MAIN CYCLE: front → back mirror → return
+  const vw = innerWidth;
+  gsap.timeline({ repeat:-1, defaults:{ ease:"power1.inOut" } })
+    .to(el, { x: vw*0.35, opacity:.8, duration:8 })          // FRONT L→R
+    .to(el, { color:"#bdefff", scale:.85, duration:.01 })     // swap to BACK
+    .to(el, { x:-vw*0.70, opacity:.35, duration:8 })          // BACK R→L
+    .to(el, { color:"#dffaff", scale:.80, duration:.01 })     // swap to FRONT
+    .to(el, { x:-vw*0.15, opacity:.65, duration:8 });         // RETURN L→R
+
+  // background reaction
+  bgBurst();
+
+  return el;
+}
+// demo
+// addPhrase("¿Y si me olvido de lo que tengo que decir?", "B", "hero");
+// addPhrase("Capaz no es suficiente lo que preparé...", "A");
+// addPhrase("¿Desenchufé la planchita de pelo?", "C");
+// addPhrase("¿Cómo hago para subirlos a todos al barco de Sistema Nervioso Central?", "D");
+</script>
+
+Step 5 — Audio per phrase (no overlap popping)
+<script>
+const audioCache = new Map();
+function preload(mp3){ if(!audioCache.has(mp3)){ const a=new Audio(mp3); a.preload="auto"; audioCache.set(mp3,a); } }
+function play(mp3){ const a=audioCache.get(mp3)||new Audio(mp3); a.currentTime=0; a.play(); audioCache.set(mp3,a); }
+// Example on addPhrase trigger:
+// play("/assets/audio/s1_01_olvido.mp3");
+</script>
+
+Step 6 — Sizes/weights match the refs
+
+Hero: clamp(40px, 6vw, 132px), weight 600.
+
+Satellites: clamp(22px, 2.6vw, 36px), weight 500–600.
+
+Keep line-height ~1.15 for stacked lines.
+
+Step 7 — Performance sanity
+
+Cap device pixel ratio to ≤1.5 (CSS image-rendering not needed; just avoid huge shadow radii).
+
+If FPS < 50: lower number.value in net from 120→80; pulses 18→12

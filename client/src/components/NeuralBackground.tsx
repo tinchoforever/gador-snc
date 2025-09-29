@@ -60,7 +60,17 @@ export default function NeuralBackground({
   }, []);
 
   useEffect(() => {
-    if (initializedRef.current || !window.tsParticles) return;
+    if (initializedRef.current) return;
+    
+    // Wait for tsParticles to load if not available
+    if (!window.tsParticles) {
+      const timer = setTimeout(() => {
+        if (window.tsParticles && !initializedRef.current) {
+          initNeuralSystem();
+        }
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
 
     const initNeuralSystem = async () => {
       try {
@@ -224,8 +234,8 @@ export default function NeuralBackground({
       <div
         id="bg-net"
         ref={netRef}
-        className="absolute inset-0 z-10"
-        style={{ background: 'transparent', pointerEvents: 'none' }}
+        className="fixed inset-0 z-[1]"
+        style={{ pointerEvents: 'none' }}
         data-testid="neural-network-layer"
       />
       
@@ -233,8 +243,8 @@ export default function NeuralBackground({
       <div
         id="bg-pulses"
         ref={pulsesRef}
-        className="absolute inset-0 z-20"
-        style={{ background: 'transparent', pointerEvents: 'none' }}
+        className="fixed inset-0 z-[2]"
+        style={{ pointerEvents: 'none' }}
         data-testid="neural-pulse-layer"
       />
       
@@ -242,8 +252,8 @@ export default function NeuralBackground({
       <div
         id="bg-bursts"
         ref={burstRef}
-        className="absolute inset-0 z-30"
-        style={{ background: 'transparent', pointerEvents: 'none' }}
+        className="fixed inset-0 z-[3]"
+        style={{ pointerEvents: 'none' }}
         data-testid="neural-burst-layer"
       />
     </>

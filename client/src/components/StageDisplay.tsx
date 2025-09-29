@@ -211,15 +211,15 @@ export default function StageDisplay({ installationState, onStateChange }: Stage
     <div 
       className="relative w-full h-screen overflow-hidden cursor-none"
       style={{ 
-        background: '#FFFFFF'  // WHITE STAGE as specced - phrases pop, brand colors become accents
+        background: 'transparent'  // Let neural background show through
       }}
       onClick={handleManualTrigger}
       data-testid="stage-display"
     >
       <NeuralBackground 
         intensity={0.7}
-        particleCount={100}
-        connectionDistance={200}
+        particleCount={120}
+        connectionDistance={180}
         pulseActive={pulseActive}
       />
       

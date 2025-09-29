@@ -256,38 +256,34 @@ export default function FloatingPhrase({
         className="relative"
         style={{ willChange: 'transform, opacity' }}
       >
-        {/* FUTURISTIC HUD Container - EXACT SPEC (not chat bubble) */}
+        {/* PROFESSIONAL HUD Container - EXACT GADOR SPECS */}
         <div
-          className="relative max-w-4xl"
+          className="relative"
           style={{
-            padding: '14px 20px',               // bigger padding as spec
-            borderRadius: '14px',               // tighter radius as spec  
-            border: '2px solid rgba(0,169,157,.65)',  // teal outline
-            background: 'rgba(0,51,160,.18)',         // blue translucent fill
-            backdropFilter: 'blur(6px)',
+            padding: '14px 20px',                    // EXACT padding from spec
+            borderRadius: '14px',                    // EXACT radius from spec  
+            border: '2px solid rgba(0,169,157,0.65)', // Teal outline EXACT
+            backgroundColor: 'rgba(0,51,160,0.18)',   // Blue fill EXACT
+            backdropFilter: 'blur(8px)',             // Glass effect for projection
+            boxShadow: '0 0 20px rgba(0,169,157,0.3)', // Subtle glow
+            maxWidth: '80vw',                        // Responsive width
+            minWidth: '300px',                       // Minimum readable size
           }}
           data-testid={`phrase-container-${phrase.id}`}
         >
-          {/* Additional glow layer */}
-          <div 
-            className="absolute inset-0 rounded-2xl"
-            style={{
-              background: 'linear-gradient(45deg, transparent, rgba(0, 169, 157, 0.1), transparent)',
-              filter: 'blur(1px)',
-              pointerEvents: 'none'
-            }}
-          />
           <p 
             ref={textRef}
-            className="relative leading-relaxed"
+            className="relative leading-tight text-center"
             style={{ 
-              fontFamily: 'var(--font-display)',
-              fontWeight: '700',                        // heavier for distance
-              fontSize: 'clamp(28px, 3.2vw, 68px)',   // EXACT as spec
-              color: '#FFFFFF',                        // white text
-              letterSpacing: '.2px',                   // EXACT as spec
-              textShadow: '0 0 10px rgba(0,169,157,.8), 0 0 18px rgba(120,196,230,.6)', // EXACT glow
-              userSelect: 'none'
+              fontFamily: '"Avenir Next", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+              fontWeight: '700',                        // Bold for projection distance
+              fontSize: 'clamp(24px, 2.8vw, 52px)',   // Professional readable size
+              color: '#FFFFFF',                        // Pure white text
+              letterSpacing: '0.5px',                  // Improved spacing for readability
+              textShadow: '0 2px 4px rgba(0,0,0,0.3), 0 0 8px rgba(0,169,157,0.6)', // Professional glow
+              userSelect: 'none',
+              margin: 0,                               // Remove default margins
+              lineHeight: 1.2,                         // Tighter line height
             }}
             data-testid={`phrase-text-${phrase.id}`}
           >
