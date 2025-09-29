@@ -125,16 +125,38 @@ export default function FloatingPhrase({
     // HOLD readable - EXACT from user document
     entryTl.to(textElement, { duration: 1.0 });
 
-    // MAIN CYCLE: front → back mirror → return - EXACT from user document
+    // VARIED SPEEDS & DIRECTIONS - smooth but different for each phrase
+    const baseSpeed = 8; // Base duration
+    const speedVariation = 0.7 + (Math.random() * 0.6); // Random between 0.7-1.3x speed
+    const duration1 = baseSpeed * speedVariation;
+    const duration2 = baseSpeed * (0.8 + Math.random() * 0.4); // Different variation for each segment
+    const duration3 = baseSpeed * (0.9 + Math.random() * 0.2);
+    
+    // RANDOM DIRECTION - some start left, some start right
+    const startRight = Math.random() > 0.5;
+    
     const mainCycle = gsap.timeline({ 
       repeat: -1, 
       defaults: { ease: "power1.inOut" } 
-    })
-    .to(textElement, { x: vw * 0.35, opacity: .8, duration: 8 })          // FRONT L→R
-    .to(textElement, { color: "#bdefff", scale: .85, duration: .01 })     // swap to BACK
-    .to(textElement, { x: -vw * 0.70, opacity: .35, duration: 8 })       // BACK R→L
-    .to(textElement, { color: "#dffaff", scale: .80, duration: .01 })     // swap to FRONT
-    .to(textElement, { x: -vw * 0.15, opacity: .65, duration: 8 });      // RETURN L→R
+    });
+    
+    if (startRight) {
+      // START RIGHT → LEFT → RIGHT pattern
+      mainCycle
+        .to(textElement, { x: vw * 0.35, opacity: .8, duration: duration1 })          // FRONT L→R
+        .to(textElement, { color: "#bdefff", scale: .85, duration: .01 })             // swap to BACK
+        .to(textElement, { x: -vw * 0.70, opacity: .35, duration: duration2 })       // BACK R→L
+        .to(textElement, { color: "#dffaff", scale: .80, duration: .01 })             // swap to FRONT
+        .to(textElement, { x: -vw * 0.15, opacity: .65, duration: duration3 });      // RETURN L→R
+    } else {
+      // START LEFT → RIGHT → LEFT pattern  
+      mainCycle
+        .to(textElement, { x: -vw * 0.35, opacity: .8, duration: duration1 })        // FRONT R→L
+        .to(textElement, { color: "#bdefff", scale: .85, duration: .01 })             // swap to BACK
+        .to(textElement, { x: vw * 0.70, opacity: .35, duration: duration2 })        // BACK L→R
+        .to(textElement, { color: "#dffaff", scale: .80, duration: .01 })             // swap to FRONT
+        .to(textElement, { x: vw * 0.15, opacity: .65, duration: duration3 });       // RETURN R→L
+    }
 
     // Create master timeline - EXACT from user document
     masterTimeline.current = gsap.timeline()
