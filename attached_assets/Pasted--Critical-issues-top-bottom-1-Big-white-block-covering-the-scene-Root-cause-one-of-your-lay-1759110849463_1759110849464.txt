@@ -1,0 +1,182 @@
+🔧 Critical issues (top → bottom)
+1) Big white block covering the scene
+
+Root cause: one of your layers (#bg-net / #bg-pulses / body) still has a white background or the canvas isn’t truly full-screen.
+
+Fix: make every particle layer transparent, and set the base to Deep Space (#020814).
+
+html,body{height:100%;margin:0;background:#020814;}
+#bg-net,#bg-pulses{ position:fixed; inset:0; z-index:-2; background:transparent; } /* NOT white */
+
+// tsParticles MUST be transparent
+tsParticles.load("bg-net",   { fullScreen:{enable:false}, background:{color:"transparent"}, ... });
+tsParticles.load("bg-pulses",{ fullScreen:{enable:false}, background:{color:"transparent"}, ... });
+
+
+Also ensure the element that follows them (#stage) does not have a white background.
+
+2) Background stops halfway (canvas/parent not filling viewport)
+
+Root cause: a container is not 100vh or the canvas size isn’t syncing on resize.
+
+Fix: lock heights and force resize.
+
+#stage{position:relative;width:100%;height:100vh;overflow:hidden;}
+
+
+For any custom canvas (formulas, etc.):
+
+function fitCanvas(cv){ cv.width=innerWidth; cv.height=innerHeight; }
+addEventListener("resize", ()=>fitCanvas(document.getElementById("bg-formulas")));
+
+3) Only dots showing (no network lines)
+
+Root cause: links.enable is false/missing.
+
+Fix: enable links at 30% opacity.
+
+particles:{
+  ...
+  links:{ enable:true, distance:140, color:"#7DF9FF", opacity:0.30, width:1.05 }
+}
+
+4) Particle nodes too bright on white → look like “snow”
+
+Root cause: wrong palette/opacity; node glow halo too strong on a light base.
+
+Fix: use the Digital Anxiety palette + reduce halos.
+
+particles:{
+  color:{ value:"#7DF9FF" },
+  opacity:{ value:0.40, animation:{ enable:true, speed:0.3, minimumValue:0.25 } },
+  size:{ value:2 }
+}
+
+/* reduce canvas dropshadow */
+#bg-pulses canvas{ filter: drop-shadow(0 0 8px rgba(125,249,255,.45)); }
+
+5) Top gradient is teal/navy; we need Deep Space + vignette
+
+Root cause: wrong background gradient.
+
+Fix:
+
+#bg-base{ position:fixed; inset:0; z-index:-3;
+  background:
+    radial-gradient(55% 55% at 50% 50%, rgba(0,0,0,0) 0%, #020814 75%),
+    #020814;
+}
+
+
+Add <div id="bg-base"></div> just above particle layers.
+
+6) Phrase is touching the top edge (no safe area)
+
+Root cause: missing stage padding.
+
+Fix: add safe area and lanes.
+
+#phrases-layer{ position:absolute; inset:0; padding:7% 10%; } /* safe */
+
+
+Place hero on lane B = 38% (and never < 7% from top).
+
+7) Boxes still look like chat bubbles (rounded, milky fill)
+
+Root cause: large radius + opaque blue. We need Nebula Blue translucent with neon stroke.
+
+Fix (strict to spec):
+
+.phrase{
+  color:#7DF9FF; font-weight:600; line-height:1.15; letter-spacing:.2px;
+  padding:16px 24px; border-radius:12px; backdrop-filter: blur(4px);
+  background: radial-gradient(60% 60% at 50% 50%, rgba(125,249,255,.07) 0%, rgba(15,35,60,.70) 60%);
+  border:2px solid #7DF9FF;
+  /* Glow: 75% opacity, 15px blur, ~2px spread */
+  box-shadow: 0 0 15px rgba(125,249,255,.75), 0 0 2px rgba(125,249,255,.75);
+  text-shadow: 0 0 3px #7DF9FF;
+}
+
+8) Text looks soft (blur used instead of glow)
+
+Root cause: filter: blur() applied to text.
+
+Fix: remove blur from text; use only text-shadow.
+
+.phrase{ filter:none; }   /* ensure no inherited blur */
+
+9) Missing border “draw-on” animation
+
+Root cause: static CSS border; no SVG dash.
+
+Fix: wrap with SVG <rect> and animate dash.
+
+<div class="phrase" id="p1">
+  <svg class="border"><rect/></svg>
+  <div class="txt">Capaz no es suficiente lo que preparé…</div>
+</div>
+
+.phrase .border{ position:absolute; inset:0; width:100%; height:100%; pointer-events:none;
+  filter: drop-shadow(0 0 15px rgba(125,249,255,.75)); }
+.phrase .border rect{
+  fill:transparent; stroke:#7DF9FF; stroke-width:2; rx:12; ry:12;
+  stroke-dasharray:1000; stroke-dashoffset:1000;
+}
+
+const rect = document.querySelector("#p1 rect");
+const len  = (rect.getBoundingClientRect().width + rect.getBoundingClientRect().height)*2;
+gsap.set(rect,{strokeDasharray:len, strokeDashoffset:len});
+gsap.to(rect,{strokeDashoffset:0, duration:0.5, ease:"power2.out"});
+
+10) No depth cycle (everything same layer)
+
+Root cause: missing GSAP timeline for front → back mirror → return.
+
+Fix (per phrase):
+
+const vw = innerWidth;
+gsap.timeline({ repeat:-1, defaults:{ ease:"power1.inOut" } })
+  .to(el,{ x: vw*0.35,  opacity:0.80, duration:8 })   // FRONT L→R
+  .to(el,{ scale:0.85,  duration:0.01 })               // swap BACK
+  .to(el,{ x:-vw*0.70,  opacity:0.35, duration:8 })    // BACK R→L
+  .to(el,{ scale:0.80,  duration:0.01 })               // swap FRONT
+  .to(el,{ x:-vw*0.15,  opacity:0.65, duration:8 });   // RETURN L→R
+
+11) Background not reacting to phrase entries
+
+Root cause: you never call the burst.
+
+Fix:
+
+function bgBurst(ms=900){
+  const pulses = tsParticles.domItem(1); if(!pulses) return;
+  const prev = pulses.actualOptions.particles.move.speed;
+  pulses.options.particles.move.speed = 2.8; pulses.refresh();
+  setTimeout(()=>{ pulses.options.particles.move.speed = prev; pulses.refresh(); }, ms);
+}
+// call on every phrase entry start:
+bgBurst();
+
+12) DPR overlay “1.50” on screen (debug element)
+
+Root cause: a dev HUD / FPS badge was left visible.
+
+Fix: hide/remove the badge.
+
+#fps,#dpr,.debug-badge{ display:none !important; }
+
+✅ Quick verification checklist (after fixes)
+
+ Page background is #020814 with a soft vignette (no white anywhere).
+
+ Network shows lines + nodes in #7DF9FF at 30–40% opacity.
+
+ Phrases have neon cyan border, Nebula Blue fill, no blur text.
+
+ Hero phrase sits at ~38% Y, satellites on other lanes; none touch edges.
+
+ Each phrase runs front→back→return with opacities 1/0.8 → 0.35 → 0.65.
+
+ Background pulses (faster particles) on each phrase entry.
+
+ No debug badges or overlays visible.

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import NeuralBackground from './NeuralBackground';
 import FloatingPhrase from './FloatingPhrase';
 import PhotoBooth from './PhotoBooth';
@@ -228,11 +228,14 @@ export default function StageDisplay({ installationState, onStateChange }: Stage
       id="stage"
       className="relative w-full h-screen overflow-hidden cursor-none"
       style={{ 
-        background: 'linear-gradient(160deg, #041d3c, #01233d)'  // EXACT gradient from spec
+        background: 'transparent'  // EXACT transparent from user spec - Deep Space handled by CSS
       }}
       onClick={handleManualTrigger}
       data-testid="stage-display"
     >
+      {/* DEEP SPACE BASE WITH VIGNETTE - EXACT from user spec */}
+      <div id="bg-base"></div>
+      
       <NeuralBackground 
         intensity={0.7}
         particleCount={120}

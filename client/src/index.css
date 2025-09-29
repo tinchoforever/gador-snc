@@ -446,20 +446,56 @@
   text-shadow: 0 0 10px rgba(0,169,157,.8), 0 0 18px rgba(120,196,230,.6);
 }
 
-/* BACKGROUND LAYERS - EXACT from your spec */
+/* ===== CRITICAL FIXES - DEEP SPACE NEURAL NETWORK ===== */
+
+/* 1. DEEP SPACE BACKGROUND - EXACT from user spec */
+html, body {
+  height: 100% !important;
+  margin: 0 !important;
+  background: #020814 !important;  /* Deep Space - EXACT from spec */
+}
+
+/* 2. PARTICLE LAYERS - EXACT transparency from spec */
 #bg-net, #bg-pulses { 
-  position: fixed; 
-  inset: 0; 
-  z-index: -1; 
-  background: #fff; 
+  position: fixed !important; 
+  inset: 0 !important; 
+  z-index: -2 !important; 
+  background: transparent !important; /* NOT white - EXACT from spec */
 }
 
-#bg-net canvas { 
-  filter: drop-shadow(0 0 4px rgba(0,169,157,.35)) drop-shadow(0 0 6px rgba(120,196,230,.25)); 
-}
-
+/* 3. PARTICLE GLOW REDUCTION - EXACT from spec */
 #bg-pulses canvas { 
-  filter: drop-shadow(0 0 10px rgba(0,169,157,.8)) drop-shadow(0 0 16px rgba(120,196,230,.6)); 
+  filter: drop-shadow(0 0 8px rgba(125,249,255,.45)) !important; 
+}
+
+/* 4. STAGE - EXACT 100vh from spec */
+#stage {
+  position: relative !important;
+  width: 100% !important;
+  height: 100vh !important;
+  overflow: hidden !important;
+}
+
+/* 5. PHRASES LAYER - EXACT safe area from spec */
+#phrases-layer { 
+  position: absolute !important; 
+  inset: 0 !important; 
+  padding: 7% 10% !important; /* safe area - EXACT from spec */
+}
+
+/* 6. HIDE DEBUG BADGES - EXACT from spec */
+#fps, #dpr, .debug-badge { 
+  display: none !important; 
+}
+
+/* 7. DEEP SPACE BASE WITH VIGNETTE - EXACT from spec */
+#bg-base { 
+  position: fixed !important; 
+  inset: 0 !important; 
+  z-index: -3 !important;
+  background:
+    radial-gradient(55% 55% at 50% 50%, rgba(0,0,0,0) 0%, #020814 75%),
+    #020814 !important;
 }
 
 /* OPACITY LAYERS - EXACT from your spec */

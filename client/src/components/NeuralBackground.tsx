@@ -54,35 +54,25 @@ export default function NeuralBackground({
     }
   }, []);
 
-  useEffect(() => {
+  // NEURAL SYSTEM INITIALIZATION - Fixed scope issue
+  const initNeuralSystem = useCallback(async () => {
     if (initializedRef.current) return;
     
-    // Wait for tsParticles to load if not available
-    if (!window.tsParticles) {
-      const timer = setTimeout(() => {
-        if (window.tsParticles && !initializedRef.current) {
-          initNeuralSystem();
-        }
-      }, 1000);
-      return () => clearTimeout(timer);
-    }
-
-    const initNeuralSystem = async () => {
-      try {
-        // LAYER 1: NEURAL NETWORK - EXACT from user document
+    try {
+        // LAYER 1: NEURAL NETWORK - EXACT Digital Anxiety palette from user spec
         await window.tsParticles.load("bg-net", {
           fullScreen: { enable: false }, 
-          background: { color: "transparent" },               // Transparent - stage has gradient
+          background: { color: "transparent" },               // EXACT transparent from spec
           fpsLimit: 60, 
           detectRetina: true,
           particles: {
-            number: { value: 120, density: { enable: true, area: 1200 } },  // EXACT from spec
-            color: { value: ["#00E6FF", "#00A99D", "#78C4E6"] },            // EXACT colors from spec
+            number: { value: 120, density: { enable: true, area: 1200 } },
+            color: { value: "#7DF9FF" },                      // EXACT Digital Anxiety color from spec
             shape: { type: "circle" },
-            size: { value: 2, random: { enable: true, minimumValue: 1 } },   // EXACT from spec
+            size: { value: 2 },                               // EXACT from spec
             opacity: { 
-              value: .55, 
-              animation: { enable: true, speed: .35, minimumValue: .3, sync: false } 
+              value: 0.40, 
+              animation: { enable: true, speed: 0.3, minimumValue: 0.25, sync: false }  // EXACT from spec
             },
             move: { 
               enable: true, 
@@ -91,29 +81,29 @@ export default function NeuralBackground({
               outModes: { default: "bounce" } 
             },
             links: { 
-              enable: true, 
+              enable: true,                                   // EXACT enable links from spec
               distance: 140, 
-              color: "#00E6FF", 
-              opacity: .35, 
-              width: 1.1 
+              color: "#7DF9FF",                              // EXACT Digital Anxiety color from spec
+              opacity: 0.30,                                 // EXACT 30% opacity from spec
+              width: 1.05                                    // EXACT from spec
             }
           }
         });
 
-        // LAYER 2: PULSE SYSTEM - EXACT from user document  
+        // LAYER 2: PULSE SYSTEM - EXACT Digital Anxiety from user spec
         await window.tsParticles.load("bg-pulses", {
           fullScreen: { enable: false }, 
-          background: { color: "transparent" }, 
+          background: { color: "transparent" },               // EXACT transparent from spec
           fpsLimit: 60, 
           detectRetina: true,
           particles: {
-            number: { value: 18, density: { enable: true, area: 1000 } },    // EXACT from spec
-            color: { value: ["#00E6FF", "#78C4E6"] },                       // EXACT colors from spec
+            number: { value: 18, density: { enable: true, area: 1000 } },
+            color: { value: "#7DF9FF" },                      // EXACT Digital Anxiety color from spec
             shape: { type: "circle" },
-            size: { value: { min: 1.5, max: 3.5 } },                        // EXACT from spec
+            size: { value: { min: 1.5, max: 3.5 } },
             opacity: { 
-              value: .95, 
-              animation: { enable: true, speed: 1.2, minimumValue: .5, sync: false } 
+              value: 0.40,                                    // EXACT reduced opacity from spec
+              animation: { enable: true, speed: 0.3, minimumValue: 0.25, sync: false } 
             },
             move: { 
               enable: true, 
@@ -185,7 +175,20 @@ export default function NeuralBackground({
       } catch (error) {
         console.error('Error initializing neural system:', error);
       }
-    };
+    }, [triggerGlobalBurst]);
+
+  useEffect(() => {
+    if (initializedRef.current) return;
+    
+    // Wait for tsParticles to load if not available
+    if (!window.tsParticles) {
+      const timer = setTimeout(() => {
+        if (window.tsParticles && !initializedRef.current) {
+          initNeuralSystem();
+        }
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
 
     initNeuralSystem();
 
@@ -198,7 +201,7 @@ export default function NeuralBackground({
       }
       (window as any).neuralBurst = null;
     };
-  }, [particleCount, connectionDistance, triggerGlobalBurst]);
+  }, [initNeuralSystem]);
 
   // Phrase-triggered pulse effect
   useEffect(() => {
@@ -208,19 +211,7 @@ export default function NeuralBackground({
 
   return (
     <>
-      {/* Background gradient using Gador brand colors */}
-      <div
-        className="fixed inset-0 z-[-3]"
-        style={{
-          background: `
-            radial-gradient(circle at 25% 25%, hsl(219, 100%, 8%) 0%, transparent 50%),
-            radial-gradient(circle at 75% 75%, hsl(178, 100%, 6%) 0%, transparent 50%),
-            radial-gradient(circle at 50% 50%, hsl(199, 68%, 4%) 0%, transparent 50%),
-            linear-gradient(135deg, hsl(219, 100%, 4%) 0%, hsl(219, 80%, 6%) 50%, hsl(178, 100%, 8%) 100%)
-          `
-        }}
-        data-testid="neural-background-gradient"
-      />
+      {/* NO BACKGROUND HERE - Deep Space handled by CSS #bg-base */}
       
       {/* Layer 1: Neural Network */}
       <div

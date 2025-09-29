@@ -127,8 +127,8 @@ export default function FloatingPhrase({
       .add(mainCycle);
 
     // Background reaction - call bgBurst function from user document
-    if ((window as any).neuralBurst) {
-      (window as any).neuralBurst(900);
+    if ((window as any).bgBurst) {
+      (window as any).bgBurst(900);
     }
   };
 
@@ -147,7 +147,7 @@ export default function FloatingPhrase({
         className="relative"
         style={{ willChange: 'transform, opacity' }}
       >
-        {/* SCI-FI NEON FRAME - EXACT SPEC FROM DOCUMENT */}
+        {/* NEON CYAN PHRASE - EXACT from user spec */}
         <div
           ref={textRef}
           className="phrase"
@@ -156,18 +156,22 @@ export default function FloatingPhrase({
             left: '50%',
             transform: 'translateX(-50%)',
             whiteSpace: 'pre-wrap',
-            color: '#dffaff',                           // EXACT color from spec
+            color: '#7DF9FF',                           // EXACT Digital Anxiety color from spec
             fontWeight: '600',                          // EXACT weight from spec  
             lineHeight: '1.15',                         // EXACT line height from spec
-            padding: '14px 22px',                       // EXACT padding from spec
-            borderRadius: '10px',                       // EXACT radius from spec
-            background: 'rgba(0,230,255,.06)',          // EXACT background from spec
-            border: '1.6px solid rgba(0,230,255,.9)',   // EXACT border from spec
-            textShadow: '0 0 12px #00E6FF, 0 0 24px rgba(0,230,255,.85)', // EXACT text shadow from spec
-            boxShadow: '0 0 16px rgba(0,230,255,.85), inset 0 0 18px rgba(0,230,255,.12)', // EXACT box shadow from spec
-            fontSize: phrase.text.length > 50 ? 'clamp(40px, 6vw, 132px)' : 'clamp(22px, 2.6vw, 36px)',  // Hero vs satellite - EXACT from user document
+            letterSpacing: '0.2px',                     // EXACT from spec
+            padding: '16px 24px',                       // EXACT padding from spec
+            borderRadius: '12px',                       // EXACT radius from spec
+            backdropFilter: 'blur(4px)',               // EXACT backdrop filter from spec
+            background: 'radial-gradient(60% 60% at 50% 50%, rgba(125,249,255,.07) 0%, rgba(15,35,60,.70) 60%)', // EXACT Nebula Blue from spec
+            border: '2px solid #7DF9FF',               // EXACT border from spec
+            boxShadow: '0 0 15px rgba(125,249,255,.75), 0 0 2px rgba(125,249,255,.75)', // EXACT glow from spec
+            textShadow: '0 0 3px #7DF9FF',             // EXACT text shadow from spec
+            fontSize: phrase.text.length > 50 ? 'clamp(40px, 6vw, 132px)' : 'clamp(22px, 2.6vw, 36px)',  // Hero vs satellite
             userSelect: 'none',
-            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+            willChange: 'transform, opacity, color, scale',
+            filter: 'none'                             // EXACT no blur from spec
           }}
           data-testid={`phrase-container-${phrase.id}`}
         >
