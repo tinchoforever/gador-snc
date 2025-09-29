@@ -80,12 +80,13 @@ export default function FloatingPhrase({
 
   const initializeAnimation = () => {
     const container = containerRef.current;
+    const motionElement = motionRef.current;  // FIX: Define motionElement from ref
     const textElement = textRef.current;
-    if (!container || !textElement) return;
+    if (!container || !motionElement || !textElement) return;
 
-    // Trigger bgBurst effect - EXACT from your spec
-    if ((window as any).bgBurst) {
-      (window as any).bgBurst();
+    // Trigger neural burst effect - FIX: Correct hook name
+    if ((window as any).neuralBurst) {
+      (window as any).neuralBurst(1.0);
     }
 
     // EXACT GSAP TIMELINE TEMPLATE FROM YOUR SPECIFICATION DOCUMENT
@@ -93,21 +94,21 @@ export default function FloatingPhrase({
     const laneYPercent = parseFloat(LANES[lane as keyof typeof LANES]) / 100;
     const laneY = window.innerHeight * laneYPercent;
     
-    // FIXED CONTAINER: Only positioning (no transforms/filters)
+    // CENTER POSITIONING - FIX: Proper centering
     container.style.position = 'fixed';
     container.style.top = `${laneY}px`;
-    container.style.left = '0';
+    container.style.left = '50%';           // FIX: Center properly
     container.style.zIndex = '100';
     
     // CLEAR ANY RESIDUAL TRANSFORMS
     gsap.set([container, motionElement], { clearProps: 'transform' });
     
-    // MOTION ELEMENT: All GSAP transforms happen here
+    // MOTION ELEMENT: Proper center positioning 
     gsap.set(motionElement, {
       x: 0,
-      xPercent: -50,  // Center without CSS conflicts
+      xPercent: -50,  // Center from 50% left position
       opacity: 0,
-      force3D: true   // Ensure proper compositing
+      force3D: true   
     });
 
     // GLOW PULSE ON ENTRY - EXACT as spec (pulse then settle, not constant neon)
