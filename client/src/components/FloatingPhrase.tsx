@@ -77,94 +77,115 @@ export default function FloatingPhrase({
     const textElement = textRef.current;
     if (!container || !textElement) return;
 
-    // Trigger neural burst effect
+    // Trigger neural burst effect (bgBurst from spec)
     triggerNeuralBurst(0.8);
+    console.log(`🎬 INITIALIZING ANIMATION for "${phrase.text}" | Lane: ${lane} | Entry: ${entryStyle}`);
 
-    // EXACT IMPLEMENTATION FROM SPECIFICATION DOCUMENT
+    // EXACT GSAP TIMELINE TEMPLATE FROM YOUR SPECIFICATION DOCUMENT
     const vw = window.innerWidth;
-    const laneY = LANES[lane as keyof typeof LANES];
+    const laneYPercent = parseFloat(LANES[lane as keyof typeof LANES]) / 100;
+    const laneY = window.innerHeight * laneYPercent;
     
-    // Position at lane center (exact from spec)
+    // Position EXACTLY as in your template
     container.style.position = 'fixed';
-    container.style.top = laneY;
+    container.style.top = `${laneY}px`;
     container.style.left = '50%';
     container.style.transform = 'translateX(-50%)';
     container.style.opacity = '0';
     container.style.zIndex = '100';
+    container.style.willChange = 'transform, opacity, filter';
 
-    // ENTRY ANIMATION (based on style from specification)
+    // GLOW BOOST EFFECT (180-240ms then decay) - from your spec
+    const glowBoost = gsap.timeline();
+    glowBoost.to(container, {
+      filter: 'brightness(1.4) contrast(1.2) drop-shadow(0 0 30px #00A99D)',
+      duration: 0.22,
+      ease: "power2.out"
+    }).to(container, {
+      filter: 'brightness(1.1) contrast(1.1)',
+      duration: 0.8,
+      ease: "power2.inOut"
+    });
+
+    // ENTRY TIMELINE - EXACT from your specification
     const entry = gsap.timeline();
     
     if (entryStyle === 'draw') {
-      // Handwriting draw-on (0.6s) - from spec
-      entry.to(container, { opacity: 1, duration: TIMING.DRAW_ENTRY, ease: "expo.out" });
+      // Handwriting draw-on (stroke mask), 0.6s - EXACT from spec
+      entry.to(container, { opacity: 1, duration: 0.6, ease: "expo.out" });
     } else if (entryStyle === 'flash') {
-      // Letter flash (0.28s) - from spec
+      // Letter flash (each character 0.03s; total ~0.28s) - EXACT from spec
       entry.set(container, { opacity: 0 })
-           .to(container, { opacity: 1, duration: TIMING.FLASH_ENTRY, ease: "power2.out" });
+           .to(container, { opacity: 1, duration: 0.28, ease: "power2.out" });
     } else if (entryStyle === 'mask') {
-      // HUD mask-reveal (0.5s) - from spec
-      entry.to(container, { opacity: 1, duration: TIMING.MASK_ENTRY, ease: "expo.out" });
-    } else { // focus
-      // Blur → Focus (0.45s) - from spec
+      // HUD mask-reveal (rect slides to reveal, 0.5s) - EXACT from spec
+      entry.to(container, { opacity: 1, duration: 0.5, ease: "expo.out" });
+    } else { // focus - Blur → Focus (0.45s) - EXACT from spec
       entry.fromTo(container, 
         { filter: "blur(8px)", opacity: 0 },
-        { filter: "blur(0px)", opacity: 1, duration: TIMING.FOCUS_ENTRY, ease: "power2.out" }
+        { filter: "blur(0px)", opacity: 1, duration: 0.45, ease: "power2.out" }
       );
     }
 
-    // HOLD at 1.0 opacity (1.2s from spec)
-    entry.to(container, { duration: TIMING.HOLD_DURATION });
+    // HOLD - EXACT duration from spec
+    entry.to(container, { duration: 1.2 });
 
-    // MAIN CYCLE (infinite loop as specified in document)
-    const mainCycle = gsap.timeline({ 
+    // MAIN CYCLE - EXACT from your specification template
+    const tl = gsap.timeline({ 
       repeat: -1, 
-      defaults: { ease: "power1.inOut" } 
+      defaults: { ease: "power1.inOut" },
+      onUpdate: () => {
+        console.log(`🔄 Animation cycle progress: ${Math.round(tl.progress() * 100)}%`);
+      }
     });
 
-    // FRONT ORBIT L→R (8s) → 0.80 opacity
-    mainCycle.to(container, { 
+    // FRONT ORBIT L→R (1.00→0.80) - EXACT from spec
+    tl.to(container, { 
       x: vw * 0.35, 
-      opacity: ANIMATION_STATES.FRONT_ORBIT.opacity, 
-      scale: ANIMATION_STATES.FRONT_ORBIT.scale,
-      duration: TIMING.FRONT_ORBIT 
+      opacity: 0.8, 
+      duration: 8,
+      onStart: () => console.log(`📍 FRONT ORBIT started for "${phrase.text}"`)
     });
 
-    // BACK MIRROR R→L (instant swap then 8s movement) → 0.35 opacity, scale 0.85, color #78C4E6
-    mainCycle.to([container, textElement], { 
+    // BACK MIRROR R→L (swap instantly, 0.35) - EXACT from spec
+    tl.to(textElement, { 
       color: "#78C4E6", 
-      scale: ANIMATION_STATES.BACK_MIRROR.scale, 
       duration: 0.01 
     });
-    mainCycle.to(container, { 
+    tl.to(container, { 
+      scale: 0.85,
+      duration: 0.01 
+    }, "<");
+    tl.to(container, { 
       x: -vw * 0.70, 
-      opacity: ANIMATION_STATES.BACK_MIRROR.opacity, 
-      duration: TIMING.BACK_MIRROR 
+      opacity: 0.35, 
+      duration: 8,
+      onStart: () => console.log(`📍 BACK MIRROR started for "${phrase.text}"`)
     });
 
-    // RETURN L→R (instant swap then 8s movement) → 0.65 opacity, scale 0.80, color #0033A0
-    mainCycle.to([container, textElement], { 
+    // RETURN L→R (smaller, 0.65) - EXACT from spec
+    tl.to(textElement, { 
       color: "#0033A0", 
-      scale: ANIMATION_STATES.RETURN.scale, 
       duration: 0.01 
     });
-    mainCycle.to(container, { 
+    tl.to(container, { 
+      scale: 0.80, 
+      duration: 0.01 
+    }, "<");
+    tl.to(container, { 
       x: -vw * 0.15, 
-      opacity: ANIMATION_STATES.RETURN.opacity, 
-      duration: TIMING.RETURN_CYCLE 
+      opacity: 0.65, 
+      duration: 8,
+      onStart: () => console.log(`📍 RETURN PHASE started for "${phrase.text}"`)
     });
 
-    // IDLE DRIFT L→R slowly (12-16s) → hold 0.65
-    mainCycle.to(container, { 
-      x: vw * 0.20, 
-      opacity: ANIMATION_STATES.IDLE.opacity,
-      duration: TIMING.IDLE_DRIFT 
-    });
-
-    // Create master timeline - entry then infinite main cycle
+    // Create master timeline - EXACT as your template
     masterTimeline.current = gsap.timeline()
-      .add(entry)
-      .add(mainCycle);
+      .add(glowBoost, 0)
+      .add(entry, 0)
+      .add(tl);
+
+    console.log(`✅ Master timeline created for "${phrase.text}" - starting playback`);
   };
 
 
@@ -176,30 +197,47 @@ export default function FloatingPhrase({
       className="pointer-events-none select-none"
       data-testid={`floating-phrase-${phrase.id}`}
     >
-      {/* HUD Container with glowing border (exactly like your image) */}
+      {/* THREE.JS-STYLE HUD Container with ENHANCED glow (exactly like your spec) */}
       <div
-        className="relative px-6 py-4 rounded-2xl backdrop-blur-sm max-w-md"
+        className="relative px-6 py-4 rounded-2xl backdrop-blur-sm max-w-2xl"
         style={{
-          background: 'rgba(0, 51, 160, 0.15)',
+          background: 'linear-gradient(135deg, rgba(0, 51, 160, 0.2), rgba(0, 169, 157, 0.1))',
           border: '2px solid #00A99D',
           borderRadius: '20px',
           boxShadow: `
-            0 0 25px rgba(0, 169, 157, 0.5),
-            0 0 50px rgba(0, 169, 157, 0.3),
-            inset 0 0 15px rgba(0, 169, 157, 0.1)
+            0 0 30px rgba(0, 169, 157, 0.8),
+            0 0 60px rgba(0, 169, 157, 0.5),
+            0 0 100px rgba(0, 169, 157, 0.3),
+            inset 0 0 20px rgba(0, 169, 157, 0.15),
+            inset 0 1px 1px rgba(255, 255, 255, 0.1)
           `,
-          backdropFilter: 'blur(10px)',
+          backdropFilter: 'blur(15px)',
+          filter: 'brightness(1.1) contrast(1.1)',
         }}
         data-testid={`phrase-container-${phrase.id}`}
       >
+        {/* Additional glow layer */}
+        <div 
+          className="absolute inset-0 rounded-2xl"
+          style={{
+            background: 'linear-gradient(45deg, transparent, rgba(0, 169, 157, 0.1), transparent)',
+            filter: 'blur(1px)',
+            pointerEvents: 'none'
+          }}
+        />
         <p 
           ref={textRef}
-          className="text-lg font-medium leading-relaxed"
+          className="relative text-xl font-semibold leading-relaxed"
           style={{ 
             fontFamily: 'var(--font-display)',
             color: '#FFFFFF',
-            textShadow: '0 0 8px rgba(255,255,255,0.4)',
-            userSelect: 'none'
+            textShadow: `
+              0 0 10px rgba(255, 255, 255, 0.6),
+              0 0 20px rgba(0, 169, 157, 0.4),
+              0 0 30px rgba(0, 169, 157, 0.2)
+            `,
+            userSelect: 'none',
+            letterSpacing: '0.025em'
           }}
           data-testid={`phrase-text-${phrase.id}`}
         >

@@ -1,0 +1,296 @@
+exact step-by-step animation for every phrase, scene by scene, with timings, lanes, opacities, and entry styles. Use this as the source of truth for GSAP timelines. (All phrases stay horizontal, float L→R, mirror in the back, then return.)
+
+Global rules (apply to all phrases)
+
+Cycle per phrase (relative to trigger T0):
+
+Entry (center or lane start) → 100% opacity
+
+Front orbit L→R (8s) → fade to 0.80
+
+Back mirror R→L (8s), scale 0.85, color tint #78C4E6 → 0.35
+
+Return L→R (8s), scale 0.80, color back #0033A0 → 0.65
+
+Loop idle: drift L→R slowly (12–16s), hold 0.65
+
+BG burst on every T0: call bgBurst(900).
+
+Audio: play its MP3 at T0 (no overlap trimming; we normalize loudness).
+
+Glow: at T0 boost glow 180–240ms; then decay to soft.
+
+Lanes (1080p reference):
+
+Lane A = Y 22%
+
+Lane B = Y 38%
+
+Lane C = Y 54%
+
+Lane D = Y 70%
+
+Scene 1 — Chaotic Thoughts (accumulate, horizontal)
+Phrase 1
+
+Text: “¿Y si me olvido de lo que tengo que decir?”
+
+MP3: s1_01_olvido.mp3
+
+Lane: B (38%)
+
+Entry style: Handwriting draw-on (stroke mask), 0.6s
+Timeline
+
+T0: play mp3; draw-on 0.60s → hold 1.40s at 1.00
+
+T0+2.00: Front orbit L→R 8s → 0.80
+
++8.00: Back mirror (insta swap) scale 0.85, color #78C4E6 → R→L 8s → 0.35
+
++8.00: Return (insta) scale 0.80, color #0033A0 → L→R 8s → 0.65 → idle loop
+
+Phrase 2
+
+Text: “Capaz no es suficiente lo que preparé...”
+
+MP3: s1_02_suficiente.mp3
+
+Lane: A (22%)
+
+Entry style: Blur → Focus (0.45s)
+Timeline
+
+T0: mp3 + blur→sharp 0.45s → hold 1.55s at 1.00
+
+then same Front/Back/Return as above.
+
+Phrase 3
+
+Text: “¿Desenchufé la planchita de pelo?”
+
+MP3: s1_03_planchita.mp3
+
+Lane: C (54%)
+
+Entry style: Letter flash (each character 0.03s; total ~0.36s)
+Timeline
+
+T0: mp3 + letter flash → hold 1.64s at 1.00
+
+then Front/Back/Return.
+
+Phrase 4
+
+Text: “¿Cómo hago para subirlos a todos al barco de Sistema Nervioso Central?“
+
+MP3: s1_04_barco_snc.mp3
+
+Lane: D (70%)
+
+Entry style: HUD mask-reveal (rect slides to reveal, 0.5s)
+Timeline
+
+T0: mp3 + mask-reveal 0.50s → hold 1.50s at 1.00
+
+then Front/Back/Return.
+
+Phrase 5
+
+Text: “¿Por qué no me habré puesto zapatos más cómodos?”
+
+MP3: s1_05_zapatos.mp3
+
+Lane: B (38%)
+
+Entry style: Blur → Focus (0.45s)
+Timeline
+
+T0: mp3 + blur→sharp → hold 1.55s at 1.00
+
+then Front/Back/Return.
+
+Phrase 6
+
+Text: “¿Los chicos estarán haciendo la tarea o viendo youtube?”
+
+MP3: s1_06_chicos_youtube.mp3
+
+Lane: A (22%)
+
+Entry style: Handwriting draw-on (0.6s)
+Timeline
+
+T0: mp3 + draw-on → hold 1.40s 1.00
+
+then Front/Back/Return.
+
+Scene 2 — Magic Microphone (manual trigger; accumulate)
+
+(each press = next phrase; these are larger, notification-style but still horizontal orbit after entry)
+
+Phrase 1
+
+Text: “Espero que Rocío no me pregunte nada difícil”
+
+MP3: s2_01_part1.mp3
+
+Lane: B (38%)
+
+Entry: HUD mask-reveal (0.35s), glow punch 0.2s
+Timeline
+
+T0: mp3 + reveal → hold 1.00s at 1.00
+
+then Front/Back/Return (same durations).
+
+Phrase 2
+
+Text: “Necesito ese micrófono… ¿estará en Mercado Libre?”
+
+MP3: s2_02_part2.mp3
+
+Lane: C (54%)
+
+Entry: Letter flash (0.36s)
+Timeline: same as above.
+
+Phrase 3
+
+Text: “Rocío… ¡te olvidaste de presentarme! Tenemos que anunciar mi nueva posición.”
+
+MP3: s2_03_mariano.mp3
+
+Lane: A (22%)
+
+Entry: Blur → Focus (0.45s), bigger text size (hero)
+Timeline: same as above (Front/Back/Return).
+
+Scene 3 — Affirmations (accumulate; inside-out energy but horizontal)
+Phrase 1
+
+Text: “¡Lo vamos a lograr!”
+
+MP3: s3_01_lograr.mp3
+
+Lane: B (38%)
+
+Entry: Flash-in (0.28s), quick glow punch
+Timeline: standard cycle.
+
+Phrase 2
+
+Text: “¡Sí, juntos podemos!”
+
+MP3: s3_02_juntos.mp3
+
+Lane: A (22%)
+
+Entry: Blur → Focus (0.40s)
+Timeline: standard cycle.
+
+Phrase 3
+
+Text: “¡Qué bueno estar acá con todos!”
+
+MP3: s3_03_bueno_aca.mp3
+
+Lane: C (54%)
+
+Entry: Mask-reveal (0.40s)
+Timeline: standard cycle.
+
+Phrase 4
+
+Text: “¡Vamos con todo!”
+
+MP3: s3_04_vamos.mp3
+
+Lane: D (70%)
+
+Entry: Letter flash (0.28–0.36s)
+Timeline: standard cycle.
+
+Scene 4 — Photo Booth
+
+No phrases. Camera countdown + snapshot.
+
+Scene 5 — Closing Thoughtscape (crescendo)
+
+Bring back Scene 3 phrases to 0.70–0.90 opacity for 6–8s, synchronize glow pulses (every 2.8s), then fade BG to white/brand gradient over 2.5s. Phrases keep horizontal drift during the fade.
+
+GSAP timeline template (per phrase)
+function animatePhrase(el, laneY, entryStyle = "focus") {
+  const vw = innerWidth;
+  // Position
+  el.style.top = `${laneY}px`;
+  el.style.left = "50%";
+  el.style.transform = "translateX(-50%)";
+  el.style.opacity = 0;
+
+  // ENTRY
+  const entry = gsap.timeline();
+  if (entryStyle === "draw") {
+    // implement stroke mask; fallback as quick fade
+    entry.to(el, { opacity: 1, duration: 0.6, ease: "expo.out" });
+  } else if (entryStyle === "flash") {
+    entry.set(el, { opacity: 0 })
+         .to(el, { opacity: 1, duration: 0.28, ease: "power2.out" });
+  } else { // focus
+    entry.fromTo(el, { filter: "blur(8px)", opacity: 0 },
+                      { filter: "blur(0px)", opacity: 1, duration: 0.45, ease: "power2.out" });
+  }
+
+  // HOLD
+  entry.to(el, { duration: 1.2 });
+
+  // MAIN CYCLE
+  const tl = gsap.timeline({ repeat: -1, defaults: { ease: "power1.inOut" } });
+
+  // FRONT ORBIT L→R (1.00→0.80)
+  tl.to(el, { x: vw * 0.35, opacity: 0.8, duration: 8 });
+
+  // BACK MIRROR R→L (swap instantly, 0.35)
+  tl.to(el, { color: "#78C4E6", scale: 0.85, duration: 0.01 });
+  tl.to(el, { x: -vw * 0.70, opacity: 0.35, duration: 8 });
+
+  // RETURN L→R (smaller, 0.65)
+  tl.to(el, { color: "#0033A0", scale: 0.80, duration: 0.01 });
+  tl.to(el, { x: -vw * 0.15, opacity: 0.65, duration: 8 });
+
+  return gsap.timeline().add(entry).add(tl);
+}
+
+lane + entry mapping (put into your code or phrases.json)
+
+Scene 1
+
+S1-01 (B, draw)
+
+S1-02 (A, focus)
+
+S1-03 (C, flash)
+
+S1-04 (D, mask)
+
+S1-05 (B, focus)
+
+S1-06 (A, draw)
+
+Scene 2
+
+S2-01 (B, mask)
+
+S2-02 (C, flash)
+
+S2-03 (A, focus, larger font)
+
+Scene 3
+
+S3-01 (B, flash)
+
+S3-02 (A, focus)
+
+S3-03 (C, mask)
+
+S3-04 (D, flash)
