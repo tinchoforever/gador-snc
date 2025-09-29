@@ -165,7 +165,7 @@ export default function FloatingPhrase({
             border: '1.6px solid rgba(0,230,255,.9)',   // EXACT border from spec
             textShadow: '0 0 12px #00E6FF, 0 0 24px rgba(0,230,255,.85)', // EXACT text shadow from spec
             boxShadow: '0 0 16px rgba(0,230,255,.85), inset 0 0 18px rgba(0,230,255,.12)', // EXACT box shadow from spec
-            fontSize: 'clamp(22px, 2.6vw, 36px)',      // Satellite size (default)
+            fontSize: phrase.text.length > 50 ? 'clamp(40px, 6vw, 132px)' : 'clamp(22px, 2.6vw, 36px)',  // Hero vs satellite - EXACT from user document
             userSelect: 'none',
             fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
           }}

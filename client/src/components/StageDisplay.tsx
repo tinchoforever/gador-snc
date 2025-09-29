@@ -13,6 +13,19 @@ export default function StageDisplay({ installationState, onStateChange }: Stage
   const [phrases, setPhrases] = useState<PhraseState[]>(installationState.activePhrases);
   const [showPhotoMode, setShowPhotoMode] = useState(false);
   const [pulseActive, setPulseActive] = useState(false);
+  
+  // Audio system - EXACT from user document (no overlap popping)
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const playAudio = useCallback((id: string) => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    
+    // Reset playback to avoid overlap - EXACT from user document
+    audio.currentTime = 0;
+    audio.volume = 0.55;
+    audio.play().catch(e => console.log('Audio blocked'));
+  }, []);
 
   useEffect(() => {
     setPhrases(installationState.activePhrases);
@@ -82,6 +95,9 @@ export default function StageDisplay({ installationState, onStateChange }: Stage
 
     setPhrases(prev => [...prev, newPhrase]);
     console.log(`Triggered phrase: "${phraseText}" | Lane: ${config.lane} | Entry: ${config.entry}`);
+    
+    // Play audio for this phrase - EXACT from user document
+    playAudio(newPhrase.id);
   };
 
   // SCENE ORCHESTRATION SYSTEM - Complete scheduling per specification
@@ -253,6 +269,16 @@ export default function StageDisplay({ installationState, onStateChange }: Stage
           }}
         />
       )}
+      
+      {/* Audio element - EXACT from user document */}
+      <audio 
+        ref={audioRef}
+        preload="auto"
+        data-testid="phrase-audio"
+      >
+        <source src="/audio/phrase-sound.mp3" type="audio/mpeg" />
+        <source src="/audio/phrase-sound.wav" type="audio/wav" />
+      </audio>
       
     </div>
   );
