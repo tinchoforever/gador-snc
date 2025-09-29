@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import NeuralBackground from './NeuralBackground';
+// NeuralBackground now implemented in DOM - see index.html
 import FloatingPhrase from './FloatingPhrase';
 import PhotoBooth from './PhotoBooth';
 import { InstallationState, PhraseState, SCENES } from '@shared/schema';
@@ -250,15 +250,7 @@ export default function StageDisplay({ installationState, onStateChange }: Stage
       onClick={handleManualTrigger}
       data-testid="stage-display"
     >
-      {/* DEEP SPACE BASE WITH VIGNETTE - EXACT from user spec */}
-      <div id="bg-base"></div>
-      
-      <NeuralBackground 
-        intensity={0.7}
-        particleCount={120}
-        connectionDistance={180}
-        pulseActive={pulseActive}
-      />
+      {/* Background now handled by DOM-level implementation in index.html */}
       
       {/* Phrases layer with safe areas - EXACT 7% 10% padding from spec */}
       <div 

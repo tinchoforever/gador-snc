@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { gsap } from 'gsap';
 import { PhraseState } from '@shared/schema';
-import { triggerNeuralBurst } from './NeuralBackground';
+// Neural burst now available as window.bgBurst via DOM implementation
 
 interface FloatingPhraseProps {
   phrase: PhraseState;
