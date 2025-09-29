@@ -94,18 +94,24 @@ export default function FloatingPhrase({
     textElement.style.opacity = '0';
     textElement.style.zIndex = '100';
 
-    // ENTRY ANIMATION - EXACT from user document
+    // TYPEWRITING EFFECT - Not huge brutal, smooth typewriting
     const entryTl = gsap.timeline();
     
-    if (entryStyle === 'flash') {
-      // EXACT flash sequence from user document
-      entryTl.to(textElement, { opacity: 1, duration: .18, ease: "power2.out" })
-             .to(textElement, { opacity: .4, duration: .08 })
-             .to(textElement, { opacity: 1, duration: .18 });
-    } else {
-      // Default entry - EXACT from user document
-      entryTl.fromTo(textElement, { opacity: 0 }, { opacity: 1, duration: .45, ease: "power2.out" });
-    }
+    // Clear text and set up for typewriting
+    const originalText = phrase.text;
+    textElement.textContent = '';
+    textElement.style.opacity = '1';
+    
+    // Create typewriting effect
+    let currentIndex = 0;
+    const typeInterval = setInterval(() => {
+      if (currentIndex < originalText.length) {
+        textElement.textContent = originalText.substring(0, currentIndex + 1);
+        currentIndex++;
+      } else {
+        clearInterval(typeInterval);
+      }
+    }, 45); // Typewriting speed - not brutal, smooth
 
     // HOLD readable - EXACT from user document
     entryTl.to(textElement, { duration: 1.0 });
@@ -160,14 +166,14 @@ export default function FloatingPhrase({
             fontWeight: '600',                          // EXACT weight from spec  
             lineHeight: '1.15',                         // EXACT line height from spec
             letterSpacing: '0.2px',                     // EXACT from spec
-            padding: '16px 24px',                       // EXACT padding from spec
+            padding: phrase.text.length > 60 ? '20px 28px' : phrase.text.length > 30 ? '16px 24px' : '12px 18px', // Different sizes based on text length
             borderRadius: '12px',                       // EXACT radius from spec
             backdropFilter: 'blur(4px)',               // EXACT backdrop filter from spec
             background: 'radial-gradient(60% 60% at 50% 50%, rgba(125,249,255,.07) 0%, rgba(15,35,60,.70) 60%)', // EXACT Nebula Blue from spec
             border: '2px solid #7DF9FF',               // EXACT border from spec
             boxShadow: '0 0 15px rgba(125,249,255,.75), 0 0 2px rgba(125,249,255,.75)', // EXACT glow from spec
             textShadow: '0 0 3px #7DF9FF',             // EXACT text shadow from spec
-            fontSize: phrase.text.length > 50 ? 'clamp(40px, 6vw, 132px)' : 'clamp(22px, 2.6vw, 36px)',  // Hero vs satellite
+            fontSize: 'clamp(18px, 2.2vw, 28px)',  // CONSISTENT size - not huge brutal
             userSelect: 'none',
             fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
             willChange: 'transform, opacity, color, scale',
