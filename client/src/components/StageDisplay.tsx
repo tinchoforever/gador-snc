@@ -51,42 +51,7 @@ export default function StageDisplay({ installationState, onStateChange }: Stage
     console.log(`🔄 Scene changed to ${installationState.currentScene}, cleared all phrases`);
   }, [installationState]);
 
-  // Initialize ghost text background
-  useEffect(() => {
-    if (!ghostContainerRef.current) return;
-    
-    const container = ghostContainerRef.current;
-    container.innerHTML = '';
-    
-    GHOST_PHRASES.forEach(word => {
-      const span = document.createElement('span');
-      span.className = 'ghost-phrase';
-      span.textContent = word;
-      span.style.cssText = `
-        position: absolute;
-        color: rgba(15,23,42,0.08);
-        font-family: "Avenir Next", Helvetica, sans-serif;
-        font-weight: 600;
-        font-size: clamp(28px, 3vw, 64px);
-        line-height: 1.05;
-        white-space: nowrap;
-        pointer-events: none;
-        left: ${gsap.utils.random(10, 90)}%;
-        top: ${gsap.utils.random(12, 88)}%;
-        transform: translate(-50%, -50%) rotate(${gsap.utils.random(-6, 6)}deg);
-      `;
-      container.appendChild(span);
-      
-      // Subtle drift animation
-      gsap.to(span, {
-        x: `+=${gsap.utils.random(-10, 10)}`,
-        duration: 5 + Math.random() * 4,
-        repeat: -1,
-        yoyo: true,
-        ease: "sine.inOut"
-      });
-    });
-  }, []);
+  // Background ghost phrases removed per user request
 
   // Phrase-to-lane mapping
   const getPhraseConfig = (text: string, sceneId: number) => {
@@ -282,22 +247,13 @@ export default function StageDisplay({ installationState, onStateChange }: Stage
       onClick={handleManualTrigger}
       data-testid="stage-display"
     >
-      {/* Ghost text background layer */}
-      <div 
-        ref={ghostContainerRef}
-        id="bg-ghost-phrases"
-        className="absolute inset-0 pointer-events-none"
-        style={{ zIndex: 0 }}
-      />
       
-      {/* Notifications stack - centered with proper stacking */}
+      {/* Notifications scattered - NIGHTMARE MODE */}
       <div 
         id="notifications-stack"
-        className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"
+        className="absolute inset-0 pointer-events-none"
         style={{ 
-          padding: '8% 10%',
           zIndex: 10,
-          gap: '14px'
         }}
         data-testid="notifications-stack"
       >

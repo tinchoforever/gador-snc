@@ -19,29 +19,39 @@ interface FloatingPhraseProps {
 
 const VARIANT_STYLES = {
   grey: {
-    bg: '#F7F8FA',
-    titleColor: '#374151',
-    msgColor: '#0F172A',
-    metaColor: '#6B7280',
-    iconBg: 'linear-gradient(180deg, #00A99D, #78C4E6)',
+    bg: '#F1F1F4',
+    textColor: '#1C1C1C',
+    metaColor: '#6E6E73',
   },
-  blue: {
-    bg: '#2F6BED',
-    titleColor: 'rgba(255,255,255,0.9)',
-    msgColor: '#FFFFFF',
+  darkBlue: {
+    bg: '#3B4D5E',
+    textColor: '#FFFFFF',
+    metaColor: 'rgba(255,255,255,0.8)',
+  },
+  accentBlue: {
+    bg: '#007AFF',
+    textColor: '#FFFFFF',
+    metaColor: 'rgba(255,255,255,0.85)',
+  },
+  black: {
+    bg: '#1C1C1C',
+    textColor: '#FFFFFF',
+    metaColor: 'rgba(255,255,255,0.75)',
+  },
+  errorRed: {
+    bg: '#FF3B30',
+    textColor: '#FFFFFF',
     metaColor: 'rgba(255,255,255,0.9)',
-    iconBg: 'linear-gradient(180deg, #00A99D, #78C4E6)',
-  },
-  green: {
-    bg: '#0B1F17',
-    titleColor: '#E8FFF5',
-    msgColor: '#E8FFF5',
-    metaColor: 'rgba(232,255,245,0.8)',
-    iconBg: 'linear-gradient(180deg, #0EA36E, #00A99D)',
   }
 };
 
-const ICON_COMPONENTS = [MessageCircle, Zap, Bell, Brain, MessageSquare, Smartphone];
+// Icon configurations with specific colors
+const ICON_OPTIONS = [
+  { icon: Zap, color: '#007AFF', bg: '#FFFFFF', label: '⚡' }, // Lightning - blue on white
+  { icon: Bell, color: '#FF3B30', bg: '#F1F1F4', label: '🔋' }, // Low battery style - red on grey
+  { icon: MessageCircle, color: '#FFFFFF', bg: '#34C759', label: '📞' }, // Call - white on green
+  { icon: Brain, color: '#1C1C1C', bg: '#FFCC00', label: '😟' }, // Emoji - dark on yellow
+];
 
 export default function FloatingPhrase({ 
   phrase, 
@@ -69,45 +79,47 @@ export default function FloatingPhrase({
     const el = containerRef.current;
     if (!el) return;
 
-    // Get random rotation for this notification
-    const rotation = gsap.utils.random(-2, 3);
+    // NIGHTMARE MODE: Random positioning across entire screen
+    const randomX = gsap.utils.random(5, 95);
+    const randomY = gsap.utils.random(10, 85);
+    const rotation = gsap.utils.random(-8, 8);
     
-    // SIMPLE ENTRANCE: slide up + fade in (NO typewriting, NO orbital movements)
+    // Position absolutely and randomly
     gsap.set(el, { 
+      position: 'absolute',
+      left: `${randomX}%`,
+      top: `${randomY}%`,
+      transform: `translate(-50%, -50%)`,
       opacity: 0, 
-      y: 12, 
-      scale: 0.995, 
+      scale: 0.8, 
       rotate: rotation,
       transformOrigin: "50% 50%" 
     });
     
     const tl = gsap.timeline();
     
-    // Entrada suave - NOT brutal animation
+    // Dramatic entrance
     tl.to(el, { 
       opacity: 1, 
-      y: 0, 
       scale: 1, 
-      duration: 0.42, 
-      ease: "cubic-bezier(.22,.61,.36,1)" 
+      duration: 0.6, 
+      ease: "back.out(1.4)" 
     });
     
-    // Hold readable - let people read the message
-    tl.to(el, { duration: 1.2 });
-    
-    // IDLE: subtle floating - only 6px up/down, very gentle
+    // Chaotic floating - bigger movements
     tl.to(el, { 
-      y: "+=6", 
-      duration: 3.2, 
+      y: `+=${gsap.utils.random(-20, 20)}`,
+      x: `+=${gsap.utils.random(-15, 15)}`,
+      duration: 4, 
       yoyo: true, 
       repeat: -1, 
       ease: "sine.inOut" 
-    }, "<");
+    }, "+=0.5");
     
-    // Very subtle rotation drift
+    // More dramatic rotation
     tl.to(el, { 
-      rotate: `+=${gsap.utils.random(-0.6, 0.6)}`, 
-      duration: 6, 
+      rotate: `+=${gsap.utils.random(-4, 4)}`, 
+      duration: 5, 
       yoyo: true, 
       repeat: -1, 
       ease: "sine.inOut" 
@@ -116,24 +128,21 @@ export default function FloatingPhrase({
     masterTimeline.current = tl;
   };
 
-  // Choose variant based on phrase characteristics
-  const getVariant = () => {
-    const text = phrase.text.toLowerCase();
-    // Positive/affirmative phrases get blue
-    if (text.includes('lograr') || text.includes('podemos') || text.includes('bueno') || text.includes('vamos')) {
-      return 'blue';
-    }
-    // Chat-like phrases get green occasionally
-    if (Math.random() > 0.8) {
-      return 'green';
-    }
-    // Default to grey
-    return 'grey';
-  };
-
-  const variant = getVariant();
+  // Random variant for chaotic notification storm
+  const variants = ['grey', 'darkBlue', 'accentBlue', 'black', 'errorRed'] as const;
+  const variant = variants[Math.floor(Math.random() * variants.length)];
   const styles = VARIANT_STYLES[variant];
-  const IconComponent = ICON_COMPONENTS[Math.floor(Math.random() * ICON_COMPONENTS.length)];
+  
+  // Random icon (or sometimes none for chaos)
+  const showIcon = Math.random() > 0.3; // 70% chance to show icon
+  const iconConfig = ICON_OPTIONS[Math.floor(Math.random() * ICON_OPTIONS.length)];
+  const IconComponent = iconConfig.icon;
+  
+  // Random shadow depth for layering
+  const useSoftShadow = Math.random() > 0.5;
+  const shadow = useSoftShadow 
+    ? '0 8px 20px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04)' // soft - background noise
+    : '0 20px 50px rgba(0,0,0,0.25), 0 8px 16px rgba(0,0,0,0.15)'; // strong - intrusive foreground
   
   // Generate meta time
   const metas = ['ahora', 'hace 1 min', 'hace 2 min', 'lun 1:21'];
@@ -144,81 +153,72 @@ export default function FloatingPhrase({
       ref={containerRef}
       className="pointer-events-none select-none"
       style={{
-        position: 'relative',
+        position: 'absolute',
         display: 'flex',
-        gap: '12px',
+        gap: showIcon ? '18px' : '0px',
         alignItems: 'flex-start',
-        borderRadius: '18px',
-        padding: '16px 18px',
-        margin: '16px 0',
-        border: '1px solid rgba(15,23,42,0.06)',
-        boxShadow: '0 12px 28px rgba(15,23,42,0.10), 0 3px 8px rgba(15,23,42,0.06)',
+        borderRadius: '16px',
+        padding: '24px 28px',
+        border: 'none',
+        boxShadow: shadow,
         background: styles.bg,
         willChange: 'transform, opacity',
-        maxWidth: '600px',
-        minWidth: '400px',
+        minWidth: '480px',
+        maxWidth: '750px',
+        width: 'auto',
       }}
       data-testid={`floating-phrase-${phrase.id}`}
     >
-      {/* Icon - using lucide-react instead of emoji */}
-      <div 
-        style={{
-          width: '40px',
-          height: '40px',
-          borderRadius: '12px',
-          display: 'grid',
-          placeItems: 'center',
-          flexShrink: 0,
-          background: styles.iconBg,
-          color: '#fff',
-          boxShadow: '0 2px 6px rgba(0,0,0,.08), inset 0 0 0 2px rgba(255,255,255,.75)',
-        }}
-        aria-hidden="true"
-      >
-        <IconComponent size={20} strokeWidth={2} />
-      </div>
+      {/* Icon - random distribution for chaos */}
+      {showIcon && (
+        <div 
+          style={{
+            width: '48px',
+            height: '48px',
+            borderRadius: '50%',
+            display: 'grid',
+            placeItems: 'center',
+            flexShrink: 0,
+            background: iconConfig.bg,
+            color: iconConfig.color,
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+          }}
+          aria-hidden="true"
+        >
+          <IconComponent size={24} strokeWidth={2.5} />
+        </div>
+      )}
       
       {/* Body */}
       <div style={{ flex: 1, minWidth: 0 }}>
+        {/* System label/timestamp - small regular text */}
         <div 
           style={{
             fontFamily: '"Avenir Next", Helvetica, sans-serif',
-            fontWeight: 600,
+            fontWeight: 400,
             fontSize: '14px',
-            lineHeight: 1.3,
-            color: styles.titleColor,
+            lineHeight: 1.4,
+            color: styles.metaColor,
             letterSpacing: '0.2px',
+            marginBottom: '4px',
           }}
         >
-          {variant === 'blue' ? 'Te enviaste un mensaje' : variant === 'green' ? 'Chat' : 'Notificación'}
+          {meta}
         </div>
+        
+        {/* Main intrusive thought - large bold */}
         <div 
           style={{
             fontFamily: '"Avenir Next", Helvetica, sans-serif',
-            fontWeight: 600,
-            fontSize: 'clamp(18px, 2.1vw, 28px)',
-            lineHeight: 1.15,
-            color: styles.msgColor,
-            marginTop: '2px',
+            fontWeight: 700,
+            fontSize: 'clamp(24px, 2.8vw, 28px)',
+            lineHeight: 1.25,
+            color: styles.textColor,
             wordBreak: 'break-word',
           }}
         >
           {phrase.text}
         </div>
-      </div>
-      
-      {/* Meta */}
-      <div 
-        style={{
-          color: styles.metaColor,
-          fontFamily: '"Avenir Next", Helvetica, sans-serif',
-          fontWeight: 400,
-          fontSize: '12px',
-          lineHeight: 1,
-          marginLeft: '8px',
-        }}
-      >
-        {meta}
       </div>
     </div>
   );
