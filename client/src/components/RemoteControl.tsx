@@ -15,6 +15,7 @@ interface RemoteControlProps {
   onPhraseTriggered?: (phraseText: string, sceneId: number) => void;
   onPhotoTrigger?: () => void;
   onVolumeChange?: (volume: number) => void;
+  onScene1Complete?: () => void;
 }
 
 export default function RemoteControl({
@@ -22,7 +23,8 @@ export default function RemoteControl({
   onSceneChange,
   onPhraseTriggered,
   onPhotoTrigger,
-  onVolumeChange
+  onVolumeChange,
+  onScene1Complete
 }: RemoteControlProps) {
   const [isMuted, setIsMuted] = useState(false);
   const [selectedPhrase, setSelectedPhrase] = useState<string | null>(null);
@@ -103,7 +105,15 @@ export default function RemoteControl({
     setLastTriggerTime(now);
     triggerHaptic();
     
-    setScene1Index((scene1Index + 1) % currentScene.phrases.length);
+    const nextIndex = scene1Index + 1;
+    
+    // After completing all 5 phrases, trigger auto mode
+    if (nextIndex >= currentScene.phrases.length) {
+      onScene1Complete?.();
+      setScene1Index(0); // Reset to beginning
+    } else {
+      setScene1Index(nextIndex);
+    }
   };
 
   const handleScene4Next = () => {

@@ -22,9 +22,14 @@ function Home() {
   });
 
   const [phraseTrigger, setPhraseTrigger] = useState<{ phraseText: string; sceneId: number; timestamp: number } | null>(null);
+  const [scene1AutoEnabled, setScene1AutoEnabled] = useState(false);
 
   const handleSceneChange = (sceneId: number) => {
     setInstallationState(prev => ({ ...prev, currentScene: sceneId }));
+    // Reset scene1 auto mode when changing scenes
+    if (sceneId !== 1) {
+      setScene1AutoEnabled(false);
+    }
     console.log('Scene changed to:', sceneId);
   };
 
@@ -35,6 +40,11 @@ function Home() {
       sceneId,
       timestamp: Date.now()
     });
+  };
+
+  const handleScene1Complete = () => {
+    console.log('🎉 Scene 1 manual phrases complete! Starting auto-trigger mode...');
+    setScene1AutoEnabled(true);
   };
 
   const handleVolumeChange = (volume: number) => {
@@ -50,6 +60,7 @@ function Home() {
           onSceneChange={handleSceneChange}
           onPhraseTriggered={handlePhraseTriggered}
           onVolumeChange={handleVolumeChange}
+          onScene1Complete={handleScene1Complete}
         />
       </div>
       <div className="flex-1">
@@ -57,6 +68,7 @@ function Home() {
           installationState={installationState}
           onStateChange={setInstallationState}
           phraseTrigger={phraseTrigger}
+          scene1AutoEnabled={scene1AutoEnabled}
         />
       </div>
     </div>

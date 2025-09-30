@@ -9,6 +9,7 @@ interface StageDisplayProps {
   installationState: InstallationState;
   onStateChange?: (newState: InstallationState) => void;
   phraseTrigger?: { phraseText: string; sceneId: number; timestamp: number } | null;
+  scene1AutoEnabled?: boolean;
 }
 
 // Ghost phrases for background - from mental health campaign
@@ -24,7 +25,7 @@ const GHOST_PHRASES = [
   "me olvido",
 ];
 
-export default function StageDisplay({ installationState, onStateChange, phraseTrigger }: StageDisplayProps) {
+export default function StageDisplay({ installationState, onStateChange, phraseTrigger, scene1AutoEnabled = false }: StageDisplayProps) {
   const [phrases, setPhrases] = useState<PhraseState[]>(installationState.activePhrases);
   const [floatingIcons, setFloatingIcons] = useState<Array<{ id: string }>>([]);
   const [showPhotoMode, setShowPhotoMode] = useState(false);
@@ -157,9 +158,9 @@ export default function StageDisplay({ installationState, onStateChange, phraseT
     }
   }, [installationState.currentScene]);
 
-  // Scene 1: Auto-trigger phrases
+  // Scene 1: Auto-trigger phrases (only AFTER manual 5 are done)
   useEffect(() => {
-    if (installationState.currentScene === 1) {
+    if (installationState.currentScene === 1 && scene1AutoEnabled) {
       const scene1Interval = setInterval(() => {
         const randomPhrase = SCENE1_AUTO_PHRASES[Math.floor(Math.random() * SCENE1_AUTO_PHRASES.length)];
         triggerPhrase(randomPhrase, 1);
@@ -167,7 +168,7 @@ export default function StageDisplay({ installationState, onStateChange, phraseT
 
       return () => clearInterval(scene1Interval);
     }
-  }, [installationState.currentScene, triggerPhrase]);
+  }, [installationState.currentScene, scene1AutoEnabled, triggerPhrase]);
 
   // SCENE ORCHESTRATION - Simplified for manual control
 
