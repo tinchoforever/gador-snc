@@ -226,6 +226,46 @@ export default function FloatingPhrase({
   ];
   const meta = metas[phraseHash % metas.length];
 
+  // TAMAÑOS VARIADOS - 3 tallas diferentes
+  const sizeVariant = phraseHash % 3;
+  const sizes = {
+    small: {
+      padding: '18px 24px',
+      gap: '14px',
+      iconSize: 45,
+      iconContainerSize: 45,
+      metaFontSize: 'clamp(12px, 1.5vw, 15px)',
+      textFontSize: 'clamp(20px, 2.5vw, 26px)',
+      minWidth: 'min(400px, 75vw)',
+      maxWidth: 'min(650px, 85vw)',
+      borderRadius: '16px',
+    },
+    medium: {
+      padding: '24px 30px',
+      gap: '18px',
+      iconSize: 50,
+      iconContainerSize: 55,
+      metaFontSize: 'clamp(14px, 1.8vw, 18px)',
+      textFontSize: 'clamp(24px, 3vw, 30px)',
+      minWidth: 'min(500px, 80vw)',
+      maxWidth: 'min(750px, 87vw)',
+      borderRadius: '18px',
+    },
+    large: {
+      padding: '32px 40px',
+      gap: '22px',
+      iconSize: 55,
+      iconContainerSize: 65,
+      metaFontSize: 'clamp(16px, 2vw, 20px)',
+      textFontSize: 'clamp(28px, 3.5vw, 38px)',
+      minWidth: 'min(600px, 85vw)',
+      maxWidth: 'min(900px, 92vw)',
+      borderRadius: '22px',
+    }
+  };
+  
+  const currentSize = sizeVariant === 0 ? sizes.small : sizeVariant === 1 ? sizes.medium : sizes.large;
+
   return (
     <div 
       ref={containerRef}
@@ -233,27 +273,27 @@ export default function FloatingPhrase({
       style={{
         position: 'absolute',
         display: 'flex',
-        gap: showIcon ? '20px' : '0px',
+        gap: showIcon ? currentSize.gap : '0px',
         alignItems: 'flex-start',
-        borderRadius: '20px',
-        padding: '28px 34px',
-        border: variant === 'standard' ? '1px solid #E5E7EB' : 'none', // Border for white notifications
+        borderRadius: currentSize.borderRadius,
+        padding: currentSize.padding,
+        border: variant === 'standard' ? '1px solid #E5E7EB' : 'none',
         boxShadow: shadow,
         backgroundColor: styles.bg,
-        opacity: styles.opacity, // Base opacity - GSAP will override during animations
+        opacity: styles.opacity,
         willChange: 'transform, opacity',
-        minWidth: 'min(600px, 85vw)', // Responsive: never exceed 85% viewport width
-        maxWidth: 'min(900px, 90vw)',
+        minWidth: currentSize.minWidth,
+        maxWidth: currentSize.maxWidth,
         width: 'auto',
       }}
       data-testid={`floating-phrase-${phrase.id}`}
     >
-      {/* Icon - random distribution for chaos */}
+      {/* Icon - tamaño variado */}
       {showIcon && (
         <div 
           style={{
-            width: '60px',
-            height: '60px',
+            width: `${currentSize.iconContainerSize}px`,
+            height: `${currentSize.iconContainerSize}px`,
             borderRadius: '50%',
             display: 'grid',
             placeItems: 'center',
@@ -264,18 +304,18 @@ export default function FloatingPhrase({
           }}
           aria-hidden="true"
         >
-          <IconComponent size={30} strokeWidth={2.5} />
+          <IconComponent size={currentSize.iconSize} strokeWidth={2.5} />
         </div>
       )}
       
       {/* Body */}
       <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
-        {/* System label/timestamp - small regular text */}
+        {/* System label/timestamp - tamaño variado */}
         <div 
           style={{
             fontFamily: '"Avenir Next", Helvetica, sans-serif',
             fontWeight: 400,
-            fontSize: 'clamp(14px, 1.8vw, 18px)',
+            fontSize: currentSize.metaFontSize,
             lineHeight: 1.4,
             color: styles.metaColor,
             letterSpacing: '0.2px',
@@ -285,12 +325,12 @@ export default function FloatingPhrase({
           {meta}
         </div>
         
-        {/* Main intrusive thought - large bold */}
+        {/* Main intrusive thought - tamaño variado */}
         <div 
           style={{
             fontFamily: '"Avenir Next", Helvetica, sans-serif',
             fontWeight: 700,
-            fontSize: 'clamp(26px, 3.2vw, 34px)',
+            fontSize: currentSize.textFontSize,
             lineHeight: 1.25,
             color: styles.textColor,
             wordBreak: 'break-word',
