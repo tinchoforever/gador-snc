@@ -17,31 +17,49 @@ interface FloatingPhraseProps {
  * Simple entrance animations - NO crazy orbital effects
  */
 
+// COLORES OFICIALES DE LA CAMPAÑA GADOR
 const VARIANT_STYLES = {
-  grey: {
-    bg: '#F1F1F4',
-    textColor: '#1C1C1C',
-    metaColor: '#6E6E73',
+  standard: {
+    bg: '#FFFFFF',
+    textColor: '#000000',
+    metaColor: '#666666',
+    opacity: 1,
   },
-  darkBlue: {
-    bg: '#3B4D5E',
+  sent: {
+    bg: '#3B82F6',
     textColor: '#FFFFFF',
     metaColor: 'rgba(255,255,255,0.8)',
+    opacity: 1,
   },
-  accentBlue: {
-    bg: '#007AFF',
-    textColor: '#FFFFFF',
-    metaColor: 'rgba(255,255,255,0.85)',
+  received: {
+    bg: '#D1FAE5',
+    textColor: '#000000',
+    metaColor: '#333333',
+    opacity: 1,
   },
-  black: {
-    bg: '#1C1C1C',
+  alert: {
+    bg: '#F8D7DA',
+    textColor: '#721C24',
+    metaColor: '#721C24',
+    opacity: 1,
+  },
+  reminder: {
+    bg: '#000000',
     textColor: '#FFFFFF',
     metaColor: 'rgba(255,255,255,0.75)',
+    opacity: 0.8,
   },
-  errorRed: {
-    bg: '#FF3B30',
+  mention: {
+    bg: '#606368',
     textColor: '#FFFFFF',
-    metaColor: 'rgba(255,255,255,0.9)',
+    metaColor: 'rgba(255,255,255,0.8)',
+    opacity: 0.9,
+  },
+  tag: {
+    bg: '#E5E7EB',
+    textColor: '#000000',
+    metaColor: '#555555',
+    opacity: 1,
   }
 };
 
@@ -93,6 +111,9 @@ export default function FloatingPhrase({
     const randomY = gsap.utils.random(15, 85); 
     const rotation = gsap.utils.random(-15, 15); // MÁS VARIACIÓN EN INCLINACIÓN
     
+    // Get the target opacity from data attribute or default to 1
+    const targetOpacity = parseFloat(el.style.opacity || '1');
+    
     // Position with percentages and translate to keep within bounds
     gsap.set(el, { 
       position: 'absolute',
@@ -119,7 +140,7 @@ export default function FloatingPhrase({
     const delay = (stackIndex || 0) * 0.15; // Menos delay entre notificaciones
     
     tl.to(el, { 
-      opacity: 1, 
+      opacity: targetOpacity, // Fade to the variant's target opacity
       scale: 1, 
       duration: 0.3, // MÁS RÁPIDO
       ease: "back.out(1.7)", // Más bounce
@@ -168,7 +189,7 @@ export default function FloatingPhrase({
   };
 
   // TRULY RANDOM variant based on unique phrase ID (not text)
-  const variants = ['grey', 'darkBlue', 'accentBlue', 'black', 'errorRed'] as const;
+  const variants = ['standard', 'sent', 'received', 'alert', 'reminder', 'mention', 'tag'] as const;
   const phraseHash = getHash(phrase.id); // Use ID instead of text for randomness
   const variant = variants[phraseHash % variants.length];
   const styles = VARIANT_STYLES[variant];
@@ -216,9 +237,10 @@ export default function FloatingPhrase({
         alignItems: 'flex-start',
         borderRadius: '20px',
         padding: '28px 34px',
-        border: 'none',
+        border: variant === 'standard' ? '1px solid #E5E7EB' : 'none', // Border for white notifications
         boxShadow: shadow,
         backgroundColor: styles.bg,
+        opacity: styles.opacity, // Base opacity - GSAP will override during animations
         willChange: 'transform, opacity',
         minWidth: 'min(600px, 85vw)', // Responsive: never exceed 85% viewport width
         maxWidth: 'min(900px, 90vw)',
