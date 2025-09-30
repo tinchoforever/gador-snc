@@ -39,8 +39,8 @@ const VARIANT_STYLES = {
   },
   darkGray: {
     bg: '#434f5d',
-    textColor: '#79797a',
-    metaColor: '#79797a',
+    textColor: '#a0a0a0',
+    metaColor: '#909090',
     opacity: 1,
   }
 };
