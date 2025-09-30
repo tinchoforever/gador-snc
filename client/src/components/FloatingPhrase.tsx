@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { PhraseState } from '@shared/schema';
-import { MessageCircle, Zap, Bell, Brain, MessageSquare, Smartphone } from 'lucide-react';
+import { MessageCircle, Zap, Bell, Brain, MessageSquare, Smartphone, Mail, Phone, Calendar, Camera, Music, Heart, AlertCircle, BatteryLow, Wifi, Volume2 } from 'lucide-react';
 
 interface FloatingPhraseProps {
   phrase: PhraseState;
@@ -45,12 +45,20 @@ const VARIANT_STYLES = {
   }
 };
 
-// Icon configurations with specific colors
+// Icon configurations with specific colors - VARIED APPS
 const ICON_OPTIONS = [
-  { icon: Zap, color: '#007AFF', bg: '#FFFFFF', label: '⚡' }, // Lightning - blue on white
-  { icon: Bell, color: '#FF3B30', bg: '#F1F1F4', label: '🔋' }, // Low battery style - red on grey
-  { icon: MessageCircle, color: '#FFFFFF', bg: '#34C759', label: '📞' }, // Call - white on green
-  { icon: Brain, color: '#1C1C1C', bg: '#FFCC00', label: '😟' }, // Emoji - dark on yellow
+  { icon: MessageCircle, color: '#FFFFFF', bg: '#25D366', label: 'WhatsApp' }, // WhatsApp green
+  { icon: Mail, color: '#FFFFFF', bg: '#EA4335', label: 'Gmail' }, // Gmail red
+  { icon: Camera, color: '#FFFFFF', bg: '#E1306C', label: 'Instagram' }, // Instagram pink
+  { icon: Phone, color: '#FFFFFF', bg: '#007AFF', label: 'Teléfono' }, // Phone blue
+  { icon: MessageSquare, color: '#1C1C1C', bg: '#FFCC00', label: 'Mensaje' }, // SMS yellow
+  { icon: Calendar, color: '#FFFFFF', bg: '#FF3B30', label: 'Calendario' }, // Calendar red
+  { icon: Music, color: '#FFFFFF', bg: '#1DB954', label: 'Spotify' }, // Spotify green
+  { icon: Bell, color: '#FFFFFF', bg: '#5856D6', label: 'Notificación' }, // Purple notification
+  { icon: Heart, color: '#FFFFFF', bg: '#FF2D55', label: 'Salud' }, // Health pink
+  { icon: AlertCircle, color: '#1C1C1C', bg: '#FFCC00', label: 'Alerta' }, // Alert yellow
+  { icon: BatteryLow, color: '#FFFFFF', bg: '#FF3B30', label: 'Batería' }, // Battery red
+  { icon: Wifi, color: '#FFFFFF', bg: '#007AFF', label: 'WiFi' }, // WiFi blue
 ];
 
 export default function FloatingPhrase({ 
@@ -81,9 +89,9 @@ export default function FloatingPhrase({
 
     // CHAOTIC POSITIONING: Allow overlap, tight stacking, claustrophobia
     // Wider range but with percentage-based positioning to keep content visible
-    const randomX = gsap.utils.random(20, 80); 
-    const randomY = gsap.utils.random(20, 80); 
-    const rotation = gsap.utils.random(-8, 8);
+    const randomX = gsap.utils.random(15, 85); 
+    const randomY = gsap.utils.random(15, 85); 
+    const rotation = gsap.utils.random(-15, 15); // MÁS VARIACIÓN EN INCLINACIÓN
     
     // Position with percentages and translate to keep within bounds
     gsap.set(el, { 
@@ -92,11 +100,10 @@ export default function FloatingPhrase({
       top: `${randomY}%`,
       transform: `translate(-50%, -50%)`,
       opacity: 0, 
-      scale: 0.85, 
+      scale: 0.7, // Más pequeña al inicio para entrada más dramática
       rotate: rotation,
       transformOrigin: "50% 50%",
-      // Ensure it stays within viewport
-      maxWidth: '40vw', // Constrain to 40% of viewport width
+      maxWidth: '40vw',
     });
     
     const tl = gsap.timeline({
@@ -108,43 +115,43 @@ export default function FloatingPhrase({
       }
     });
     
-    // SEQUENTIAL entrance with stagger based on stackIndex
-    const delay = (stackIndex || 0) * 0.3; // Stagger by 0.3s per notification
+    // ENTRADA MÁS RÁPIDA Y DINÁMICA
+    const delay = (stackIndex || 0) * 0.15; // Menos delay entre notificaciones
     
     tl.to(el, { 
       opacity: 1, 
       scale: 1, 
-      duration: 0.5, 
-      ease: "back.out(1.2)",
+      duration: 0.3, // MÁS RÁPIDO
+      ease: "back.out(1.7)", // Más bounce
       delay: delay
     });
     
-    // Subtle floating - minimal to maintain chaos/claustrophobia
+    // Floating más dinámico y rápido
     tl.to(el, { 
-      y: `+=${gsap.utils.random(-8, 8)}`,
-      x: `+=${gsap.utils.random(-6, 6)}`,
-      duration: 3.5, 
+      y: `+=${gsap.utils.random(-12, 12)}`,
+      x: `+=${gsap.utils.random(-10, 10)}`,
+      duration: 2, // MÁS RÁPIDO
+      yoyo: true, 
+      repeat: 4, // Más repeticiones
+      ease: "sine.inOut" 
+    }, "+=0.1");
+    
+    // Rotación más pronunciada y variada
+    tl.to(el, { 
+      rotate: `+=${gsap.utils.random(-8, 8)}`, // MÁS ROTACIÓN
+      duration: 2.5, 
       yoyo: true, 
       repeat: 3,
       ease: "sine.inOut" 
-    }, "+=0.3");
-    
-    // Subtle rotation drift
-    tl.to(el, { 
-      rotate: `+=${gsap.utils.random(-3, 3)}`, 
-      duration: 4.5, 
-      yoyo: true, 
-      repeat: 2,
-      ease: "sine.inOut" 
     }, "<");
 
-    // Exit animation - fade out after life cycle
+    // Exit animation - más rápida
     tl.to(el, {
       opacity: 0,
-      scale: 0.9,
-      duration: 0.8,
+      scale: 0.85,
+      duration: 0.5, // MÁS RÁPIDO
       ease: "power2.in"
-    }, "+=2");
+    }, "+=1");
 
     masterTimeline.current = tl;
   };
@@ -177,8 +184,25 @@ export default function FloatingPhrase({
     ? '0 8px 20px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04)' // soft - background noise
     : '0 20px 50px rgba(0,0,0,0.25), 0 8px 16px rgba(0,0,0,0.15)'; // strong - intrusive foreground
   
-  // Generate meta time
-  const metas = ['ahora', 'hace 1 min', 'hace 2 min', 'lun 1:21'];
+  // Generate meta time - MÁS VARIEDAD
+  const metas = [
+    'ahora', 
+    'hace 1 min', 
+    'hace 2 min', 
+    'hace 5 min',
+    'hace 15 min',
+    'lun 9:21', 
+    'mar 14:33',
+    'mié 11:05',
+    'jue 16:42',
+    'vie 8:17',
+    'sáb 13:29',
+    'dom 10:44',
+    '7:30',
+    '12:15',
+    '18:22',
+    '21:08'
+  ];
   const meta = metas[phraseHash % metas.length];
 
   return (

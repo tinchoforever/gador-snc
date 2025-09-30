@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import FloatingPhrase from './FloatingPhrase';
+import FloatingIcon from './FloatingIcon';
 import PhotoBooth from './PhotoBooth';
 import { InstallationState, PhraseState, SCENES } from '@shared/schema';
 import { gsap } from 'gsap';
@@ -24,6 +25,7 @@ const GHOST_PHRASES = [
 
 export default function StageDisplay({ installationState, onStateChange }: StageDisplayProps) {
   const [phrases, setPhrases] = useState<PhraseState[]>(installationState.activePhrases);
+  const [floatingIcons, setFloatingIcons] = useState<Array<{ id: string }>>([]);
   const [showPhotoMode, setShowPhotoMode] = useState(false);
   const ghostContainerRef = useRef<HTMLDivElement>(null);
   
@@ -137,12 +139,12 @@ export default function StageDisplay({ installationState, onStateChange }: Stage
     autonomousIntervals: new Map<number, number>()
   });
 
-  // Scene 1: Autonomous cadence
+  // Scene 1: Autonomous cadence - MÁS RÁPIDO Y DINÁMICO
   useEffect(() => {
     if (installationState.currentScene === 1) {
       const scene1Interval = setInterval(() => {
         const now = Date.now();
-        if (now - sceneState.scene1Cooldown > 4000) {
+        if (now - sceneState.scene1Cooldown > 2000) { // Reducido de 4000 a 2000
           const currentScene = SCENES.find(s => s.id === 1);
           if (currentScene) {
             const randomPhrase = currentScene.phrases[Math.floor(Math.random() * currentScene.phrases.length)];
@@ -150,11 +152,31 @@ export default function StageDisplay({ installationState, onStateChange }: Stage
             setSceneState(prev => ({ ...prev, scene1Cooldown: now }));
           }
         }
-      }, Math.random() * 4000 + 4000);
+      }, Math.random() * 2000 + 1500); // Más rápido: 1.5-3.5 segundos
 
       return () => clearInterval(scene1Interval);
     }
   }, [installationState.currentScene, sceneState.scene1Cooldown]);
+
+  // Íconos flotantes independientes - Scene 1
+  useEffect(() => {
+    if (installationState.currentScene === 1) {
+      const iconInterval = setInterval(() => {
+        // 50% chance de generar un ícono flotante
+        if (Math.random() > 0.5) {
+          const newIcon = {
+            id: `icon-${Date.now()}-${Math.random()}`
+          };
+          setFloatingIcons(prev => [...prev, newIcon]);
+        }
+      }, Math.random() * 3000 + 2000); // Cada 2-5 segundos
+
+      return () => clearInterval(iconInterval);
+    } else {
+      // Limpiar íconos cuando cambia de escena
+      setFloatingIcons([]);
+    }
+  }, [installationState.currentScene]);
 
   // Scene 3: Affirmations loop
   useEffect(() => {
@@ -270,6 +292,26 @@ export default function StageDisplay({ installationState, onStateChange }: Stage
             stackIndex={index}
             onAnimationComplete={() => {
               setPhrases(prev => prev.filter(p => p.id !== phrase.id));
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Íconos flotantes independientes */}
+      <div 
+        id="floating-icons"
+        className="absolute inset-0 pointer-events-none"
+        style={{ 
+          zIndex: 5,
+        }}
+        data-testid="floating-icons"
+      >
+        {floatingIcons.map((icon) => (
+          <FloatingIcon
+            key={icon.id}
+            id={icon.id}
+            onAnimationComplete={() => {
+              setFloatingIcons(prev => prev.filter(i => i.id !== icon.id));
             }}
           />
         ))}
