@@ -128,37 +128,31 @@ export default function FloatingPhrase({
     tl.to(el, { 
       opacity: targetOpacity, // Fade to the variant's target opacity
       scale: 1, 
-      duration: 0.3, // MÁS RÁPIDO
+      duration: 0.3,
       ease: "back.out(1.7)", // Más bounce
       delay: delay
     });
     
-    // Floating más dinámico y rápido - MENOS REPETICIONES
+    // Floating infinito - NUNCA TERMINA
     tl.to(el, { 
       y: `+=${gsap.utils.random(-12, 12)}`,
       x: `+=${gsap.utils.random(-10, 10)}`,
-      duration: 1.5,
+      duration: 2,
       yoyo: true, 
-      repeat: 1, // Solo 1 repetición = 3 segundos total
+      repeat: -1, // INFINITO - nunca termina
       ease: "sine.inOut" 
     }, "+=0.1");
     
-    // Rotación más pronunciada y variada - MENOS REPETICIONES
+    // Rotación infinita
     tl.to(el, { 
-      rotate: `+=${gsap.utils.random(-8, 8)}`, // MÁS ROTACIÓN
-      duration: 1.5, 
+      rotate: `+=${gsap.utils.random(-8, 8)}`,
+      duration: 2.5, 
       yoyo: true, 
-      repeat: 1, // Solo 1 repetición
+      repeat: -1, // INFINITO - nunca termina
       ease: "sine.inOut" 
     }, "<");
 
-    // Exit animation - más rápida
-    tl.to(el, {
-      opacity: 0,
-      scale: 0.85,
-      duration: 0.4,
-      ease: "power2.in"
-    }, "+=0.3"); // Menos pausa antes de salir
+    // NO EXIT ANIMATION - las notificaciones NUNCA desaparecen
 
     masterTimeline.current = tl;
   };
