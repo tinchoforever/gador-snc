@@ -133,22 +133,22 @@ export default function FloatingPhrase({
       delay: delay
     });
     
-    // Floating más dinámico y rápido
+    // Floating más dinámico y rápido - MENOS REPETICIONES
     tl.to(el, { 
       y: `+=${gsap.utils.random(-12, 12)}`,
       x: `+=${gsap.utils.random(-10, 10)}`,
-      duration: 2, // MÁS RÁPIDO
+      duration: 1.5,
       yoyo: true, 
-      repeat: 4, // Más repeticiones
+      repeat: 1, // Solo 1 repetición = 3 segundos total
       ease: "sine.inOut" 
     }, "+=0.1");
     
-    // Rotación más pronunciada y variada
+    // Rotación más pronunciada y variada - MENOS REPETICIONES
     tl.to(el, { 
       rotate: `+=${gsap.utils.random(-8, 8)}`, // MÁS ROTACIÓN
-      duration: 2.5, 
+      duration: 1.5, 
       yoyo: true, 
-      repeat: 3,
+      repeat: 1, // Solo 1 repetición
       ease: "sine.inOut" 
     }, "<");
 
@@ -156,9 +156,9 @@ export default function FloatingPhrase({
     tl.to(el, {
       opacity: 0,
       scale: 0.85,
-      duration: 0.5, // MÁS RÁPIDO
+      duration: 0.4,
       ease: "power2.in"
-    }, "+=1");
+    }, "+=0.3"); // Menos pausa antes de salir
 
     masterTimeline.current = tl;
   };
