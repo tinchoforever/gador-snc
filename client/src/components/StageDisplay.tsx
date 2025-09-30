@@ -43,16 +43,10 @@ export default function StageDisplay({ installationState, onStateChange, phraseT
   }, []);
 
   useEffect(() => {
-    setPhrases(installationState.activePhrases);
-    
     // Check if we're in photo mode
     const currentScene = SCENES.find(s => s.id === installationState.currentScene);
     setShowPhotoMode(currentScene?.name === 'Photo Booth');
-    
-    // Clear phrases on scene change
-    setPhrases([]);
-    console.log(`🔄 Scene changed to ${installationState.currentScene}, cleared all phrases`);
-  }, [installationState]);
+  }, [installationState.currentScene]);
 
   // Background ghost phrases removed per user request
 
@@ -129,6 +123,32 @@ export default function StageDisplay({ installationState, onStateChange, phraseT
     }
   }, [phraseTrigger, triggerPhrase]);
 
+  // Floating icons for Scene 1
+  useEffect(() => {
+    if (installationState.currentScene === 1) {
+      const spawnIcon = () => {
+        const newIcon = {
+          id: `icon-${Date.now()}-${Math.random()}`
+        };
+        setFloatingIcons(prev => [...prev, newIcon]);
+      };
+
+      spawnIcon();
+      setTimeout(() => spawnIcon(), 500);
+      setTimeout(() => spawnIcon(), 1000);
+
+      const iconInterval = setInterval(() => {
+        spawnIcon();
+      }, 2500);
+
+      return () => {
+        clearInterval(iconInterval);
+      };
+    } else {
+      setFloatingIcons([]);
+    }
+  }, [installationState.currentScene]);
+
   // SCENE ORCHESTRATION - Simplified for manual control
 
   // Show ALL notifications - they never leave
@@ -162,7 +182,7 @@ export default function StageDisplay({ installationState, onStateChange, phraseT
             entryStyle={(phrase as any).entry || 'focus'}
             stackIndex={index}
             onAnimationComplete={() => {
-              setPhrases(prev => prev.filter(p => p.id !== phrase.id));
+              // Phrases stay forever - never remove
             }}
           />
         ))}
