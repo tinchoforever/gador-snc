@@ -48,30 +48,28 @@ export type InstallationState = z.infer<typeof installationStateSchema>;
 export const SCENES: Scene[] = [
   {
     id: 1,
-    name: "Chaotic Thoughts",
-    description: "Random anxious thoughts appearing automatically",
+    name: "Opening Thoughts",
+    description: "First 5 phrases - sequential remote trigger",
     phrases: [
       "¿Y si me olvido de lo que tengo que decir?",
       "Capaz no es suficiente lo que preparé...",
       "¿Desenchufé la planchita de pelo?",
       "¿Cómo hago para subirlos a todos al barco de Sistema Nervioso Central?",
-      "¿Por qué no me habré puesto zapatos más cómodos?",
-      "Los chicos estarán haciendo la tarea o viendo YouTube?",
-      "Hoy la misión es clara: motivar, inspirar y sumar confianza.",
-      "¿Traje el cargador del celu? ¿Necesitaré adaptador?",
-      "Respirá profundo: convención, allá vamos.",
-      "Último repaso mental: todo bajo control.",
-      "Ojalá que la energía positiva sea contagiosa.",
-      "¿Estará mi perfume en el freeshop?",
-      "Tengo que comprar garotos para todos en la oficina.",
-      "Preparada, enfocada y con toda la energía lista."
+      "¿Por qué no me habré puesto zapatos más cómodos?"
     ],
     isActive: false,
   },
   {
     id: 2,
-    name: "Magic Microphone",
-    description: "Manual trigger phrases one by one",
+    name: "Start Scene",
+    description: "Start button to begin",
+    phrases: [],
+    isActive: false,
+  },
+  {
+    id: 3,
+    name: "Scene 3",
+    description: "3 individual phrase buttons",
     phrases: [
       "Espero que Rocío no me pregunte nada difícil",
       "Necesito ese micrófono… ¿estará en Mercado Libre?",
@@ -80,33 +78,14 @@ export const SCENES: Scene[] = [
     isActive: false,
   },
   {
-    id: 3,
-    name: "Collective Energy",
-    description: "Positive affirmations circulating",
-    phrases: [
-      "¡Lo vamos a lograr!",
-      "¡Sí, juntos podemos!",
-      "¡Qué bueno estar acá con todos!",
-      "¡Vamos con todo!"
-    ],
-    isActive: false,
-  },
-  {
     id: 4,
-    name: "Photo Booth",
-    description: "Camera countdown and snapshot",
-    phrases: [],
-    isActive: false,
-  },
-  {
-    id: 5,
-    name: "Closing Thoughtscape",
-    description: "Final crescendo with all phrases orbiting",
+    name: "Closing Scene",
+    description: "4 closing phrases - sequential trigger",
     phrases: [
+      "¡Sí! Juntos podemos, ¡vamos con todo!",
+      "¿Nos sacamos una foto todos juntos?",
       "¡Lo vamos a lograr!",
-      "¡Sí, juntos podemos!",
-      "¡Qué bueno estar acá con todos!",
-      "¡Vamos con todo!"
+      "¡Qué bueno estar acá con todos!"
     ],
     isActive: false,
   },

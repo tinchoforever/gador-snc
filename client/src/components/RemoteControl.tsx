@@ -7,7 +7,7 @@ import { Progress } from '@/components/ui/progress';
 import SceneSelector from './SceneSelector';
 import ConnectionStatus from './ConnectionStatus';
 import { InstallationState, SCENES } from '@shared/schema';
-import { Volume2, VolumeX, Play, Square, Camera, Zap, Timer, Activity } from 'lucide-react';
+import { Volume2, VolumeX, Play, Square } from 'lucide-react';
 
 interface RemoteControlProps {
   installationState: InstallationState;
@@ -29,11 +29,18 @@ export default function RemoteControl({
   const [lastTriggerTime, setLastTriggerTime] = useState(0);
   const [cooldownProgress, setCooldownProgress] = useState(0);
   const [volume, setVolume] = useState(installationState.volume * 100);
-  const [sceneActivity, setSceneActivity] = useState<Record<number, number>>({});
   const [hapticFeedback, setHapticFeedback] = useState(false);
+  const [scene1Index, setScene1Index] = useState(0);
+  const [scene4Index, setScene4Index] = useState(0);
 
   // Cooldown management (2 seconds for manual triggers)
   const COOLDOWN_DURATION = 2000;
+  
+  // Reset sequential indices when scene changes
+  useEffect(() => {
+    setScene1Index(0);
+    setScene4Index(0);
+  }, [installationState.currentScene]);
   
   useEffect(() => {
     if (lastTriggerTime > 0) {
@@ -52,23 +59,6 @@ export default function RemoteControl({
     }
   }, [lastTriggerTime]);
 
-  // Simulate real-time scene activity indicators
-  useEffect(() => {
-    const activityInterval = setInterval(() => {
-      if (installationState.currentScene === 1) {
-        // Scene 1: Show autonomous activity
-        setSceneActivity(prev => ({ ...prev, 1: Date.now() }));
-      } else if (installationState.currentScene === 3) {
-        // Scene 3: Show loop activity  
-        setSceneActivity(prev => ({ ...prev, 3: Date.now() }));
-      } else if (installationState.currentScene === 5) {
-        // Scene 5: Show crescendo activity
-        setSceneActivity(prev => ({ ...prev, 5: Date.now() }));
-      }
-    }, 1000);
-
-    return () => clearInterval(activityInterval);
-  }, [installationState.currentScene]);
 
   // Haptic feedback simulation (for mobile devices)
   const triggerHaptic = () => {
@@ -84,20 +74,66 @@ export default function RemoteControl({
   const handlePhraseSelect = (phrase: string) => {
     const now = Date.now();
     
-    // Check cooldown for Scene 2 manual triggers
-    if (installationState.currentScene === 2 && now - lastTriggerTime < COOLDOWN_DURATION) {
-      triggerHaptic(); // Haptic feedback for blocked action
+    // Check cooldown
+    if (now - lastTriggerTime < COOLDOWN_DURATION) {
+      triggerHaptic();
       return;
     }
     
     setSelectedPhrase(phrase);
     setLastTriggerTime(now);
     onPhraseTriggered?.(phrase, installationState.currentScene);
-    triggerHaptic(); // Success haptic feedback
+    triggerHaptic();
     console.log('🎤 Phrase triggered from remote:', phrase);
     
-    // Clear selection after a brief moment
     setTimeout(() => setSelectedPhrase(null), 1200);
+  };
+
+  const handleScene1Next = () => {
+    if (!currentScene || currentScene.phrases.length === 0) return;
+    
+    const now = Date.now();
+    if (now - lastTriggerTime < COOLDOWN_DURATION) {
+      triggerHaptic();
+      return;
+    }
+    
+    const phrase = currentScene.phrases[scene1Index];
+    onPhraseTriggered?.(phrase, 1);
+    setLastTriggerTime(now);
+    triggerHaptic();
+    
+    setScene1Index((scene1Index + 1) % currentScene.phrases.length);
+  };
+
+  const handleScene4Next = () => {
+    if (!currentScene || currentScene.phrases.length === 0) return;
+    
+    const now = Date.now();
+    if (now - lastTriggerTime < COOLDOWN_DURATION) {
+      triggerHaptic();
+      return;
+    }
+    
+    const phrase = currentScene.phrases[scene4Index];
+    onPhraseTriggered?.(phrase, 4);
+    setLastTriggerTime(now);
+    triggerHaptic();
+    
+    setScene4Index((scene4Index + 1) % currentScene.phrases.length);
+  };
+
+  const handleScene2Start = () => {
+    const now = Date.now();
+    if (now - lastTriggerTime < COOLDOWN_DURATION) {
+      triggerHaptic();
+      return;
+    }
+    
+    triggerHaptic();
+    setLastTriggerTime(now);
+    onSceneChange?.(3);
+    console.log('Scene 2 start button clicked - transitioning to Scene 3');
   };
 
   const handleVolumeChange = (newVolume: number[]) => {
@@ -161,31 +197,16 @@ export default function RemoteControl({
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-teal-300 text-lg">{currentScene.name}</CardTitle>
-                <div className="flex items-center gap-2">
-                  {/* Real-time activity indicator */}
-                  {sceneActivity[currentScene.id] && Date.now() - sceneActivity[currentScene.id] < 2000 && (
-                    <div className="flex items-center gap-1">
-                      <Activity className="w-3 h-3 text-green-400 animate-pulse" />
-                      <span className="text-xs text-green-400">LIVE</span>
-                    </div>
-                  )}
-                  <Badge variant="outline" className="border-teal-400 text-teal-300">
-                    Active
-                  </Badge>
-                </div>
+                <Badge variant="outline" className="border-teal-400 text-teal-300">
+                  Active
+                </Badge>
               </div>
               <p className="text-blue-200 text-sm opacity-80">
                 {currentScene.description}
               </p>
               
               {/* Scene-specific status */}
-              {currentScene.id === 1 && (
-                <div className="flex items-center gap-2 mt-2">
-                  <Timer className="w-4 h-4 text-purple-400" />
-                  <span className="text-xs text-purple-300">Autonomous mode • 4-8s intervals</span>
-                </div>
-              )}
-              {currentScene.id === 2 && cooldownProgress > 0 && (
+              {cooldownProgress > 0 && (
                 <div className="mt-3">
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-xs text-blue-300">Trigger Cooldown</span>
@@ -194,20 +215,52 @@ export default function RemoteControl({
                   <Progress value={cooldownProgress} className="h-1" />
                 </div>
               )}
-              {currentScene.id === 3 && (
-                <div className="flex items-center gap-2 mt-2">
-                  <Zap className="w-4 h-4 text-green-400" />
-                  <span className="text-xs text-green-300">Orchestrated loop • 6s cycle</span>
-                </div>
-              )}
             </CardHeader>
-            {currentScene.phrases.length > 0 && (
+            
+            {/* Scene 1: Sequential button */}
+            {currentScene.id === 1 && currentScene.phrases.length > 0 && (
               <CardContent className="space-y-3">
-                <h4 className="text-white font-medium mb-3">Trigger Phrases:</h4>
+                <h4 className="text-white font-medium mb-3">Sequential Phrases ({scene1Index + 1}/{currentScene.phrases.length})</h4>
+                <div className="mb-3 p-3 bg-blue-500/10 border border-blue-400/30 rounded-md">
+                  <p className="text-sm text-blue-200 italic">"{currentScene.phrases[scene1Index]}"</p>
+                </div>
+                <Button
+                  size="lg"
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white border-blue-500"
+                  onClick={handleScene1Next}
+                  disabled={cooldownProgress > 0}
+                  data-testid="button-scene1-next"
+                >
+                  <Play className="w-5 h-5 mr-3" />
+                  Trigger Next Phrase
+                </Button>
+              </CardContent>
+            )}
+
+            {/* Scene 2: Start button */}
+            {currentScene.id === 2 && (
+              <CardContent className="space-y-3">
+                <Button
+                  size="lg"
+                  className="w-full bg-green-600 hover:bg-green-700 text-white border-green-500"
+                  onClick={handleScene2Start}
+                  disabled={cooldownProgress > 0}
+                  data-testid="button-scene2-start"
+                >
+                  <Play className="w-5 h-5 mr-3" />
+                  Start
+                </Button>
+              </CardContent>
+            )}
+
+            {/* Scene 3: Individual buttons */}
+            {currentScene.id === 3 && currentScene.phrases.length > 0 && (
+              <CardContent className="space-y-3">
+                <h4 className="text-white font-medium mb-3">Trigger Individual Phrases:</h4>
                 <div className="space-y-2">
                   {currentScene.phrases.map((phrase, index) => {
                     const isSelected = selectedPhrase === phrase;
-                    const isOnCooldown = currentScene.id === 2 && cooldownProgress > 0;
+                    const isOnCooldown = cooldownProgress > 0;
                     const isDisabled = isOnCooldown && !isSelected;
                     
                     return (
@@ -230,9 +283,6 @@ export default function RemoteControl({
                             isSelected ? 'text-white' : isDisabled ? 'text-gray-500' : 'text-blue-400'
                           }`} />
                           <span className="text-sm leading-relaxed">{phrase}</span>
-                          {isOnCooldown && !isSelected && (
-                            <Timer className="w-3 h-3 text-gray-500 ml-auto" />
-                          )}
                         </div>
                       </Button>
                     );
@@ -240,25 +290,29 @@ export default function RemoteControl({
                 </div>
               </CardContent>
             )}
+
+            {/* Scene 4: Sequential button */}
+            {currentScene.id === 4 && currentScene.phrases.length > 0 && (
+              <CardContent className="space-y-3">
+                <h4 className="text-white font-medium mb-3">Sequential Closing ({scene4Index + 1}/{currentScene.phrases.length})</h4>
+                <div className="mb-3 p-3 bg-purple-500/10 border border-purple-400/30 rounded-md">
+                  <p className="text-sm text-purple-200 italic">"{currentScene.phrases[scene4Index]}"</p>
+                </div>
+                <Button
+                  size="lg"
+                  className="w-full bg-purple-600 hover:bg-purple-700 text-white border-purple-500"
+                  onClick={handleScene4Next}
+                  disabled={cooldownProgress > 0}
+                  data-testid="button-scene4-next"
+                >
+                  <Play className="w-5 h-5 mr-3" />
+                  Trigger Next Phrase
+                </Button>
+              </CardContent>
+            )}
           </Card>
         )}
 
-        {/* Photo Booth */}
-        {currentScene?.name === 'Photo Booth' && (
-          <Card className="border-orange-500/30 bg-black/40 backdrop-blur-sm">
-            <CardContent className="pt-6">
-              <Button
-                size="lg"
-                className="w-full bg-orange-600 hover:bg-orange-700 text-white border-orange-500"
-                onClick={onPhotoTrigger}
-                data-testid="button-trigger-photo"
-              >
-                <Camera className="w-5 h-5 mr-3" />
-                Start Photo Session
-              </Button>
-            </CardContent>
-          </Card>
-        )}
 
         {/* Enhanced Volume Controls */}
         <Card className="border-gray-500/30 bg-black/40 backdrop-blur-sm">

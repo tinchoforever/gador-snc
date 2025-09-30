@@ -64,26 +64,17 @@ export default function StageDisplay({ installationState, onStateChange }: Stage
         { text: "¿Desenchufé la planchita de pelo?", lane: 'C' as const, entry: 'flash' as const },
         { text: "¿Cómo hago para subirlos a todos al barco de Sistema Nervioso Central?", lane: 'D' as const, entry: 'mask' as const },
         { text: "¿Por qué no me habré puesto zapatos más cómodos?", lane: 'B' as const, entry: 'focus' as const },
-        { text: "Los chicos estarán haciendo la tarea o viendo YouTube?", lane: 'A' as const, entry: 'draw' as const },
-        { text: "Hoy la misión es clara: motivar, inspirar y sumar confianza.", lane: 'C' as const, entry: 'focus' as const },
-        { text: "¿Traje el cargador del celu? ¿Necesitaré adaptador?", lane: 'D' as const, entry: 'flash' as const },
-        { text: "Respirá profundo: convención, allá vamos.", lane: 'A' as const, entry: 'mask' as const },
-        { text: "Último repaso mental: todo bajo control.", lane: 'B' as const, entry: 'draw' as const },
-        { text: "Ojalá que la energía positiva sea contagiosa.", lane: 'C' as const, entry: 'focus' as const },
-        { text: "¿Estará mi perfume en el freeshop?", lane: 'D' as const, entry: 'flash' as const },
-        { text: "Tengo que comprar garotos para todos en la oficina.", lane: 'A' as const, entry: 'mask' as const },
-        { text: "Preparada, enfocada y con toda la energía lista.", lane: 'B' as const, entry: 'draw' as const },
       ],
-      2: [
+      3: [
         { text: "Espero que Rocío no me pregunte nada difícil", lane: 'B' as const, entry: 'mask' as const },
         { text: "Necesito ese micrófono… ¿estará en Mercado Libre?", lane: 'C' as const, entry: 'flash' as const },
         { text: "Rocío… ¡te olvidaste de presentarme! Tenemos que anunciar mi nueva posición.", lane: 'A' as const, entry: 'focus' as const },
       ],
-      3: [
-        { text: "¡Lo vamos a lograr!", lane: 'B' as const, entry: 'flash' as const },
-        { text: "¡Sí, juntos podemos!", lane: 'A' as const, entry: 'focus' as const },
-        { text: "¡Qué bueno estar acá con todos!", lane: 'C' as const, entry: 'mask' as const },
-        { text: "¡Vamos con todo!", lane: 'D' as const, entry: 'flash' as const },
+      4: [
+        { text: "¡Sí! Juntos podemos, ¡vamos con todo!", lane: 'A' as const, entry: 'focus' as const },
+        { text: "¿Nos sacamos una foto todos juntos?", lane: 'B' as const, entry: 'flash' as const },
+        { text: "¡Lo vamos a lograr!", lane: 'C' as const, entry: 'mask' as const },
+        { text: "¡Qué bueno estar acá con todos!", lane: 'D' as const, entry: 'flash' as const },
       ]
     };
 
@@ -130,141 +121,7 @@ export default function StageDisplay({ installationState, onStateChange }: Stage
     playAudio(newPhrase.id);
   };
 
-  // SCENE ORCHESTRATION
-  const [sceneState, setSceneState] = useState({
-    lastTrigger: 0,
-    scene1Cooldown: 0,
-    scene3LoopIndex: 0,
-    scene5CrescendoActive: false,
-    autonomousIntervals: new Map<number, number>()
-  });
-
-  // Scene 1: Autonomous cadence - MÁS RÁPIDO Y DINÁMICO
-  useEffect(() => {
-    if (installationState.currentScene === 1) {
-      const scene1Interval = setInterval(() => {
-        const now = Date.now();
-        if (now - sceneState.scene1Cooldown > 2000) { // Reducido de 4000 a 2000
-          const currentScene = SCENES.find(s => s.id === 1);
-          if (currentScene) {
-            const randomPhrase = currentScene.phrases[Math.floor(Math.random() * currentScene.phrases.length)];
-            triggerPhrase(randomPhrase, 1);
-            setSceneState(prev => ({ ...prev, scene1Cooldown: now }));
-          }
-        }
-      }, Math.random() * 2000 + 1500); // Más rápido: 1.5-3.5 segundos
-
-      return () => clearInterval(scene1Interval);
-    }
-  }, [installationState.currentScene, sceneState.scene1Cooldown]);
-
-  // Íconos flotantes independientes - Scene 1 - ACTIVOS
-  useEffect(() => {
-    if (installationState.currentScene === 1) {
-      const spawnIcon = () => {
-        const newIcon = {
-          id: `icon-${Date.now()}-${Math.random()}`
-        };
-        setFloatingIcons(prev => [...prev, newIcon]);
-      };
-
-      // Spawn 3 icons immediately to test
-      spawnIcon();
-      setTimeout(() => spawnIcon(), 500);
-      setTimeout(() => spawnIcon(), 1000);
-
-      const iconInterval = setInterval(() => {
-        spawnIcon();
-      }, 2500); // Cada 2.5 segundos
-
-      return () => {
-        clearInterval(iconInterval);
-      };
-    } else {
-      setFloatingIcons([]);
-    }
-  }, [installationState.currentScene]);
-
-  // Scene 3: Affirmations loop
-  useEffect(() => {
-    if (installationState.currentScene === 3) {
-      const scene3Loop = setInterval(() => {
-        const currentScene = SCENES.find(s => s.id === 3);
-        if (currentScene) {
-          const phraseIndex = sceneState.scene3LoopIndex % currentScene.phrases.length;
-          const phrase = currentScene.phrases[phraseIndex];
-          triggerPhrase(phrase, 3);
-          setSceneState(prev => ({ 
-            ...prev, 
-            scene3LoopIndex: prev.scene3LoopIndex + 1 
-          }));
-        }
-      }, 6000);
-
-      return () => clearInterval(scene3Loop);
-    }
-  }, [installationState.currentScene, sceneState.scene3LoopIndex]);
-
-  // Scene 5: Crescendo
-  useEffect(() => {
-    if (installationState.currentScene === 5 && !sceneState.scene5CrescendoActive) {
-      setSceneState(prev => ({ ...prev, scene5CrescendoActive: true }));
-      
-      const crescendoSequence = async () => {
-        const scene5 = SCENES.find(s => s.id === 5);
-        if (scene5) {
-          console.log('🌟 SCENE 5 CRESCENDO STARTING!');
-          
-          scene5.phrases.forEach((phrase, index) => {
-            setTimeout(() => {
-              triggerPhrase(phrase, 5);
-            }, index * 1500);
-          });
-
-          const crescendoInterval = setInterval(() => {
-            const randomPhrase = scene5.phrases[Math.floor(Math.random() * scene5.phrases.length)];
-            triggerPhrase(randomPhrase, 5);
-          }, 8000);
-
-          setSceneState(prev => ({
-            ...prev,
-            autonomousIntervals: new Map(prev.autonomousIntervals.set(5, crescendoInterval as any))
-          }));
-        }
-      };
-
-      crescendoSequence();
-    }
-
-    if (installationState.currentScene !== 5 && sceneState.scene5CrescendoActive) {
-      const interval = sceneState.autonomousIntervals.get(5);
-      if (interval) {
-        clearInterval(interval);
-        setSceneState(prev => {
-          const newIntervals = new Map(prev.autonomousIntervals);
-          newIntervals.delete(5);
-          return { 
-            ...prev, 
-            scene5CrescendoActive: false,
-            autonomousIntervals: newIntervals
-          };
-        });
-      }
-    }
-  }, [installationState.currentScene, sceneState.scene5CrescendoActive]);
-
-  // Scene 2: Manual trigger
-  const handleManualTrigger = () => {
-    const now = Date.now();
-    if (now - sceneState.lastTrigger < 2000) return;
-    
-    const currentScene = SCENES.find(s => s.id === installationState.currentScene);
-    if (currentScene?.id === 2 && currentScene.phrases.length > 0) {
-      const randomPhrase = currentScene.phrases[Math.floor(Math.random() * currentScene.phrases.length)];
-      triggerPhrase(randomPhrase, 2);
-      setSceneState(prev => ({ ...prev, lastTrigger: now }));
-    }
-  };
+  // SCENE ORCHESTRATION - Simplified for manual control
 
   // Show ALL notifications - they never leave
   const visiblePhrases = phrases;
@@ -277,7 +134,6 @@ export default function StageDisplay({ installationState, onStateChange }: Stage
         background: '#c7c7c7',
         cursor: 'default'
       }}
-      onClick={handleManualTrigger}
       data-testid="stage-display"
     >
       
