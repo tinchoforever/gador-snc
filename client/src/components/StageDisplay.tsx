@@ -158,22 +158,29 @@ export default function StageDisplay({ installationState, onStateChange }: Stage
     }
   }, [installationState.currentScene, sceneState.scene1Cooldown]);
 
-  // Íconos flotantes independientes - Scene 1 - RESTAURADOS
+  // Íconos flotantes independientes - Scene 1 - ACTIVOS
   useEffect(() => {
     if (installationState.currentScene === 1) {
-      const iconInterval = setInterval(() => {
-        // 50% chance de generar un ícono flotante
-        if (Math.random() > 0.5) {
-          const newIcon = {
-            id: `icon-${Date.now()}-${Math.random()}`
-          };
-          setFloatingIcons(prev => [...prev, newIcon]);
-        }
-      }, 2000 + Math.random() * 3000); // Cada 2-5 segundos
+      const spawnIcon = () => {
+        const newIcon = {
+          id: `icon-${Date.now()}-${Math.random()}`
+        };
+        setFloatingIcons(prev => [...prev, newIcon]);
+      };
 
-      return () => clearInterval(iconInterval);
+      // Spawn 3 icons immediately to test
+      spawnIcon();
+      setTimeout(() => spawnIcon(), 500);
+      setTimeout(() => spawnIcon(), 1000);
+
+      const iconInterval = setInterval(() => {
+        spawnIcon();
+      }, 2500); // Cada 2.5 segundos
+
+      return () => {
+        clearInterval(iconInterval);
+      };
     } else {
-      // Limpiar íconos cuando cambia de escena
       setFloatingIcons([]);
     }
   }, [installationState.currentScene]);
