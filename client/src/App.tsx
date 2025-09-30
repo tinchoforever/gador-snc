@@ -84,16 +84,46 @@ function StagePage() {
     volume: 0.8,
   });
 
-  // todo: remove mock functionality - replace with WebSocket connection
-  const handleStateChange = (newState: InstallationState) => {
-    setInstallationState(newState);
-    console.log('Installation state updated:', newState);
-  };
+  const [phraseTrigger, setPhraseTrigger] = useState<{ phraseText: string; sceneId: number; timestamp: number } | null>(null);
+  const [scene1AutoEnabled, setScene1AutoEnabled] = useState(false);
+
+  // Listen for messages from remote control via localStorage
+  useEffect(() => {
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === 'gador-scene-change' && e.newValue) {
+        const sceneId = parseInt(e.newValue);
+        setInstallationState(prev => ({ ...prev, currentScene: sceneId }));
+        if (sceneId !== 1) {
+          setScene1AutoEnabled(false);
+        }
+      }
+      
+      if (e.key === 'gador-phrase-trigger' && e.newValue) {
+        const data = JSON.parse(e.newValue);
+        setPhraseTrigger(data);
+      }
+      
+      if (e.key === 'gador-scene1-complete' && e.newValue === 'true') {
+        setScene1AutoEnabled(true);
+        localStorage.removeItem('gador-scene1-complete');
+      }
+      
+      if (e.key === 'gador-volume-change' && e.newValue) {
+        const volume = parseFloat(e.newValue);
+        setInstallationState(prev => ({ ...prev, volume }));
+      }
+    };
+
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }, []);
 
   return (
     <StageDisplay 
       installationState={installationState}
-      onStateChange={handleStateChange}
+      onStateChange={setInstallationState}
+      phraseTrigger={phraseTrigger}
+      scene1AutoEnabled={scene1AutoEnabled}
     />
   );
 }
@@ -107,25 +137,31 @@ function RemotePage() {
     volume: 0.8,
   });
 
-  // todo: remove mock functionality - replace with WebSocket communication
   const handleSceneChange = (sceneId: number) => {
     setInstallationState(prev => ({ ...prev, currentScene: sceneId }));
-    console.log('Scene changed to:', sceneId);
+    localStorage.setItem('gador-scene-change', sceneId.toString());
+    console.log('📡 Remote: Scene changed to:', sceneId);
   };
 
   const handlePhraseTriggered = (phraseText: string, sceneId: number) => {
-    console.log('Phrase triggered:', phraseText, 'in scene:', sceneId);
-    // In real implementation, this would send WebSocket message to stage
+    const data = {
+      phraseText,
+      sceneId,
+      timestamp: Date.now()
+    };
+    localStorage.setItem('gador-phrase-trigger', JSON.stringify(data));
+    console.log('📡 Remote: Phrase triggered:', phraseText, 'in scene:', sceneId);
   };
 
-  const handlePhotoTrigger = () => {
-    setInstallationState(prev => ({ ...prev, currentScene: 4 })); // Switch to photo booth scene
-    console.log('Photo session triggered');
+  const handleScene1Complete = () => {
+    localStorage.setItem('gador-scene1-complete', 'true');
+    console.log('📡 Remote: Scene 1 complete! Auto-mode starting...');
   };
 
   const handleVolumeChange = (volume: number) => {
     setInstallationState(prev => ({ ...prev, volume }));
-    console.log('Volume changed to:', volume);
+    localStorage.setItem('gador-volume-change', volume.toString());
+    console.log('📡 Remote: Volume changed to:', volume);
   };
 
   return (
@@ -133,8 +169,8 @@ function RemotePage() {
       installationState={installationState}
       onSceneChange={handleSceneChange}
       onPhraseTriggered={handlePhraseTriggered}
-      onPhotoTrigger={handlePhotoTrigger}
       onVolumeChange={handleVolumeChange}
+      onScene1Complete={handleScene1Complete}
     />
   );
 }
