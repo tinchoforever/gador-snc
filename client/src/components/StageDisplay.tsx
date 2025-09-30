@@ -115,11 +115,7 @@ export default function StageDisplay({ installationState, onStateChange }: Stage
     setPhrases(prev => [...prev, newPhrase]);
     console.log(`✅ Triggered phrase: "${phraseText}" | Lane: ${config.lane} | Entry: ${config.entry}`);
     
-    // AUTO-CLEANUP after 30 seconds
-    setTimeout(() => {
-      setPhrases(prev => prev.filter(p => p.id !== newPhrase.id));
-      console.log(`🗑️ Removed completed phrase: "${phraseText}"`);
-    }, 30000);
+    // NOTIFICATIONS STAY FOREVER - no auto-cleanup
     
     playAudio(newPhrase.id);
   };
@@ -233,8 +229,8 @@ export default function StageDisplay({ installationState, onStateChange }: Stage
     }
   };
 
-  // Limit to max 4 visible notifications at once
-  const visiblePhrases = phrases.slice(-4);
+  // Show ALL notifications - they never leave
+  const visiblePhrases = phrases;
 
   return (
     <div 

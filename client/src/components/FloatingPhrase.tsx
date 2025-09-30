@@ -167,16 +167,16 @@ export default function FloatingPhrase({
       style={{
         position: 'absolute',
         display: 'flex',
-        gap: showIcon ? '36px' : '0px',
+        gap: showIcon ? '27px' : '0px',
         alignItems: 'flex-start',
-        borderRadius: '32px',
-        padding: '48px 56px',
+        borderRadius: '24px',
+        padding: '36px 42px',
         border: 'none',
         boxShadow: shadow,
-        background: styles.bg,
+        backgroundColor: styles.bg,
         willChange: 'transform, opacity',
-        minWidth: '960px',
-        maxWidth: '1400px',
+        minWidth: '720px',
+        maxWidth: '1050px',
         width: 'auto',
       }}
       data-testid={`floating-phrase-${phrase.id}`}
@@ -185,19 +185,19 @@ export default function FloatingPhrase({
       {showIcon && (
         <div 
           style={{
-            width: '96px',
-            height: '96px',
+            width: '72px',
+            height: '72px',
             borderRadius: '50%',
             display: 'grid',
             placeItems: 'center',
             flexShrink: 0,
-            background: iconConfig.bg,
+            backgroundColor: iconConfig.bg,
             color: iconConfig.color,
-            boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
+            boxShadow: '0 3px 12px rgba(0,0,0,0.15)',
           }}
           aria-hidden="true"
         >
-          <IconComponent size={48} strokeWidth={2.5} />
+          <IconComponent size={36} strokeWidth={2.5} />
         </div>
       )}
       
@@ -208,11 +208,11 @@ export default function FloatingPhrase({
           style={{
             fontFamily: '"Avenir Next", Helvetica, sans-serif',
             fontWeight: 400,
-            fontSize: '28px',
+            fontSize: '21px',
             lineHeight: 1.4,
             color: styles.metaColor,
-            letterSpacing: '0.4px',
-            marginBottom: '8px',
+            letterSpacing: '0.3px',
+            marginBottom: '6px',
           }}
         >
           {meta}
@@ -223,7 +223,7 @@ export default function FloatingPhrase({
           style={{
             fontFamily: '"Avenir Next", Helvetica, sans-serif',
             fontWeight: 700,
-            fontSize: 'clamp(48px, 5.6vw, 56px)',
+            fontSize: 'clamp(36px, 4.2vw, 42px)',
             lineHeight: 1.25,
             color: styles.textColor,
             wordBreak: 'break-word',
