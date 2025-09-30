@@ -1,20 +1,17 @@
 import { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { PhraseState } from '@shared/schema';
-import { MessageCircle, Zap, Bell, Brain, MessageSquare, Smartphone } from 'lucide-react';
 
-interface FloatingPhraseProps {
+interface NotificationToastProps {
   phrase: PhraseState;
   onAnimationComplete?: () => void;
-  lane?: 'A' | 'B' | 'C' | 'D';
-  entryStyle?: 'draw' | 'focus' | 'flash' | 'mask';
-  stackIndex?: number;
+  variant?: 'grey' | 'blue' | 'green';
 }
 
 /**
  * GADOR MENTAL HEALTH CAMPAIGN - NOTIFICATION TOAST
  * iOS-style notification cards on white background
- * Simple entrance animations - NO crazy orbital effects
+ * Simple entrance animations without crazy effects
  */
 
 const VARIANT_STYLES = {
@@ -41,15 +38,13 @@ const VARIANT_STYLES = {
   }
 };
 
-const ICON_COMPONENTS = [MessageCircle, Zap, Bell, Brain, MessageSquare, Smartphone];
+const ICONS = ['💬', '⚡', '🔔', '🧠', '💭', '📱'];
 
-export default function FloatingPhrase({ 
+export default function NotificationToast({ 
   phrase, 
   onAnimationComplete,
-  lane = 'B',
-  entryStyle = 'focus',
-  stackIndex = 0
-}: FloatingPhraseProps) {
+  variant = 'grey'
+}: NotificationToastProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const masterTimeline = useRef<gsap.core.Timeline | null>(null);
 
@@ -72,7 +67,7 @@ export default function FloatingPhrase({
     // Get random rotation for this notification
     const rotation = gsap.utils.random(-2, 3);
     
-    // SIMPLE ENTRANCE: slide up + fade in (NO typewriting, NO orbital movements)
+    // SIMPLE ENTRANCE: slide up + fade in
     gsap.set(el, { 
       opacity: 0, 
       y: 12, 
@@ -83,7 +78,7 @@ export default function FloatingPhrase({
     
     const tl = gsap.timeline();
     
-    // Entrada suave - NOT brutal animation
+    // Entrada suave - NO crazy animation
     tl.to(el, { 
       opacity: 1, 
       y: 0, 
@@ -92,7 +87,7 @@ export default function FloatingPhrase({
       ease: "cubic-bezier(.22,.61,.36,1)" 
     });
     
-    // Hold readable - let people read the message
+    // Hold readable
     tl.to(el, { duration: 1.2 });
     
     // IDLE: subtle floating - only 6px up/down, very gentle
@@ -116,24 +111,8 @@ export default function FloatingPhrase({
     masterTimeline.current = tl;
   };
 
-  // Choose variant based on phrase characteristics
-  const getVariant = () => {
-    const text = phrase.text.toLowerCase();
-    // Positive/affirmative phrases get blue
-    if (text.includes('lograr') || text.includes('podemos') || text.includes('bueno') || text.includes('vamos')) {
-      return 'blue';
-    }
-    // Chat-like phrases get green occasionally
-    if (Math.random() > 0.8) {
-      return 'green';
-    }
-    // Default to grey
-    return 'grey';
-  };
-
-  const variant = getVariant();
   const styles = VARIANT_STYLES[variant];
-  const IconComponent = ICON_COMPONENTS[Math.floor(Math.random() * ICON_COMPONENTS.length)];
+  const icon = ICONS[Math.floor(Math.random() * ICONS.length)];
   
   // Generate meta time
   const metas = ['ahora', 'hace 1 min', 'hace 2 min', 'lun 1:21'];
@@ -156,11 +135,10 @@ export default function FloatingPhrase({
         background: styles.bg,
         willChange: 'transform, opacity',
         maxWidth: '600px',
-        minWidth: '400px',
       }}
-      data-testid={`floating-phrase-${phrase.id}`}
+      data-testid={`notification-toast-${phrase.id}`}
     >
-      {/* Icon - using lucide-react instead of emoji */}
+      {/* Icon */}
       <div 
         style={{
           width: '40px',
@@ -169,13 +147,14 @@ export default function FloatingPhrase({
           display: 'grid',
           placeItems: 'center',
           flexShrink: 0,
+          fontSize: '18px',
           background: styles.iconBg,
           color: '#fff',
           boxShadow: '0 2px 6px rgba(0,0,0,.08), inset 0 0 0 2px rgba(255,255,255,.75)',
         }}
         aria-hidden="true"
       >
-        <IconComponent size={20} strokeWidth={2} />
+        {icon}
       </div>
       
       {/* Body */}

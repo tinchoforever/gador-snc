@@ -2,57 +2,33 @@
 @tailwind components;
 @tailwind utilities;
 
-/* DIGITAL ANXIETY BACKGROUND - EXACT FROM USER SPECIFICATION */
+/* WHITE BACKGROUND FOR NOTIFICATIONS - MENTAL HEALTH CAMPAIGN STYLE */
 :root {
-  --deep: #020814;
-  --cyan: #7DF9FF;
+  --bg-white: #FFFFFF;
+  --brand-blue: #0027AF;
+  --brand-teal: #00A99D;
+  --brand-ltblue: #78C4E6;
+  --ink-900: #0F172A;
+  --ink-700: #374151;
+  --ink-500: #6B7280;
+  --hairline: rgba(15,23,42,0.06);
+  --bg-ghost: rgba(15,23,42,0.08);
 }
 
 html,
 body {
   height: 100%;
   margin: 0;
-  background: var(--deep);
+  background: var(--bg-white);
   overflow: hidden;
 }
 
+/* Hide background elements - white background only */
 #bg-base,
 #bg-formulas,
 #bg-net,
 #bg-pulses {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-}
-
-#bg-base {
-  z-index: 4;
-  background:
-    radial-gradient(55% 55% at 50% 50%, rgba(0, 0, 0, 0) 0%, var(--deep) 75%),
-    var(--deep);
-}
-
-#bg-formulas {
-  z-index: 3;
-}
-
-#bg-net {
-  z-index: 1;
-  background: transparent;
-}
-
-#bg-pulses {
-  z-index: 0;
-  background: transparent;
-}
-
-/* Optional glow refinement on the canvases */
-#bg-net canvas {
-  filter: drop-shadow(0 0 4px rgba(125, 249, 255, .25));
-}
-
-#bg-pulses canvas {
-  filter: drop-shadow(0 0 10px rgba(125, 249, 255, .55));
+  display: none;
 }
 
 /* GADOR SNC 85TH ANNIVERSARY - LIGHT MODE */

@@ -15,60 +15,30 @@
     <style>
       @import url("https://fonts.cdnfonts.com/css/avenir-next");
 
-      /* DIGITAL ANXIETY BACKGROUND - EXACT FROM USER SPECIFICATION */
+      /* WHITE BACKGROUND FOR NOTIFICATIONS - MENTAL HEALTH CAMPAIGN STYLE */
       :root {
-        --deep: #020814;
-        --cyan: #7df9ff;
+        --bg-white: #FFFFFF;
+        --brand-blue: #0027AF;
+        --brand-teal: #00A99D;
+        --brand-ltblue: #78C4E6;
       }
 
       html,
       body {
         height: 100%;
         margin: 0;
-        background: var(--deep);
+        background: var(--bg-white);
         overflow: hidden;
         font-family:
           "Avenir Next", "Helvetica Neue", "Inter", system-ui, sans-serif;
       }
 
+      /* Hide background elements - white background only */
       #bg-base,
       #bg-formulas,
       #bg-net,
       #bg-pulses {
-        position: fixed;
-        inset: 0;
-        pointer-events: none;
-      }
-
-      #bg-base {
-        z-index: -4;
-        background:
-          radial-gradient(
-            55% 55% at 50% 50%,
-            rgba(0, 0, 0, 0) 0%,
-            var(--deep) 75%
-          ),
-          var(--deep);
-      }
-
-      #bg-formulas {
-        z-index: -3;
-      }
-      #bg-net {
-        z-index: -2;
-        background: transparent;
-      }
-      #bg-pulses {
-        z-index: -1;
-        background: transparent;
-      }
-
-      /* Optional glow refinement on the canvases */
-      #bg-net canvas {
-        filter: drop-shadow(0 0 4px rgba(125, 249, 255, 0.25));
-      }
-      #bg-pulses canvas {
-        filter: drop-shadow(0 0 10px rgba(125, 249, 255, 0.55));
+        display: none;
       }
 
       /* Ensure React app is above background */
@@ -78,11 +48,9 @@
         background: transparent;
       }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/tsparticles-engine@2/tsparticles.engine.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/tsparticles@2/tsparticles.bundle.min.js"></script>
   </head>
   <body>
-    <!-- DIGITAL ANXIETY BACKGROUND - EXACT FROM USER SPEC -->
+    <!-- Background elements hidden for white campaign mode -->
     <div id="bg-base"></div>
     <canvas id="bg-formulas"></canvas>
     <div id="bg-net"></div>
@@ -90,186 +58,5 @@
 
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
-
-    <!-- DIGITAL ANXIETY BACKGROUND SYSTEM - EXACT FROM USER SPECIFICATION -->
-    <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        const CYAN = "#7DF9FF";
-
-        // NET: subtle, slow, connected - EXACT from user spec
-        tsParticles.load("bg-net", {
-          fullScreen: { enable: false },
-          background: { color: "transparent" },
-          fpsLimit: 60,
-          detectRetina: true,
-          particles: {
-            number: { value: 120, density: { enable: true, area: 1200 } },
-            color: { value: CYAN },
-            shape: { type: "circle" },
-            size: { value: 10, random: { enable: true, minimumValue: 1 } },
-            opacity: {
-              value: 0.4,
-              animation: {
-                enable: true,
-                speed: 0.3,
-                minimumValue: 0.25,
-                sync: false,
-              },
-            },
-            move: {
-              enable: true,
-              speed: 0.35,
-              random: true,
-              outModes: { default: "bounce" },
-            },
-            links: {
-              enable: true,
-              distance: 140,
-              color: CYAN,
-              opacity: 0.3,
-              width: 1.05,
-            },
-          },
-        });
-
-        // PULSES: energy blips + reactive burst - EXACT from user spec
-        tsParticles.load("bg-pulses", {
-          fullScreen: { enable: false }, // <- stay inside your div
-          background: { color: "transparent" }, // <- never white
-          fpsLimit: 60,
-          detectRetina: true,
-          particles: {
-            number: { value: 18, density: { enable: true, area: 1000 } },
-            color: { value: CYAN },
-            shape: { type: "circle" },
-
-            // bright dots with slight size variance
-            size: { value: { min: 1.5, max: 3.5 } },
-
-            // strong but alive
-            opacity: {
-              value: 0.95,
-              animation: {
-                enable: true,
-                speed: 1.2,
-                minimumValue: 0.5,
-                sync: false,
-              },
-            },
-
-            // motion = gentle drift + short trail to feel like energy
-            move: {
-              enable: true,
-              speed: 1.4,
-              random: true,
-              straight: false,
-              angle: { offset: 0, value: { min: -20, max: 20 } },
-              outModes: { default: "bounce" },
-
-              // <<< add a subtle streak behind each particle
-              trail: {
-                enable: true,
-                length: 8, // 6–12 works well
-                fillColor: "#020814", // Deep Space base to “erase” as it trails
-              },
-            },
-
-            links: { enable: false },
-            reduceDuplicates: true,
-          },
-        });
-
-        // BURST FUNCTION - EXACT from user spec
-        window.bgBurst = function (ms = 900) {
-          const pulses = tsParticles.domItem(1); // second instance
-          if (!pulses) return;
-          const prev = pulses.actualOptions.particles.move.speed;
-          pulses.options.particles.move.speed = 2.8;
-          pulses.refresh();
-          setTimeout(() => {
-            pulses.options.particles.move.speed = prev;
-            pulses.refresh();
-          }, ms);
-        };
-
-        // GHOST FORMULAS - EXACT from user spec
-        (function formulas() {
-          const cv = document.getElementById("bg-formulas");
-          const ctx = cv.getContext("2d");
-          function fit() {
-            cv.width = innerWidth;
-            cv.height = innerHeight;
-          }
-          fit();
-          addEventListener("resize", fit);
-
-          const glyphs = [
-            // Math / cognitive base
-            "x",
-            "y",
-            "∑",
-            "≈",
-            "→",
-            "∂",
-            "α",
-            "β",
-            "γ",
-            "π",
-            "Δ",
-            "θ",
-            "ln",
-            "ƒ",
-            // SNC / neuro context
-            "SNC",
-            "neurona",
-            "sinapsis",
-            "dopamina",
-            "axón",
-            "glía",
-            // Pharma / Gador context
-            "Gador",
-            "medicina",
-            "ciencia",
-            "innovación",
-            "tratamiento",
-            "molécula",
-          ];
-          const items = Array.from({ length: 60 }).map(() => ({
-            x: Math.random() * cv.width,
-            y: Math.random() * cv.height,
-            s: 0.8 + Math.random() * 1.4, // scale
-            v: 0.12 + Math.random() * 0.22, // vertical drift
-            a: Math.random() * Math.PI * 2, // small lateral sway
-            w: 0.15 + Math.random() * 0.25, // sway speed
-            g: glyphs[(Math.random() * glyphs.length) | 0],
-          }));
-
-          function tick(t) {
-            ctx.clearRect(0, 0, cv.width, cv.height);
-            ctx.fillStyle = "rgba(255,255,255,0.15)"; // 15% white
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-
-            items.forEach((it) => {
-              it.y += it.v;
-              if (it.y > cv.height + 20) it.y = -20;
-              it.a += it.w * 0.016;
-              const x = it.x + Math.sin(it.a) * 8; // gentle sway
-              ctx.save();
-              ctx.globalAlpha = 0.15;
-              ctx.translate(x, it.y);
-              ctx.scale(it.s, it.s);
-              ctx.font = "16px Helvetica, Arial, sans-serif";
-              ctx.fillText(it.g, 0, 0);
-              ctx.restore();
-            });
-            requestAnimationFrame(tick);
-          }
-          tick();
-        })();
-
-        console.log("🎆 DIGITAL ANXIETY BACKGROUND LOADED!");
-      });
-    </script>
   </body>
 </html>

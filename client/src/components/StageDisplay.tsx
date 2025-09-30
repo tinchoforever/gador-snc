@@ -1,27 +1,39 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-// NeuralBackground now implemented in DOM - see index.html
 import FloatingPhrase from './FloatingPhrase';
 import PhotoBooth from './PhotoBooth';
 import { InstallationState, PhraseState, SCENES } from '@shared/schema';
+import { gsap } from 'gsap';
 
 interface StageDisplayProps {
   installationState: InstallationState;
   onStateChange?: (newState: InstallationState) => void;
 }
 
+// Ghost phrases for background - from mental health campaign
+const GHOST_PHRASES = [
+  "qué hacer",
+  "debería cancelar",
+  "no puedo concentrarme",
+  "tengo que verme",
+  "incómodo",
+  "por qué",
+  "inseguro",
+  "capaz no es suficiente",
+  "me olvido",
+];
+
 export default function StageDisplay({ installationState, onStateChange }: StageDisplayProps) {
   const [phrases, setPhrases] = useState<PhraseState[]>(installationState.activePhrases);
   const [showPhotoMode, setShowPhotoMode] = useState(false);
-  const [pulseActive, setPulseActive] = useState(false);
+  const ghostContainerRef = useRef<HTMLDivElement>(null);
   
-  // Audio system - EXACT from user document (no overlap popping)
+  // Audio system
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const playAudio = useCallback((id: string) => {
     const audio = audioRef.current;
     if (!audio) return;
     
-    // Reset playback to avoid overlap - EXACT from user document
     audio.currentTime = 0;
     audio.volume = 0.55;
     audio.play().catch(e => console.log('Audio blocked'));
@@ -34,20 +46,52 @@ export default function StageDisplay({ installationState, onStateChange }: Stage
     const currentScene = SCENES.find(s => s.id === installationState.currentScene);
     setShowPhotoMode(currentScene?.name === 'Photo Booth');
     
-    // CLEAN UP ALL ACTIVE PHRASES on scene change - prevent accumulation
+    // Clear phrases on scene change
     setPhrases([]);
     console.log(`🔄 Scene changed to ${installationState.currentScene}, cleared all phrases`);
-    
-    // Activate pulse on scene changes
-    setPulseActive(true);
-    const timer = setTimeout(() => setPulseActive(false), 900);
-    return () => clearTimeout(timer);
   }, [installationState]);
 
-  // Phrase-to-lane mapping as specified in animation document
+  // Initialize ghost text background
+  useEffect(() => {
+    if (!ghostContainerRef.current) return;
+    
+    const container = ghostContainerRef.current;
+    container.innerHTML = '';
+    
+    GHOST_PHRASES.forEach(word => {
+      const span = document.createElement('span');
+      span.className = 'ghost-phrase';
+      span.textContent = word;
+      span.style.cssText = `
+        position: absolute;
+        color: rgba(15,23,42,0.08);
+        font-family: "Avenir Next", Helvetica, sans-serif;
+        font-weight: 600;
+        font-size: clamp(28px, 3vw, 64px);
+        line-height: 1.05;
+        white-space: nowrap;
+        pointer-events: none;
+        left: ${gsap.utils.random(10, 90)}%;
+        top: ${gsap.utils.random(12, 88)}%;
+        transform: translate(-50%, -50%) rotate(${gsap.utils.random(-6, 6)}deg);
+      `;
+      container.appendChild(span);
+      
+      // Subtle drift animation
+      gsap.to(span, {
+        x: `+=${gsap.utils.random(-10, 10)}`,
+        duration: 5 + Math.random() * 4,
+        repeat: -1,
+        yoyo: true,
+        ease: "sine.inOut"
+      });
+    });
+  }, []);
+
+  // Phrase-to-lane mapping
   const getPhraseConfig = (text: string, sceneId: number) => {
     const scenePhraseMappings = {
-      1: [ // Scene 1 - Chaotic Thoughts
+      1: [
         { text: "¿Y si me olvido de lo que tengo que decir?", lane: 'B' as const, entry: 'draw' as const },
         { text: "Capaz no es suficiente lo que preparé...", lane: 'A' as const, entry: 'focus' as const },
         { text: "¿Desenchufé la planchita de pelo?", lane: 'C' as const, entry: 'flash' as const },
@@ -55,12 +99,12 @@ export default function StageDisplay({ installationState, onStateChange }: Stage
         { text: "¿Por qué no me habré puesto zapatos más cómodos?", lane: 'B' as const, entry: 'focus' as const },
         { text: "¿Los chicos estarán haciendo la tarea o viendo youtube?", lane: 'A' as const, entry: 'draw' as const },
       ],
-      2: [ // Scene 2 - Magic Microphone  
+      2: [
         { text: "Espero que Rocío no me pregunte nada difícil", lane: 'B' as const, entry: 'mask' as const },
         { text: "Necesito ese micrófono… ¿estará en Mercado Libre?", lane: 'C' as const, entry: 'flash' as const },
         { text: "Rocío… ¡te olvidaste de presentarme! Tenemos que anunciar mi nueva posición.", lane: 'A' as const, entry: 'focus' as const },
       ],
-      3: [ // Scene 3 - Collective Energy
+      3: [
         { text: "¡Lo vamos a lograr!", lane: 'B' as const, entry: 'flash' as const },
         { text: "¡Sí, juntos podemos!", lane: 'A' as const, entry: 'focus' as const },
         { text: "¡Qué bueno estar acá con todos!", lane: 'C' as const, entry: 'mask' as const },
@@ -74,12 +118,11 @@ export default function StageDisplay({ installationState, onStateChange }: Stage
       if (config) return config;
     }
 
-    // Default fallback
     return { lane: 'B' as const, entry: 'focus' as const };
   };
 
   const triggerPhrase = (phraseText: string, sceneId: number) => {
-    // PREVENT DUPLICATES - Don't add if same phrase is already active
+    // PREVENT DUPLICATES
     const existingPhrase = phrases.find(p => p.text === phraseText && p.isActive);
     if (existingPhrase) {
       console.log(`⚠️ Phrase already active, skipping: "${phraseText}"`);
@@ -94,8 +137,8 @@ export default function StageDisplay({ installationState, onStateChange }: Stage
       layer: 'front',
       opacity: 1,
       position: {
-        x: window.innerWidth / 2, // Start center, GSAP will handle positioning
-        y: window.innerHeight * 0.38, // Default to lane B
+        x: window.innerWidth / 2,
+        y: window.innerHeight * 0.38,
         z: 0,
       },
       isActive: true,
@@ -107,17 +150,16 @@ export default function StageDisplay({ installationState, onStateChange }: Stage
     setPhrases(prev => [...prev, newPhrase]);
     console.log(`✅ Triggered phrase: "${phraseText}" | Lane: ${config.lane} | Entry: ${config.entry}`);
     
-    // AUTO-CLEANUP after animation cycle (30 seconds total per user spec)
+    // AUTO-CLEANUP after 30 seconds
     setTimeout(() => {
       setPhrases(prev => prev.filter(p => p.id !== newPhrase.id));
       console.log(`🗑️ Removed completed phrase: "${phraseText}"`);
     }, 30000);
     
-    // Play audio for this phrase - EXACT from user document
     playAudio(newPhrase.id);
   };
 
-  // SCENE ORCHESTRATION SYSTEM - Complete scheduling per specification
+  // SCENE ORCHESTRATION
   const [sceneState, setSceneState] = useState({
     lastTrigger: 0,
     scene1Cooldown: 0,
@@ -126,27 +168,26 @@ export default function StageDisplay({ installationState, onStateChange }: Stage
     autonomousIntervals: new Map<number, number>()
   });
 
-  // Scene 1: Autonomous cadence with cooldowns (4-8 second intervals)
+  // Scene 1: Autonomous cadence
   useEffect(() => {
     if (installationState.currentScene === 1) {
       const scene1Interval = setInterval(() => {
         const now = Date.now();
-        if (now - sceneState.scene1Cooldown > 4000) { // Min 4s cooldown
+        if (now - sceneState.scene1Cooldown > 4000) {
           const currentScene = SCENES.find(s => s.id === 1);
           if (currentScene) {
             const randomPhrase = currentScene.phrases[Math.floor(Math.random() * currentScene.phrases.length)];
             triggerPhrase(randomPhrase, 1);
             setSceneState(prev => ({ ...prev, scene1Cooldown: now }));
-            console.log(`🔄 Scene 1 autonomous trigger: "${randomPhrase}"`);
           }
         }
-      }, Math.random() * 4000 + 4000); // 4-8 second random intervals
+      }, Math.random() * 4000 + 4000);
 
       return () => clearInterval(scene1Interval);
     }
   }, [installationState.currentScene, sceneState.scene1Cooldown]);
 
-  // Scene 3: Orchestrated affirmations loop (all 4 phrases cycling)
+  // Scene 3: Affirmations loop
   useEffect(() => {
     if (installationState.currentScene === 3) {
       const scene3Loop = setInterval(() => {
@@ -159,15 +200,14 @@ export default function StageDisplay({ installationState, onStateChange }: Stage
             ...prev, 
             scene3LoopIndex: prev.scene3LoopIndex + 1 
           }));
-          console.log(`🔁 Scene 3 loop: "${phrase}" (${phraseIndex + 1}/${currentScene.phrases.length})`);
         }
-      }, 6000); // 6 second intervals for positive affirmations
+      }, 6000);
 
       return () => clearInterval(scene3Loop);
     }
   }, [installationState.currentScene, sceneState.scene3LoopIndex]);
 
-  // Scene 5: Crescendo - Multiple phrases cascading rapidly
+  // Scene 5: Crescendo
   useEffect(() => {
     if (installationState.currentScene === 5 && !sceneState.scene5CrescendoActive) {
       setSceneState(prev => ({ ...prev, scene5CrescendoActive: true }));
@@ -177,22 +217,17 @@ export default function StageDisplay({ installationState, onStateChange }: Stage
         if (scene5) {
           console.log('🌟 SCENE 5 CRESCENDO STARTING!');
           
-          // Trigger all phrases with staggered timing for crescendo effect
           scene5.phrases.forEach((phrase, index) => {
             setTimeout(() => {
               triggerPhrase(phrase, 5);
-              console.log(`🎭 Crescendo phrase ${index + 1}: "${phrase}"`);
-            }, index * 1500); // 1.5s stagger for building intensity
+            }, index * 1500);
           });
 
-          // Continue with overlapping waves every 8 seconds
           const crescendoInterval = setInterval(() => {
             const randomPhrase = scene5.phrases[Math.floor(Math.random() * scene5.phrases.length)];
             triggerPhrase(randomPhrase, 5);
-            console.log(`🌊 Crescendo wave: "${randomPhrase}"`);
           }, 8000);
 
-          // Store interval for cleanup
           setSceneState(prev => ({
             ...prev,
             autonomousIntervals: new Map(prev.autonomousIntervals.set(5, crescendoInterval as any))
@@ -203,7 +238,6 @@ export default function StageDisplay({ installationState, onStateChange }: Stage
       crescendoSequence();
     }
 
-    // Cleanup crescendo when leaving scene 5
     if (installationState.currentScene !== 5 && sceneState.scene5CrescendoActive) {
       const interval = sceneState.autonomousIntervals.get(5);
       if (interval) {
@@ -221,52 +255,60 @@ export default function StageDisplay({ installationState, onStateChange }: Stage
     }
   }, [installationState.currentScene, sceneState.scene5CrescendoActive]);
 
-  // Scene 2: Manual trigger handler (with UI feedback)
+  // Scene 2: Manual trigger
   const handleManualTrigger = () => {
     const now = Date.now();
-    if (now - sceneState.lastTrigger < 2000) return; // 2s cooldown for manual triggers
+    if (now - sceneState.lastTrigger < 2000) return;
     
     const currentScene = SCENES.find(s => s.id === installationState.currentScene);
     if (currentScene?.id === 2 && currentScene.phrases.length > 0) {
       const randomPhrase = currentScene.phrases[Math.floor(Math.random() * currentScene.phrases.length)];
       triggerPhrase(randomPhrase, 2);
       setSceneState(prev => ({ ...prev, lastTrigger: now }));
-      
-      // Trigger neural background pulse for feedback
-      setPulseActive(true);
-      setTimeout(() => setPulseActive(false), 800);
-      
-      console.log(`🎤 Manual Scene 2 trigger: "${randomPhrase}"`);
     }
   };
+
+  // Limit to max 4 visible notifications at once
+  const visiblePhrases = phrases.slice(-4);
 
   return (
     <div 
       id="stage"
-      className="relative w-full h-screen overflow-hidden cursor-none"
+      className="relative w-full h-screen overflow-hidden"
       style={{ 
-        background: 'transparent'  // EXACT transparent from user spec - Deep Space handled by CSS
+        background: '#FFFFFF',
+        cursor: 'default'
       }}
       onClick={handleManualTrigger}
       data-testid="stage-display"
     >
-      {/* Background now handled by DOM-level implementation in index.html */}
-      
-      {/* Phrases layer with safe areas - EXACT 7% 10% padding from spec */}
+      {/* Ghost text background layer */}
       <div 
-        id="phrases-layer"
+        ref={ghostContainerRef}
+        id="bg-ghost-phrases"
         className="absolute inset-0 pointer-events-none"
-        style={{ padding: '7% 10%' }}
-        data-testid="safe-area"
+        style={{ zIndex: 0 }}
+      />
+      
+      {/* Notifications stack - centered with proper stacking */}
+      <div 
+        id="notifications-stack"
+        className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"
+        style={{ 
+          padding: '8% 10%',
+          zIndex: 10,
+          gap: '14px'
+        }}
+        data-testid="notifications-stack"
       >
-        {phrases.map(phrase => (
+        {visiblePhrases.map((phrase, index) => (
           <FloatingPhrase 
             key={phrase.id}
             phrase={phrase}
             lane={(phrase as any).lane || 'B'}
             entryStyle={(phrase as any).entry || 'focus'}
+            stackIndex={index}
             onAnimationComplete={() => {
-              // Remove phrase when animation completes
               setPhrases(prev => prev.filter(p => p.id !== phrase.id));
             }}
           />
@@ -276,13 +318,12 @@ export default function StageDisplay({ installationState, onStateChange }: Stage
       {showPhotoMode && (
         <PhotoBooth 
           onComplete={() => {
-            console.log('Photo booth completed');
             setShowPhotoMode(false);
           }}
         />
       )}
       
-      {/* Audio element - EXACT from user document */}
+      {/* Audio element */}
       <audio 
         ref={audioRef}
         preload="auto"
