@@ -17,48 +17,30 @@ interface FloatingPhraseProps {
  * Simple entrance animations - NO crazy orbital effects
  */
 
-// COLORES OFICIALES DE LA CAMPAÑA GADOR - Solo azules, grises y negros
+// COLORES OFICIALES DE LA CAMPAÑA GADOR
 const VARIANT_STYLES = {
-  standard: {
-    bg: '#FFFFFF',
-    textColor: '#000000',
-    metaColor: '#666666',
-    opacity: 1,
-  },
-  sent: {
-    bg: '#3B82F6',
-    textColor: '#FFFFFF',
+  blue: {
+    bg: '#37479d',
+    textColor: '#ffffff',
     metaColor: 'rgba(255,255,255,0.8)',
     opacity: 1,
   },
-  lightBlue: {
-    bg: '#BFDBFE',
-    textColor: '#1E3A8A',
-    metaColor: '#1E40AF',
+  lightGrayLarge: {
+    bg: '#c6c6c6',
+    textColor: '#262322',
+    metaColor: '#262322',
     opacity: 1,
   },
-  darkBlue: {
-    bg: '#1E3A8A',
-    textColor: '#FFFFFF',
-    metaColor: 'rgba(255,255,255,0.8)',
+  lightGraySmall: {
+    bg: '#f2f3f7',
+    textColor: '#0b1825',
+    metaColor: '#0b1825',
     opacity: 1,
   },
-  reminder: {
-    bg: '#000000',
-    textColor: '#FFFFFF',
-    metaColor: 'rgba(255,255,255,0.75)',
-    opacity: 0.8,
-  },
-  mention: {
-    bg: '#606368',
-    textColor: '#FFFFFF',
-    metaColor: 'rgba(255,255,255,0.8)',
-    opacity: 0.9,
-  },
-  tag: {
-    bg: '#E5E7EB',
-    textColor: '#000000',
-    metaColor: '#555555',
+  darkGray: {
+    bg: '#434f5d',
+    textColor: '#79797a',
+    metaColor: '#79797a',
     opacity: 1,
   }
 };
@@ -188,10 +170,20 @@ export default function FloatingPhrase({
     return Math.abs(hash);
   };
 
-  // TRULY RANDOM variant based on unique phrase ID (not text)
-  const variants = ['standard', 'sent', 'lightBlue', 'darkBlue', 'reminder', 'mention', 'tag'] as const;
   const phraseHash = getHash(phrase.id); // Use ID instead of text for randomness
-  const variant = variants[phraseHash % variants.length];
+  
+  // TAMAÑOS VARIADOS - determinar primero
+  const sizeVariant = phraseHash % 3;
+  
+  // Colores oficiales Gador - asignar según tamaño
+  const colorOptions = sizeVariant === 0 
+    ? ['lightGraySmall', 'blue', 'darkGray'] // Pequeños usan gris claro chico
+    : sizeVariant === 2 
+    ? ['lightGrayLarge', 'blue', 'darkGray'] // Grandes usan gris claro grande
+    : ['blue', 'darkGray', 'lightGraySmall', 'lightGrayLarge']; // Medianos pueden usar cualquiera
+  
+  const variantIndex = Math.floor((phraseHash / 3)) % colorOptions.length;
+  const variant = colorOptions[variantIndex] as keyof typeof VARIANT_STYLES;
   const styles = VARIANT_STYLES[variant];
   
   // ALL notifications have icons - 100%
@@ -227,7 +219,6 @@ export default function FloatingPhrase({
   const meta = metas[phraseHash % metas.length];
 
   // TAMAÑOS VARIADOS - 3 tallas diferentes con más padding en íconos
-  const sizeVariant = phraseHash % 3;
   const sizes = {
     small: {
       padding: '16px 20px',
@@ -280,7 +271,7 @@ export default function FloatingPhrase({
         alignItems: 'flex-start',
         borderRadius: currentSize.borderRadius,
         padding: currentSize.padding,
-        border: variant === 'standard' ? '1px solid #E5E7EB' : 'none',
+        border: 'none',
         boxShadow: shadow,
         backgroundColor: styles.bg,
         opacity: styles.opacity,

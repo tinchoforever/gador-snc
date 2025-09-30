@@ -267,7 +267,7 @@ export default function StageDisplay({ installationState, onStateChange }: Stage
       id="stage"
       className="relative w-full h-screen overflow-hidden"
       style={{ 
-        background: '#FFFFFF',
+        background: '#c7c7c7',
         cursor: 'default'
       }}
       onClick={handleManualTrigger}
