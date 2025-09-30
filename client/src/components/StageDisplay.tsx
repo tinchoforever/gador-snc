@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import FloatingPhrase from './FloatingPhrase';
 import FloatingIcon from './FloatingIcon';
 import PhotoBooth from './PhotoBooth';
-import { InstallationState, PhraseState, SCENES } from '@shared/schema';
+import { InstallationState, PhraseState, SCENES, SCENE1_AUTO_PHRASES } from '@shared/schema';
 import { gsap } from 'gsap';
 
 interface StageDisplayProps {
@@ -59,6 +59,14 @@ export default function StageDisplay({ installationState, onStateChange, phraseT
         { text: "¿Desenchufé la planchita de pelo?", lane: 'C' as const, entry: 'flash' as const },
         { text: "¿Cómo hago para subirlos a todos al barco de Sistema Nervioso Central?", lane: 'D' as const, entry: 'mask' as const },
         { text: "¿Por qué no me habré puesto zapatos más cómodos?", lane: 'B' as const, entry: 'focus' as const },
+        { text: "Hoy la misión es clara: motivar, inspirar y sumar confianza.", lane: 'C' as const, entry: 'focus' as const },
+        { text: "¿Traje el cargador del celu? ¿Necesitaré adaptador?", lane: 'D' as const, entry: 'flash' as const },
+        { text: "Respirá profundo: convención, allá vamos.", lane: 'A' as const, entry: 'mask' as const },
+        { text: "Último repaso mental: todo bajo control.", lane: 'B' as const, entry: 'draw' as const },
+        { text: "Ojalá que la energía positiva sea contagiosa.", lane: 'C' as const, entry: 'focus' as const },
+        { text: "¿Estará mi perfume en el freeshop?", lane: 'D' as const, entry: 'flash' as const },
+        { text: "Tengo que comprar garotos para todos en la oficina.", lane: 'A' as const, entry: 'mask' as const },
+        { text: "Preparada, enfocada y con toda la energía lista.", lane: 'B' as const, entry: 'draw' as const },
       ],
       3: [
         { text: "Espero que Rocío no me pregunte nada difícil", lane: 'B' as const, entry: 'mask' as const },
@@ -148,6 +156,18 @@ export default function StageDisplay({ installationState, onStateChange, phraseT
       setFloatingIcons([]);
     }
   }, [installationState.currentScene]);
+
+  // Scene 1: Auto-trigger phrases
+  useEffect(() => {
+    if (installationState.currentScene === 1) {
+      const scene1Interval = setInterval(() => {
+        const randomPhrase = SCENE1_AUTO_PHRASES[Math.floor(Math.random() * SCENE1_AUTO_PHRASES.length)];
+        triggerPhrase(randomPhrase, 1);
+      }, Math.random() * 2000 + 1500);
+
+      return () => clearInterval(scene1Interval);
+    }
+  }, [installationState.currentScene, triggerPhrase]);
 
   // SCENE ORCHESTRATION - Simplified for manual control
 

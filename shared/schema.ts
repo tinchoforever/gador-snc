@@ -44,6 +44,18 @@ export type PhraseState = z.infer<typeof phraseStateSchema>;
 export type SocketMessage = z.infer<typeof socketMessageSchema>;
 export type InstallationState = z.infer<typeof installationStateSchema>;
 
+// Auto-triggered phrases for Scene 1
+export const SCENE1_AUTO_PHRASES = [
+  "Hoy la misión es clara: motivar, inspirar y sumar confianza.",
+  "¿Traje el cargador del celu? ¿Necesitaré adaptador?",
+  "Respirá profundo: convención, allá vamos.",
+  "Último repaso mental: todo bajo control.",
+  "Ojalá que la energía positiva sea contagiosa.",
+  "¿Estará mi perfume en el freeshop?",
+  "Tengo que comprar garotos para todos en la oficina.",
+  "Preparada, enfocada y con toda la energía lista."
+];
+
 // Scene data as defined in the concept
 export const SCENES: Scene[] = [
   {
