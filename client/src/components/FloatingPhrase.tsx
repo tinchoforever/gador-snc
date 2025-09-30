@@ -17,31 +17,35 @@ interface FloatingPhraseProps {
  * Simple entrance animations - NO crazy orbital effects
  */
 
-// COLORES OFICIALES DE LA CAMPAÑA GADOR
+// COLORES OFICIALES DE LA CAMPAÑA GADOR - ESPECIFICACIÓN EXACTA
 const VARIANT_STYLES = {
   blue: {
     bg: '#37479d',
     textColor: '#ffffff',
     metaColor: 'rgba(255,255,255,0.8)',
     opacity: 1,
+    borderRadius: '12px', // Mensajes complejos
   },
   lightGrayLarge: {
     bg: '#c6c6c6',
     textColor: '#262322',
     metaColor: '#262322',
     opacity: 1,
+    borderRadius: '16px', // Notificaciones de sistema - efecto 3D
   },
   lightGraySmall: {
     bg: '#f2f3f7',
     textColor: '#0b1825',
     metaColor: '#0b1825',
     opacity: 1,
+    borderRadius: '50%', // Píldoras - totalmente redondeadas
   },
   darkGray: {
     bg: '#434f5d',
-    textColor: '#a0a0a0',
-    metaColor: '#909090',
+    textColor: '#c0c0c0',
+    metaColor: '#a0a0a0',
     opacity: 1,
+    borderRadius: '8px', // Menciones - esquinas suaves
   }
 };
 
@@ -218,42 +222,39 @@ export default function FloatingPhrase({
   ];
   const meta = metas[phraseHash % metas.length];
 
-  // TAMAÑOS VARIADOS - 3 tallas diferentes con más padding en íconos
+  // TAMAÑOS VARIADOS - 50% MÁS GRANDES según spec
   const sizes = {
     small: {
-      padding: '16px 20px',
-      gap: '12px',
-      iconSize: 32,
-      iconContainerSize: 50,
-      metaFontSize: 'clamp(11px, 1.4vw, 14px)',
-      textFontSize: 'clamp(18px, 2.3vw, 24px)',
-      minWidth: 'min(350px, 70vw)',
-      maxWidth: 'min(600px, 82vw)',
-      borderRadius: '14px',
+      padding: '24px 30px',
+      gap: '18px',
+      iconSize: 48,
+      iconContainerSize: 75,
+      metaFontSize: 'clamp(16px, 2.1vw, 21px)',
+      textFontSize: 'clamp(27px, 3.5vw, 36px)',
+      minWidth: 'min(525px, 75vw)',
+      maxWidth: 'min(900px, 87vw)',
       fontWeight: 400,
     },
     medium: {
-      padding: '24px 30px',
-      gap: '18px',
-      iconSize: 40,
-      iconContainerSize: 64,
-      metaFontSize: 'clamp(14px, 1.8vw, 18px)',
-      textFontSize: 'clamp(24px, 3vw, 32px)',
-      minWidth: 'min(500px, 80vw)',
-      maxWidth: 'min(750px, 87vw)',
-      borderRadius: '18px',
+      padding: '36px 45px',
+      gap: '27px',
+      iconSize: 60,
+      iconContainerSize: 96,
+      metaFontSize: 'clamp(21px, 2.7vw, 27px)',
+      textFontSize: 'clamp(36px, 4.5vw, 48px)',
+      minWidth: 'min(750px, 85vw)',
+      maxWidth: 'min(1125px, 90vw)',
       fontWeight: 600,
     },
     large: {
-      padding: '32px 42px',
-      gap: '24px',
-      iconSize: 48,
-      iconContainerSize: 76,
-      metaFontSize: 'clamp(16px, 2vw, 22px)',
-      textFontSize: 'clamp(30px, 3.8vw, 42px)',
-      minWidth: 'min(650px, 85vw)',
-      maxWidth: 'min(950px, 93vw)',
-      borderRadius: '22px',
+      padding: '48px 63px',
+      gap: '36px',
+      iconSize: 72,
+      iconContainerSize: 114,
+      metaFontSize: 'clamp(24px, 3vw, 33px)',
+      textFontSize: 'clamp(45px, 5.7vw, 63px)',
+      minWidth: 'min(975px, 90vw)',
+      maxWidth: 'min(1425px, 95vw)',
       fontWeight: 700,
     }
   };

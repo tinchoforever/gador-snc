@@ -1,0 +1,37 @@
+1. Estilos y Colores (Paleta Actualizada)
+Aplicamos tus colores a los tipos de notificaciones identificados.
+Estilo AZUL (Para Mensajes Complejos)
+Fondo de Caja: #37479d
+Color de Texto: #ffffff
+Uso: Ideal para notificaciones con múltiples líneas de texto (título y cuerpo), como la de "Pienso todo al mismo tiempo".
+Estilo GRIS CLARO grandes (Para Notificaciones de Sistema)
+Fondo de Caja: #c6c6c6
+Color de Texto: #262322
+Uso: Perfecto para notificaciones prominentes y de sistema, como la de "Me late el corazón muy rápido". Su tamaño y color le dan un peso visual importante.
+Estilo GRIS CLARO chicos (Para Alertas o Píldoras)
+Fondo de Caja: #f2f3f7
+Color de Texto: #0b1825
+Uso: Para mensajes cortos, simples y directos, a menudo con un icono al lado, como la de "Me preocupo y no puedo dormirme". Su forma de píldora la hace compacta.
+Estilo GRIS OSCURO (Para Menciones o Tareas)
+Fondo de Caja: #434f5d
+Color de Texto: #79797a
+Uso: Funciona bien para notificaciones secundarias o de contexto, como menciones (@vos) o estados. El bajo contraste entre texto y fondo la hace menos intrusiva.
+2. Tipos de Cajas (Estructura y Proporciones)
+La forma y estructura de cada caja sigue siendo la misma, independientemente del color.
+Caja de Mención (Estilo GRIS OSCURO):
+Forma: Rectángulo con esquinas redondeadas (8px).
+Estructura: [Icono] [Espacio de 8px] [Texto]
+Caja de Notificación Clásica (Estilo GRIS CLARO grandes):
+Forma: Rectángulo grande con esquinas más pronunciadas (16px) y efecto visual 3D.
+Estructura: [Icono] [Espacio de 12px] [Texto Principal] y texto secundario alineado a la derecha.
+Caja tipo Píldora (Estilo GRIS CLARO chicos):
+Forma: Totalmente redondeada (radio de esquina es 50% de la altura).
+Estructura: [Icono] [Espacio de 8px] [Texto]
+Caja de Mensaje Complejo (Estilo AZUL):
+Forma: Rectángulo con esquinas redondeadas (12px).
+Estructura: Múltiples filas para título, texto principal y metadatos, con espaciado vertical de 4px entre ellas.
+3. Distribución en la Pantalla (Layout)
+La disposición de las cajas en la imagen principal se mantiene y es clave para el mensaje.
+Fondo General: El color de fondo #c7c7c7 actuaría como el lienzo sobre el cual se despliega el caos.
+Layout Caótico: Las cajas no siguen una grilla. Están distribuidas de forma desordenada para simular una "tormenta de notificaciones" que representa la ansiedad.
+Superposición y Rotación: Las cajas se apilan y se giran ligeramente (-5° a +5°) para dar una sensación de desorden, profundidad y agobio visual.
