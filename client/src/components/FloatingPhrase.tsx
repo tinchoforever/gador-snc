@@ -128,25 +128,37 @@ export default function FloatingPhrase({
     masterTimeline.current = tl;
   };
 
-  // Random variant for chaotic notification storm
+  // Hash function to get consistent random values for each phrase
+  const getHash = (str: string) => {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash;
+    }
+    return Math.abs(hash);
+  };
+
+  // Deterministic variant based on phrase text
   const variants = ['grey', 'darkBlue', 'accentBlue', 'black', 'errorRed'] as const;
-  const variant = variants[Math.floor(Math.random() * variants.length)];
+  const phraseHash = getHash(phrase.text);
+  const variant = variants[phraseHash % variants.length];
   const styles = VARIANT_STYLES[variant];
   
-  // Random icon (or sometimes none for chaos)
-  const showIcon = Math.random() > 0.3; // 70% chance to show icon
-  const iconConfig = ICON_OPTIONS[Math.floor(Math.random() * ICON_OPTIONS.length)];
+  // Consistent icon for this phrase (or none)
+  const showIcon = (phraseHash % 10) > 3; // 70% chance to show icon
+  const iconConfig = ICON_OPTIONS[phraseHash % ICON_OPTIONS.length];
   const IconComponent = iconConfig.icon;
   
-  // Random shadow depth for layering
-  const useSoftShadow = Math.random() > 0.5;
+  // Consistent shadow depth for this phrase
+  const useSoftShadow = (phraseHash % 2) === 0;
   const shadow = useSoftShadow 
     ? '0 8px 20px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04)' // soft - background noise
     : '0 20px 50px rgba(0,0,0,0.25), 0 8px 16px rgba(0,0,0,0.15)'; // strong - intrusive foreground
   
-  // Generate meta time
+  // Generate meta time (still random for variety)
   const metas = ['ahora', 'hace 1 min', 'hace 2 min', 'lun 1:21'];
-  const meta = metas[Math.floor(Math.random() * metas.length)];
+  const meta = metas[phraseHash % metas.length];
 
   return (
     <div 
