@@ -38,7 +38,7 @@ const VARIANT_STYLES = {
     textColor: '#0b1825',
     metaColor: '#0b1825',
     opacity: 1,
-    borderRadius: '999px', // Píldoras - redondeadas pero no elipses
+    borderRadius: '10px', // Rectángulo con esquinas redondeadas
   },
   darkGray: {
     bg: '#434f5d',
