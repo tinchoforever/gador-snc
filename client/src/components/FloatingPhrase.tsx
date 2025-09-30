@@ -173,8 +173,8 @@ export default function FloatingPhrase({
   const variant = variants[phraseHash % variants.length];
   const styles = VARIANT_STYLES[variant];
   
-  // Random icon for each instance
-  const showIcon = (phraseHash % 10) > 3; // 70% chance to show icon
+  // Random icon for each instance - ONLY 30% have icons
+  const showIcon = (phraseHash % 10) > 6; // 30% chance to show icon
   const iconConfig = ICON_OPTIONS[phraseHash % ICON_OPTIONS.length];
   const IconComponent = iconConfig.icon;
   
