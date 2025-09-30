@@ -226,14 +226,14 @@ export default function FloatingPhrase({
   ];
   const meta = metas[phraseHash % metas.length];
 
-  // TAMAÑOS VARIADOS - 3 tallas diferentes
+  // TAMAÑOS VARIADOS - 3 tallas diferentes con más padding en íconos
   const sizeVariant = phraseHash % 3;
   const sizes = {
     small: {
       padding: '16px 20px',
       gap: '12px',
-      iconSize: 40,
-      iconContainerSize: 42,
+      iconSize: 32,
+      iconContainerSize: 50,
       metaFontSize: 'clamp(11px, 1.4vw, 14px)',
       textFontSize: 'clamp(18px, 2.3vw, 24px)',
       minWidth: 'min(350px, 70vw)',
@@ -244,8 +244,8 @@ export default function FloatingPhrase({
     medium: {
       padding: '24px 30px',
       gap: '18px',
-      iconSize: 52,
-      iconContainerSize: 56,
+      iconSize: 40,
+      iconContainerSize: 64,
       metaFontSize: 'clamp(14px, 1.8vw, 18px)',
       textFontSize: 'clamp(24px, 3vw, 32px)',
       minWidth: 'min(500px, 80vw)',
@@ -256,8 +256,8 @@ export default function FloatingPhrase({
     large: {
       padding: '32px 42px',
       gap: '24px',
-      iconSize: 62,
-      iconContainerSize: 68,
+      iconSize: 48,
+      iconContainerSize: 76,
       metaFontSize: 'clamp(16px, 2vw, 22px)',
       textFontSize: 'clamp(30px, 3.8vw, 42px)',
       minWidth: 'min(650px, 85vw)',
