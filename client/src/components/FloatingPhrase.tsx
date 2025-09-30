@@ -27,7 +27,7 @@ const VARIANT_STYLES = {
     borderRadius: '12px', // Mensajes complejos
   },
   lightGrayLarge: {
-    bg: '#c6c6c6',
+    bg: '#a8a8a8',
     textColor: '#262322',
     metaColor: '#262322',
     opacity: 1,
