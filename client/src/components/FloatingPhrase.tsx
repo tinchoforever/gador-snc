@@ -99,7 +99,14 @@ export default function FloatingPhrase({
       maxWidth: '40vw', // Constrain to 40% of viewport width
     });
     
-    const tl = gsap.timeline();
+    const tl = gsap.timeline({
+      onComplete: () => {
+        if (onAnimationComplete) {
+          onAnimationComplete();
+          console.log(`🗑️ Removed completed phrase: "${phrase.text}"`);
+        }
+      }
+    });
     
     // SEQUENTIAL entrance with stagger based on stackIndex
     const delay = (stackIndex || 0) * 0.3; // Stagger by 0.3s per notification
@@ -118,7 +125,7 @@ export default function FloatingPhrase({
       x: `+=${gsap.utils.random(-6, 6)}`,
       duration: 3.5, 
       yoyo: true, 
-      repeat: -1, 
+      repeat: 3,
       ease: "sine.inOut" 
     }, "+=0.3");
     
@@ -127,9 +134,17 @@ export default function FloatingPhrase({
       rotate: `+=${gsap.utils.random(-3, 3)}`, 
       duration: 4.5, 
       yoyo: true, 
-      repeat: -1, 
+      repeat: 2,
       ease: "sine.inOut" 
     }, "<");
+
+    // Exit animation - fade out after life cycle
+    tl.to(el, {
+      opacity: 0,
+      scale: 0.9,
+      duration: 0.8,
+      ease: "power2.in"
+    }, "+=2");
 
     masterTimeline.current = tl;
   };
