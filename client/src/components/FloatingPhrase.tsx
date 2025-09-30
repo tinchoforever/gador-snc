@@ -23,7 +23,7 @@ const VARIANT_STYLES = {
     bg: '#37479d',
     textColor: '#ffffff',
     metaColor: 'rgba(255,255,255,0.8)',
-    opacity: 0.85,
+    opacity: 0.9,
     borderRadius: '12px', // Mensajes complejos
   },
   lightGrayLarge: {
@@ -37,7 +37,7 @@ const VARIANT_STYLES = {
     bg: '#f2f3f7',
     textColor: '#0b1825',
     metaColor: '#0b1825',
-    opacity: 0.8,
+    opacity: 0.9,
     borderRadius: '10px', // Rectángulo con esquinas redondeadas
   },
   darkGray: {
