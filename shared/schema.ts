@@ -56,7 +56,7 @@ export const SCENES: Scene[] = [
       "¿Desenchufé la planchita de pelo?",
       "¿Cómo hago para subirlos a todos al barco de Sistema Nervioso Central?",
       "¿Por qué no me habré puesto zapatos más cómodos?",
-      "¿Los chicos estarán haciendo la tarea o viendo youtube?",
+      "Los chicos estarán haciendo la tarea o viendo YouTube?",
       "Hoy la misión es clara: motivar, inspirar y sumar confianza.",
       "¿Traje el cargador del celu? ¿Necesitaré adaptador?",
       "Respirá profundo: convención, allá vamos.",
