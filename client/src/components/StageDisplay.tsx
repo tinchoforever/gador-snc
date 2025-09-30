@@ -8,6 +8,7 @@ import { gsap } from 'gsap';
 interface StageDisplayProps {
   installationState: InstallationState;
   onStateChange?: (newState: InstallationState) => void;
+  phraseTrigger?: { phraseText: string; sceneId: number; timestamp: number } | null;
 }
 
 // Ghost phrases for background - from mental health campaign
@@ -23,7 +24,7 @@ const GHOST_PHRASES = [
   "me olvido",
 ];
 
-export default function StageDisplay({ installationState, onStateChange }: StageDisplayProps) {
+export default function StageDisplay({ installationState, onStateChange, phraseTrigger }: StageDisplayProps) {
   const [phrases, setPhrases] = useState<PhraseState[]>(installationState.activePhrases);
   const [floatingIcons, setFloatingIcons] = useState<Array<{ id: string }>>([]);
   const [showPhotoMode, setShowPhotoMode] = useState(false);
@@ -87,7 +88,7 @@ export default function StageDisplay({ installationState, onStateChange }: Stage
     return { lane: 'B' as const, entry: 'focus' as const };
   };
 
-  const triggerPhrase = (phraseText: string, sceneId: number) => {
+  const triggerPhrase = useCallback((phraseText: string, sceneId: number) => {
     // PREVENT DUPLICATES
     const existingPhrase = phrases.find(p => p.text === phraseText && p.isActive);
     if (existingPhrase) {
@@ -119,7 +120,14 @@ export default function StageDisplay({ installationState, onStateChange }: Stage
     // NOTIFICATIONS STAY FOREVER - no auto-cleanup
     
     playAudio(newPhrase.id);
-  };
+  }, [phrases, playAudio]);
+
+  // Listen for phrase trigger requests from parent
+  useEffect(() => {
+    if (phraseTrigger) {
+      triggerPhrase(phraseTrigger.phraseText, phraseTrigger.sceneId);
+    }
+  }, [phraseTrigger, triggerPhrase]);
 
   // SCENE ORCHESTRATION - Simplified for manual control
 
