@@ -79,9 +79,10 @@ export default function FloatingPhrase({
     const el = containerRef.current;
     if (!el) return;
 
-    // NIGHTMARE MODE: Random positioning across entire screen
-    const randomX = gsap.utils.random(5, 95);
-    const randomY = gsap.utils.random(10, 85);
+    // NIGHTMARE MODE: Random positioning - but keep within screen bounds
+    // Use smaller range to ensure notifications don't go off-screen
+    const randomX = gsap.utils.random(15, 85); // More centered to avoid edges
+    const randomY = gsap.utils.random(15, 75); // Keep away from top/bottom edges
     const rotation = gsap.utils.random(-8, 8);
     
     // Position absolutely and randomly
@@ -106,10 +107,10 @@ export default function FloatingPhrase({
       ease: "back.out(1.4)" 
     });
     
-    // Chaotic floating - bigger movements
+    // Chaotic floating - smaller movements to keep in bounds
     tl.to(el, { 
-      y: `+=${gsap.utils.random(-20, 20)}`,
-      x: `+=${gsap.utils.random(-15, 15)}`,
+      y: `+=${gsap.utils.random(-10, 10)}`,
+      x: `+=${gsap.utils.random(-10, 10)}`,
       duration: 4, 
       yoyo: true, 
       repeat: -1, 
