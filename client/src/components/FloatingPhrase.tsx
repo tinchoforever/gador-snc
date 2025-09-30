@@ -128,7 +128,7 @@ export default function FloatingPhrase({
     masterTimeline.current = tl;
   };
 
-  // Hash function to get consistent random values for each phrase
+  // Hash function based on phrase ID for truly unique random per instance
   const getHash = (str: string) => {
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
@@ -139,24 +139,24 @@ export default function FloatingPhrase({
     return Math.abs(hash);
   };
 
-  // Deterministic variant based on phrase text
+  // TRULY RANDOM variant based on unique phrase ID (not text)
   const variants = ['grey', 'darkBlue', 'accentBlue', 'black', 'errorRed'] as const;
-  const phraseHash = getHash(phrase.text);
+  const phraseHash = getHash(phrase.id); // Use ID instead of text for randomness
   const variant = variants[phraseHash % variants.length];
   const styles = VARIANT_STYLES[variant];
   
-  // Consistent icon for this phrase (or none)
+  // Random icon for each instance
   const showIcon = (phraseHash % 10) > 3; // 70% chance to show icon
   const iconConfig = ICON_OPTIONS[phraseHash % ICON_OPTIONS.length];
   const IconComponent = iconConfig.icon;
   
-  // Consistent shadow depth for this phrase
+  // Random shadow depth per instance
   const useSoftShadow = (phraseHash % 2) === 0;
   const shadow = useSoftShadow 
     ? '0 8px 20px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04)' // soft - background noise
     : '0 20px 50px rgba(0,0,0,0.25), 0 8px 16px rgba(0,0,0,0.15)'; // strong - intrusive foreground
   
-  // Generate meta time (still random for variety)
+  // Generate meta time
   const metas = ['ahora', 'hace 1 min', 'hace 2 min', 'lun 1:21'];
   const meta = metas[phraseHash % metas.length];
 
