@@ -167,16 +167,16 @@ export default function FloatingPhrase({
       style={{
         position: 'absolute',
         display: 'flex',
-        gap: showIcon ? '18px' : '0px',
+        gap: showIcon ? '36px' : '0px',
         alignItems: 'flex-start',
-        borderRadius: '16px',
-        padding: '24px 28px',
+        borderRadius: '32px',
+        padding: '48px 56px',
         border: 'none',
         boxShadow: shadow,
         background: styles.bg,
         willChange: 'transform, opacity',
-        minWidth: '480px',
-        maxWidth: '750px',
+        minWidth: '960px',
+        maxWidth: '1400px',
         width: 'auto',
       }}
       data-testid={`floating-phrase-${phrase.id}`}
@@ -185,19 +185,19 @@ export default function FloatingPhrase({
       {showIcon && (
         <div 
           style={{
-            width: '48px',
-            height: '48px',
+            width: '96px',
+            height: '96px',
             borderRadius: '50%',
             display: 'grid',
             placeItems: 'center',
             flexShrink: 0,
             background: iconConfig.bg,
             color: iconConfig.color,
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+            boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
           }}
           aria-hidden="true"
         >
-          <IconComponent size={24} strokeWidth={2.5} />
+          <IconComponent size={48} strokeWidth={2.5} />
         </div>
       )}
       
@@ -208,11 +208,11 @@ export default function FloatingPhrase({
           style={{
             fontFamily: '"Avenir Next", Helvetica, sans-serif',
             fontWeight: 400,
-            fontSize: '14px',
+            fontSize: '28px',
             lineHeight: 1.4,
             color: styles.metaColor,
-            letterSpacing: '0.2px',
-            marginBottom: '4px',
+            letterSpacing: '0.4px',
+            marginBottom: '8px',
           }}
         >
           {meta}
@@ -223,7 +223,7 @@ export default function FloatingPhrase({
           style={{
             fontFamily: '"Avenir Next", Helvetica, sans-serif',
             fontWeight: 700,
-            fontSize: 'clamp(24px, 2.8vw, 28px)',
+            fontSize: 'clamp(48px, 5.6vw, 56px)',
             lineHeight: 1.25,
             color: styles.textColor,
             wordBreak: 'break-word',
