@@ -31,10 +31,10 @@ const VARIANT_STYLES = {
     metaColor: 'rgba(255,255,255,0.8)',
     opacity: 1,
   },
-  received: {
-    bg: '#D1FAE5',
-    textColor: '#000000',
-    metaColor: '#333333',
+  lightBlue: {
+    bg: '#BFDBFE',
+    textColor: '#1E3A8A',
+    metaColor: '#1E40AF',
     opacity: 1,
   },
   darkBlue: {
@@ -189,7 +189,7 @@ export default function FloatingPhrase({
   };
 
   // TRULY RANDOM variant based on unique phrase ID (not text)
-  const variants = ['standard', 'sent', 'received', 'darkBlue', 'reminder', 'mention', 'tag'] as const;
+  const variants = ['standard', 'sent', 'lightBlue', 'darkBlue', 'reminder', 'mention', 'tag'] as const;
   const phraseHash = getHash(phrase.id); // Use ID instead of text for randomness
   const variant = variants[phraseHash % variants.length];
   const styles = VARIANT_STYLES[variant];
@@ -230,37 +230,40 @@ export default function FloatingPhrase({
   const sizeVariant = phraseHash % 3;
   const sizes = {
     small: {
-      padding: '18px 24px',
-      gap: '14px',
-      iconSize: 45,
-      iconContainerSize: 45,
-      metaFontSize: 'clamp(12px, 1.5vw, 15px)',
-      textFontSize: 'clamp(20px, 2.5vw, 26px)',
-      minWidth: 'min(400px, 75vw)',
-      maxWidth: 'min(650px, 85vw)',
-      borderRadius: '16px',
+      padding: '16px 20px',
+      gap: '12px',
+      iconSize: 40,
+      iconContainerSize: 42,
+      metaFontSize: 'clamp(11px, 1.4vw, 14px)',
+      textFontSize: 'clamp(18px, 2.3vw, 24px)',
+      minWidth: 'min(350px, 70vw)',
+      maxWidth: 'min(600px, 82vw)',
+      borderRadius: '14px',
+      fontWeight: 400,
     },
     medium: {
       padding: '24px 30px',
       gap: '18px',
-      iconSize: 50,
-      iconContainerSize: 55,
+      iconSize: 52,
+      iconContainerSize: 56,
       metaFontSize: 'clamp(14px, 1.8vw, 18px)',
-      textFontSize: 'clamp(24px, 3vw, 30px)',
+      textFontSize: 'clamp(24px, 3vw, 32px)',
       minWidth: 'min(500px, 80vw)',
       maxWidth: 'min(750px, 87vw)',
       borderRadius: '18px',
+      fontWeight: 600,
     },
     large: {
-      padding: '32px 40px',
-      gap: '22px',
-      iconSize: 55,
-      iconContainerSize: 65,
-      metaFontSize: 'clamp(16px, 2vw, 20px)',
-      textFontSize: 'clamp(28px, 3.5vw, 38px)',
-      minWidth: 'min(600px, 85vw)',
-      maxWidth: 'min(900px, 92vw)',
+      padding: '32px 42px',
+      gap: '24px',
+      iconSize: 62,
+      iconContainerSize: 68,
+      metaFontSize: 'clamp(16px, 2vw, 22px)',
+      textFontSize: 'clamp(30px, 3.8vw, 42px)',
+      minWidth: 'min(650px, 85vw)',
+      maxWidth: 'min(950px, 93vw)',
       borderRadius: '22px',
+      fontWeight: 700,
     }
   };
   
@@ -325,11 +328,11 @@ export default function FloatingPhrase({
           {meta}
         </div>
         
-        {/* Main intrusive thought - tamaño variado */}
+        {/* Main intrusive thought - tamaño y peso variado */}
         <div 
           style={{
             fontFamily: '"Avenir Next", Helvetica, sans-serif',
-            fontWeight: 700,
+            fontWeight: currentSize.fontWeight,
             fontSize: currentSize.textFontSize,
             lineHeight: 1.25,
             color: styles.textColor,
