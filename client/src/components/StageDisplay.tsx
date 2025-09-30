@@ -158,18 +158,18 @@ export default function StageDisplay({ installationState, onStateChange }: Stage
     }
   }, [installationState.currentScene, sceneState.scene1Cooldown]);
 
-  // Íconos flotantes independientes - Scene 1 - MENOS FRECUENTES
+  // Íconos flotantes independientes - Scene 1 - RESTAURADOS
   useEffect(() => {
     if (installationState.currentScene === 1) {
       const iconInterval = setInterval(() => {
-        // 30% chance de generar un ícono flotante - MENOS ÍCONOS
-        if (Math.random() > 0.7) {
+        // 50% chance de generar un ícono flotante
+        if (Math.random() > 0.5) {
           const newIcon = {
             id: `icon-${Date.now()}-${Math.random()}`
           };
           setFloatingIcons(prev => [...prev, newIcon]);
         }
-      }, Math.random() * 4000 + 3000); // Cada 3-7 segundos - MÁS LENTO
+      }, 2000 + Math.random() * 3000); // Cada 2-5 segundos
 
       return () => clearInterval(iconInterval);
     } else {
