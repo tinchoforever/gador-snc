@@ -1,0 +1,155 @@
+1. Core Concept
+
+The design visualizes intrusive thoughts as notifications.
+
+White background = clean, clinical, neutral → references mental health campaigns.
+
+Notifications = chaotic, stacked, overlapping → the “noise” of the mind.
+
+Ghost text = faint, floating background phrases → subconscious chatter.
+
+2. Color & Style Guide
+Background
+
+Pure White: #FFFFFF
+
+Purpose: neutrality, maximum contrast for notifications and ghost text.
+
+Notifications (Foreground Bubbles)
+
+Primary Grey Bubble: #F5F5F5
+
+For less intense thoughts.
+
+Highlight Blue Bubble: #0033A0 (Gador Blue)
+
+For more impactful or emotional phrases.
+
+Accent Teal Bubble: #00A99D
+
+For variation and modernity.
+
+Shadow: 0 2px 10px rgba(0, 0, 0, 0.1)
+
+Corner Radius: 12–16px
+
+Layout: stacked vertically, slightly overlapped, slight random tilt (±3°).
+
+Ghost Text (Background Layer)
+
+Color: #1A1A1A at 10–15% opacity
+
+Purpose: whispers, subconscious noise.
+
+Movement: slow fade in/out, drifting horizontally.
+
+Typography
+
+Primary Font: Avenir Next (Regular / Bold)
+
+Fallback: Helvetica
+
+Size:
+
+Notifications: 18–22px
+
+Ghost text: 28–40px, low opacity
+
+Color: #1A1A1A (dark grey/black) for text inside notifications.
+
+Emoji Usage
+
+Limited, as accents only (⚡😟📩).
+
+Used sparingly inside some notification bubbles.
+
+3. Animation & Motion
+Notification Behavior
+
+Entrance
+
+Motion: slide up from bottom + fade in + slight scale-up (1.05 → 1.0).
+
+Duration: 0.4–0.6s.
+
+Stagger: 0.2–0.3s random delay.
+
+Idle State
+
+Subtle floating: 2–6px vertical oscillation.
+
+Tilt: ±2–3°, slow drift.
+
+Loop: infinite, slow sine ease.
+
+Exit
+
+Fade upward with blur.
+
+Duration: 0.5–1s.
+
+Keep max 4–5 notifications visible at once.
+
+Ghost Text Behavior
+
+Fade in → linger (5–8s) → fade out.
+
+Random positioning (behind notifications).
+
+Opacity: 0.1–0.15 (never distracts).
+
+Motion: slow horizontal drift (20–40px across 10s).
+
+4. Timeline (Scene Flow)
+
+Opening Phase
+
+One notification enters (centered).
+
+Second notification joins after 0.5s.
+
+Ghost text begins to fade in background.
+
+Build-Up Phase
+
+Notifications keep stacking (3–5 max).
+
+Slight overlap and tilt create controlled chaos.
+
+Ghost text increases in density.
+
+Peak Phase
+
+Notifications float, drift, overlap more.
+
+Ghost text layered in background (like intrusive subconscious noise).
+
+Resolution Phase (Optional)
+
+Notifications fade out one by one.
+
+Ghost text dissolves, leaving blank white screen.
+
+5. Developer Implementation Notes
+
+GSAP for notification motion (entrance, floating, exit).
+
+Opacity + blur filters for ghost text fade in/out.
+
+Layering order:
+
+Base: white background.
+
+Layer 2: ghost text (low opacity).
+
+Layer 3: notifications (primary focus).
+
+Performance: limit active notifications to ~5, ghost text to ~10 simultaneously.
+
+✅ This spec ensures:
+
+Designers know exact colors, typography, and layout rules.
+
+Developers know timing, easing, and motion specs (GSAP-friendly).
+
+Client sees a clear reference to the mental health campaign style, but adapted to the interactive digital piece.

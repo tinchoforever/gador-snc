@@ -1,0 +1,75 @@
+📖 Animation & Design Direction – White Background Notifications
+1. Core Concept
+
+The animation must simulate how intrusive thoughts feel like push notifications that keep popping up on your screen.
+
+The white background ensures clarity and keeps the focus on the floating notifications.
+
+The notifications should layer on top of each other, slightly messy, to represent the chaos of the mind.
+
+The design must stay consistent with the mental health campaign visuals (clean typography, soft shadows, no overload of emojis).
+
+2. Visual Language
+
+Colors:
+
+Notifications alternate between blue (highlight / anxiety peaks), light grey (background intrusive thoughts), and dark green/black (chat style, personal doubts).
+
+Background words (like “qué hacer”, “inseguro”, “incómodo”) are in very light grey, almost invisible, to simulate constant mental noise.
+
+Typography: Use Avenir Next / Helvetica, same as campaign assets. Strong, legible, modern.
+
+Shadows & Depth: Each notification should feel like a card hovering, with soft shadows. This gives a sense of layers of thoughts.
+
+3. Motion Principles
+
+Entrance (pop-in)
+
+Notifications should slide/fade in from below with a very short bounce, like a phone alert.
+
+They should come in slightly staggered (not all at once) to create rhythm.
+
+Idle State (subtle floating)
+
+Once on screen, notifications float gently (2–6px up/down).
+
+Some notifications tilt a few degrees to feel organic and chaotic.
+
+This “micro-motion” gives life without overwhelming.
+
+Exit (fade out)
+
+Older notifications fade upward and blur slightly, like disappearing thoughts.
+
+Always keep only 3–5 visible at once so it doesn’t feel cluttered.
+
+Background words (ghost thoughts)
+
+Random phrases softly appear and disappear in the background.
+
+They are not interactive; they just add depth and atmosphere.
+
+Their opacity stays below 10–15% so they never compete with the main messages.
+
+4. Narrative Flow
+
+Scene Start: Notifications appear slowly, one by one, simulating the first anxious thoughts.
+
+Build-up: More notifications come in, overlapping and rotating slightly, giving the feeling of “mental overload.”
+
+Climax: The screen looks filled but still readable — like a “constellation” of worries.
+
+Resolution (optional for campaign video): Notifications fade out or transform into calmer, positive phrases, aligning with the health message.
+
+5. Why This Works
+
+The messy stacking mimics how anxiety feels: too many thoughts competing at once.
+
+The limited palette & consistent style ensure it looks professional and not childish.
+
+The GSAP-like micro-motions (subtle floating, staggered entry) make the animation feel alive and premium.
+
+By using real phrases from the project (not random text), the animation connects emotionally with the viewer.
+
+✅ This explanation = your core design bible.
+From here, devs can translate it into GSAP/After Effects, and designers can QA for pixel perfection.

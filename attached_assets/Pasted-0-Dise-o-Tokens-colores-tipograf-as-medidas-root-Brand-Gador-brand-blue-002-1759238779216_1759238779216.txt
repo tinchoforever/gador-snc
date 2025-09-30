@@ -1,0 +1,237 @@
+0) Diseño → Tokens (colores, tipografías, medidas)
+:root{
+  /* Brand — Gador */
+  --brand-blue: #0027AF;         /* azul corporativo */
+  --brand-teal: #00A99D;
+  --brand-ltblue: #78C4E6;
+
+  /* UI */
+  --bg-white: #FFFFFF;
+  --ink-900: #0F172A;            /* texto principal (casi negro) */
+  --ink-700: #374151;            /* secundario */
+  --ink-500: #6B7280;            /* meta / time */
+  --hairline: rgba(15,23,42,0.06); /* bordes finos */
+  --shadowA: 0 12px 28px rgba(15,23,42,0.10);
+  --shadowB: 0 3px 8px rgba(15,23,42,0.06);
+
+  /* Notif palettes (como campaña) */
+  --notif-blue: #2F6BED;         /* tarjeta azul tipo iOS */
+  --notif-blue-ink: #FFFFFF;
+  --notif-grey: #F7F8FA;         /* tarjeta clara */
+  --notif-green: #0EA36E;        /* pill “online/ok” */
+
+  /* Dim text de fondo (frases sueltas) */
+  --bg-ghost: rgba(15,23,42,0.08);
+}
+html,body{height:100%;margin:0;background:var(--bg-white);font-family:"Avenir Next", Helvetica, Arial, system-ui;}
+
+
+Tipografía
+
+Avenir Next / Helvetica (los archivos que pasaste).
+
+Títulos: 600; mensajes: 500–600; meta: 400.
+
+Radii & spacing
+
+Border-radius notif: 18px
+
+Padding notif: 16–18px
+
+Icon square: 36–40px con 12px de radio
+
+Separación entre notificaciones: 14–18px
+
+Sombras
+
+box-shadow: var(--shadowA), var(--shadowB) (sutil, moderno)
+
+1) Layout 1920×1080 (16:9)
+#stage{position:relative;width:100%;height:100vh;overflow:hidden;}
+#stack{position:absolute; inset:8% 6%; /* safe area */ }
+
+
+Composición caótica controlada: 1–2 notifs grandes en primer plano (azules), 2–3 grises detrás, 1 verde pequeña.
+
+Algunas cajas ligeramente rotadas (-2° a +3°) para energía.
+
+Frases de fondo (gris 8–10% opacidad) en tamaños 36–64px, dispersas.
+
+2) Componentes
+2.1 Notificación (HTML y CSS)
+<article class="toast toast--blue">
+  <div class="toast__icon" aria-hidden="true">💬</div>
+  <div class="toast__body">
+    <div class="toast__title">Te enviaste un mensaje</div>
+    <div class="toast__msg">Me tiemblan las manos</div>
+  </div>
+  <div class="toast__meta">hace 1 min</div>
+  <button class="toast__close" aria-label="Cerrar">✕</button>
+</article>
+
+.toast{
+  position:relative; display:flex; gap:12px; align-items:flex-start;
+  border-radius:18px; padding:16px 18px; margin:16px 0;
+  border:1px solid var(--hairline); box-shadow:var(--shadowA), var(--shadowB);
+  transform:translateY(12px) scale(.995) rotate(var(--rot,0deg));
+  opacity:0; filter:blur(0);
+  will-change:transform,opacity,filter;
+}
+.toast__icon{
+  width:40px;height:40px;border-radius:12px;display:grid;place-items:center;flex:none;
+  font-size:18px;background:linear-gradient(180deg,var(--brand-teal),var(--brand-ltblue));
+  color:#fff; box-shadow:0 2px 6px rgba(0,0,0,.08), inset 0 0 0 2px rgba(255,255,255,.75);
+}
+.toast__body{flex:1; min-width:0}
+.toast__title{font:600 14px/1.3 "Avenir Next", Helvetica; color:var(--ink-700); letter-spacing:.2px}
+.toast__msg{font:600 clamp(18px,2.1vw,28px)/1.15 "Avenir Next", Helvetica; color:var(--ink-900); margin-top:2px; word-break:break-word}
+.toast__meta{color:var(--ink-500); font:400 12px/1 "Avenir Next", Helvetica; margin-left:8px}
+.toast__close{all:unset; cursor:pointer; font-size:16px; color:var(--ink-500); padding:4px}
+
+.toast--grey{ background:var(--notif-grey); }
+.toast--blue{ background:var(--notif-blue); border-color:transparent; }
+.toast--blue .toast__title, .toast--blue .toast__meta{ color: rgba(255,255,255,.9); }
+.toast--blue .toast__msg{ color: var(--notif-blue-ink); }
+.toast--green{ background:#0B1F17; border-color:transparent; } /* cuadro oscuro como WhatsApp */
+.toast--green .toast__msg{ color:#E8FFF5; }
+
+2.2 Frases sueltas de fondo
+<div id="bg-phrases">
+  <span class="bgword">qué hacer</span>
+  <span class="bgword">debería cancelar</span>
+  <span class="bgword">no puedo concentrarme</span>
+</div>
+
+#bg-phrases{ position:absolute; inset:0; pointer-events:none; }
+.bgword{
+  position:absolute; color:var(--bg-ghost); font:600 clamp(28px,3vw,64px)/1.05 "Avenir Next";
+  white-space:nowrap; transform: translate(-50%,-50%) rotate(var(--r,0deg));
+}
+
+
+Las posiciones de .bgword se setean por JS para aleatoriedad (ver §4).
+
+3) Core de Animación (GSAP)
+
+Easing base: const EASE = "cubic-bezier(.22,.61,.36,1)"; (iOS-like)
+
+3.1 Entrada, idle, salida (una notificación)
+import 'https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js';
+
+function animateIn(el, delay=0){
+  gsap.set(el,{ opacity:0, y:12, scale:0.995, rotate:gsap.utils.random(-2,3), transformOrigin:"50% 50%" });
+  gsap.to(el,{ opacity:1, y:0, scale:1, duration:0.42, ease:EASE, delay });
+  // idle: flotación muy sutil
+  gsap.to(el,{ y:"+=6", duration:3.2, yoyo:true, repeat:-1, ease:"sine.inOut", delay:delay+0.42 });
+  gsap.to(el,{ rotate:`+=${gsap.utils.random(-0.6,0.6)}`, duration:6, yoyo:true, repeat:-1, ease:"sine.inOut", delay:delay+0.42 });
+}
+function animateOut(el, cb){
+  gsap.to(el,{ opacity:0, y:-12, scale:.995, filter:"blur(2px)", duration:0.28, ease:EASE, onComplete:cb });
+}
+
+3.2 Gestor de pila (FIFO, máx. 4 visibles)
+const stack = document.getElementById('stack');
+const MAX_VISIBLE = 4;
+const queue = [];
+
+function pushToast(node){
+  queue.push(node);
+  processQueue();
+}
+function processQueue(){
+  while (stack.children.length < MAX_VISIBLE && queue.length){
+    const el = queue.shift();
+    stack.appendChild(el);
+    animateIn(el, 0.06 * stack.children.length); // stagger
+    const hold = 2400 + Math.random()*800;
+    setTimeout(()=>animateOut(el, ()=>{ el.remove(); processQueue(); }), hold);
+  }
+}
+
+4) Semilla de escena (frases reales del proyecto)
+const F1 = "¿Y si me olvido de lo que tengo que decir?";
+const F2 = "Capaz no es suficiente lo que preparé...";
+const F3 = "¿Por qué no me habré puesto zapatos más cómodos?";
+const F4 = "¿Los chicos estarán haciendo la tarea o viendo YouTube?";
+const F5 = "¿Desenchufé la planchita de pelo?";
+const F6 = "¿Cómo hago para subirlos a todos al barco de Sistema Nervioso Central?";
+
+function makeToast(msg, variant="grey", meta="ahora", title="Notificación", icon="💬"){
+  const el = document.createElement('article');
+  el.className = `toast toast--${variant}`;
+  el.style.setProperty('--rot', `${gsap.utils.random(-2,3)}deg`);
+  el.innerHTML = `
+    <div class="toast__icon" aria-hidden="true">${icon}</div>
+    <div class="toast__body">
+      <div class="toast__title">${title}</div>
+      <div class="toast__msg">${msg}</div>
+    </div>
+    <div class="toast__meta">${meta}</div>
+    <button class="toast__close" aria-label="Cerrar">✕</button>
+  `;
+  el.querySelector('.toast__close').addEventListener('click', ()=> animateOut(el, ()=>{ el.remove(); processQueue(); }));
+  return el;
+}
+
+/* Composición de ejemplo (inicio de show) */
+pushToast( makeToast(F2, "grey", "ahora", "Recordatorio", "⚡") );
+pushToast( makeToast(F6, "blue", "lun 1:21", "Te enviaste un mensaje", "💬") );
+pushToast( makeToast(F3, "grey", "hace 2 min", "Sugerencia", "🔔") );
+pushToast( makeToast(F5, "grey", "hace 5 min", "Nota rápida", "🧠") );
+setTimeout(()=> pushToast( makeToast(F4, "green", "hoy", "Chat", "🟢") ), 600);
+setTimeout(()=> pushToast( makeToast(F1, "blue", "ahora", "Te enviaste un mensaje", "💬") ), 1200);
+
+5) Frases de fondo (distribución y leve movimiento)
+const bg = document.getElementById('bg-phrases');
+const ghosts = [
+  "qué hacer","debería cancelar","no puedo concentrarme",
+  "tengo que verme","incomodo","por qué"
+];
+ghosts.forEach(word=>{
+  const s=document.createElement('span');
+  s.className='bgword'; s.textContent=word;
+  s.style.left = `${gsap.utils.random(10,90)}%`;
+  s.style.top  = `${gsap.utils.random(12,88)}%`;
+  s.style.setProperty('--r', `${gsap.utils.random(-6,6)}deg`);
+  bg.appendChild(s);
+  // leve vaivén
+  gsap.to(s,{ x: `+=${gsap.utils.random(-10,10)}`, duration: 5+Math.random()*4, repeat:-1, yoyo:true, ease:"sine.inOut" });
+});
+
+6) Escenas & gatillos
+
+Escena 1 (intrusivos): cola automática como el ejemplo; densidad media, 5–6 notifs cíclicas.
+
+Escena 2 (Mic): un botón remoto = pushToast() con la frase del participante; usar variant:"blue" para énfasis.
+
+Escena 3 (afirmaciones): cambia title a “Equipo Gador”, usa variant:"blue" y textos positivos; reduce rotación (-1° a +1°) y aumenta hold a 3–3.5 s para “calma”.
+
+Escena 4 (photobooth): ocultar #stack (opacity:0, pointer-events:none) y mostrar UI de cámara.
+
+Escena 5 (constelación de notifs): pausa processQueue, deja 5 notifs semi-opacas (opacity .7), quita rotación y flota suave por 12 s.
+
+7) Accesibilidad & i18n
+
+role="status" en #stack, aria-live="polite" si necesitas lectores.
+
+Botón toast__close con aria-label="Cerrar".
+
+Evitar flashes > 3 Hz (nuestras animaciones no parpadean).
+
+8) QA (checklist pixel-perfect)
+
+ Fondo 100% blanco (sin gradientes).
+
+ Sombras suaves, no neon.
+
+ Avenir Next/Helvetica en todas las piezas.
+
+ Notifs 18px–28px (desktop) y no solapan texto crítico.
+
+ Max 4 visibles; resto en cola con stagger 60–120 ms.
+
+ Frases de fondo en 8–10% opacidad, lejos del texto principal.
+
+ Rotación sutil (-2° a +3°), movimiento idle 6px up/down.
+
+ Cierre manual funciona y re-acomoda cola.
