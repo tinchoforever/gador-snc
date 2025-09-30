@@ -79,48 +79,53 @@ export default function FloatingPhrase({
     const el = containerRef.current;
     if (!el) return;
 
-    // NIGHTMARE MODE: Random positioning - but keep within screen bounds
-    // Use smaller range to ensure notifications don't go off-screen
-    const randomX = gsap.utils.random(15, 85); // More centered to avoid edges
-    const randomY = gsap.utils.random(15, 75); // Keep away from top/bottom edges
+    // CHAOTIC POSITIONING: Allow overlap, tight stacking, claustrophobia
+    // Wider range but with percentage-based positioning to keep content visible
+    const randomX = gsap.utils.random(20, 80); 
+    const randomY = gsap.utils.random(20, 80); 
     const rotation = gsap.utils.random(-8, 8);
     
-    // Position absolutely and randomly
+    // Position with percentages and translate to keep within bounds
     gsap.set(el, { 
       position: 'absolute',
       left: `${randomX}%`,
       top: `${randomY}%`,
       transform: `translate(-50%, -50%)`,
       opacity: 0, 
-      scale: 0.8, 
+      scale: 0.85, 
       rotate: rotation,
-      transformOrigin: "50% 50%" 
+      transformOrigin: "50% 50%",
+      // Ensure it stays within viewport
+      maxWidth: '40vw', // Constrain to 40% of viewport width
     });
     
     const tl = gsap.timeline();
     
-    // Dramatic entrance
+    // SEQUENTIAL entrance with stagger based on stackIndex
+    const delay = (stackIndex || 0) * 0.3; // Stagger by 0.3s per notification
+    
     tl.to(el, { 
       opacity: 1, 
       scale: 1, 
-      duration: 0.6, 
-      ease: "back.out(1.4)" 
+      duration: 0.5, 
+      ease: "back.out(1.2)",
+      delay: delay
     });
     
-    // Chaotic floating - smaller movements to keep in bounds
+    // Subtle floating - minimal to maintain chaos/claustrophobia
     tl.to(el, { 
-      y: `+=${gsap.utils.random(-10, 10)}`,
-      x: `+=${gsap.utils.random(-10, 10)}`,
-      duration: 4, 
+      y: `+=${gsap.utils.random(-8, 8)}`,
+      x: `+=${gsap.utils.random(-6, 6)}`,
+      duration: 3.5, 
       yoyo: true, 
       repeat: -1, 
       ease: "sine.inOut" 
-    }, "+=0.5");
+    }, "+=0.3");
     
-    // More dramatic rotation
+    // Subtle rotation drift
     tl.to(el, { 
-      rotate: `+=${gsap.utils.random(-4, 4)}`, 
-      duration: 5, 
+      rotate: `+=${gsap.utils.random(-3, 3)}`, 
+      duration: 4.5, 
       yoyo: true, 
       repeat: -1, 
       ease: "sine.inOut" 
@@ -168,16 +173,16 @@ export default function FloatingPhrase({
       style={{
         position: 'absolute',
         display: 'flex',
-        gap: showIcon ? '27px' : '0px',
+        gap: showIcon ? '20px' : '0px',
         alignItems: 'flex-start',
-        borderRadius: '24px',
-        padding: '36px 42px',
+        borderRadius: '20px',
+        padding: '28px 34px',
         border: 'none',
         boxShadow: shadow,
         backgroundColor: styles.bg,
         willChange: 'transform, opacity',
-        minWidth: '720px',
-        maxWidth: '1050px',
+        minWidth: 'min(600px, 85vw)', // Responsive: never exceed 85% viewport width
+        maxWidth: 'min(900px, 90vw)',
         width: 'auto',
       }}
       data-testid={`floating-phrase-${phrase.id}`}
@@ -186,34 +191,34 @@ export default function FloatingPhrase({
       {showIcon && (
         <div 
           style={{
-            width: '72px',
-            height: '72px',
+            width: '60px',
+            height: '60px',
             borderRadius: '50%',
             display: 'grid',
             placeItems: 'center',
             flexShrink: 0,
             backgroundColor: iconConfig.bg,
             color: iconConfig.color,
-            boxShadow: '0 3px 12px rgba(0,0,0,0.15)',
+            boxShadow: '0 3px 10px rgba(0,0,0,0.12)',
           }}
           aria-hidden="true"
         >
-          <IconComponent size={36} strokeWidth={2.5} />
+          <IconComponent size={30} strokeWidth={2.5} />
         </div>
       )}
       
       {/* Body */}
-      <div style={{ flex: 1, minWidth: 0 }}>
+      <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
         {/* System label/timestamp - small regular text */}
         <div 
           style={{
             fontFamily: '"Avenir Next", Helvetica, sans-serif',
             fontWeight: 400,
-            fontSize: '21px',
+            fontSize: 'clamp(14px, 1.8vw, 18px)',
             lineHeight: 1.4,
             color: styles.metaColor,
-            letterSpacing: '0.3px',
-            marginBottom: '6px',
+            letterSpacing: '0.2px',
+            marginBottom: '4px',
           }}
         >
           {meta}
@@ -224,10 +229,11 @@ export default function FloatingPhrase({
           style={{
             fontFamily: '"Avenir Next", Helvetica, sans-serif',
             fontWeight: 700,
-            fontSize: 'clamp(36px, 4.2vw, 42px)',
+            fontSize: 'clamp(26px, 3.2vw, 34px)',
             lineHeight: 1.25,
             color: styles.textColor,
             wordBreak: 'break-word',
+            overflowWrap: 'break-word',
           }}
         >
           {phrase.text}
