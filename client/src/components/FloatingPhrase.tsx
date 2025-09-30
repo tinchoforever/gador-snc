@@ -17,7 +17,7 @@ interface FloatingPhraseProps {
  * Simple entrance animations - NO crazy orbital effects
  */
 
-// COLORES OFICIALES DE LA CAMPAÑA GADOR
+// COLORES OFICIALES DE LA CAMPAÑA GADOR - Solo azules, grises y negros
 const VARIANT_STYLES = {
   standard: {
     bg: '#FFFFFF',
@@ -37,10 +37,10 @@ const VARIANT_STYLES = {
     metaColor: '#333333',
     opacity: 1,
   },
-  alert: {
-    bg: '#F8D7DA',
-    textColor: '#721C24',
-    metaColor: '#721C24',
+  darkBlue: {
+    bg: '#1E3A8A',
+    textColor: '#FFFFFF',
+    metaColor: 'rgba(255,255,255,0.8)',
     opacity: 1,
   },
   reminder: {
@@ -189,7 +189,7 @@ export default function FloatingPhrase({
   };
 
   // TRULY RANDOM variant based on unique phrase ID (not text)
-  const variants = ['standard', 'sent', 'received', 'alert', 'reminder', 'mention', 'tag'] as const;
+  const variants = ['standard', 'sent', 'received', 'darkBlue', 'reminder', 'mention', 'tag'] as const;
   const phraseHash = getHash(phrase.id); // Use ID instead of text for randomness
   const variant = variants[phraseHash % variants.length];
   const styles = VARIANT_STYLES[variant];
