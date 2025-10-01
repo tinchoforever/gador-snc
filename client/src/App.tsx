@@ -8,9 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import StageDisplay from "@/components/StageDisplay";
 import RemoteControl from "@/components/RemoteControl";
-import { InstallationState } from "@shared/schema";
+import { InstallationState, type RealtimeEvent } from "@shared/schema";
 import { Monitor, Smartphone, Sparkles } from 'lucide-react';
 import NotFound from "@/pages/not-found";
+import { useRealtimeConnection } from "@/hooks/use-realtime-connection";
 
 // Home page - Unified Control + Display
 function Home() {
@@ -80,43 +81,59 @@ function StagePage() {
   const [installationState, setInstallationState] = useState<InstallationState>({
     currentScene: 1,
     activePhrases: [],
-    isConnected: true,
+    isConnected: false,
     volume: 0.8,
   });
 
   const [phraseTrigger, setPhraseTrigger] = useState<{ phraseText: string; sceneId: number; timestamp: number } | null>(null);
   const [scene1AutoEnabled, setScene1AutoEnabled] = useState(false);
 
-  // Listen for messages from remote control via localStorage
-  useEffect(() => {
-    const handleStorage = (e: StorageEvent) => {
-      if (e.key === 'gador-scene-change' && e.newValue) {
-        const sceneId = parseInt(e.newValue);
-        setInstallationState(prev => ({ ...prev, currentScene: sceneId }));
-        if (sceneId !== 1) {
-          setScene1AutoEnabled(false);
-        }
-      }
-      
-      if (e.key === 'gador-phrase-trigger' && e.newValue) {
-        const data = JSON.parse(e.newValue);
-        setPhraseTrigger(data);
-      }
-      
-      if (e.key === 'gador-scene1-complete' && e.newValue === 'true') {
-        setScene1AutoEnabled(true);
-        localStorage.removeItem('gador-scene1-complete');
-      }
-      
-      if (e.key === 'gador-volume-change' && e.newValue) {
-        const volume = parseFloat(e.newValue);
-        setInstallationState(prev => ({ ...prev, volume }));
-      }
-    };
+  // WebSocket connection for stage display
+  const { isConnected, sendEvent } = useRealtimeConnection({
+    role: "stage",
+    onMessage: (event: RealtimeEvent) => {
+      switch (event.type) {
+        case "state_sync":
+          // Sync initial state from server
+          setInstallationState(prev => ({
+            ...prev,
+            currentScene: event.state.currentScene,
+            volume: event.state.volume,
+            isConnected: true,
+          }));
+          setScene1AutoEnabled(event.state.scene1AutoEnabled);
+          break;
 
-    window.addEventListener('storage', handleStorage);
-    return () => window.removeEventListener('storage', handleStorage);
-  }, []);
+        case "scene_change":
+          setInstallationState(prev => ({ ...prev, currentScene: event.sceneId }));
+          if (event.sceneId !== 1) {
+            setScene1AutoEnabled(false);
+          }
+          break;
+
+        case "phrase_trigger":
+          setPhraseTrigger({
+            phraseText: event.phraseText,
+            sceneId: event.sceneId,
+            timestamp: Date.now()
+          });
+          break;
+
+        case "scene1_complete":
+          setScene1AutoEnabled(true);
+          break;
+
+        case "volume_change":
+          setInstallationState(prev => ({ ...prev, volume: event.volume }));
+          break;
+      }
+    },
+  });
+
+  // Update connection status
+  useEffect(() => {
+    setInstallationState(prev => ({ ...prev, isConnected }));
+  }, [isConnected]);
 
   return (
     <StageDisplay 
@@ -133,35 +150,57 @@ function RemotePage() {
   const [installationState, setInstallationState] = useState<InstallationState>({
     currentScene: 1,
     activePhrases: [],
-    isConnected: true,
+    isConnected: false,
     volume: 0.8,
   });
 
+  // WebSocket connection for remote control
+  const { isConnected, sendEvent } = useRealtimeConnection({
+    role: "remote",
+    onMessage: (event: RealtimeEvent) => {
+      switch (event.type) {
+        case "state_sync":
+          // Sync initial state from server
+          setInstallationState(prev => ({
+            ...prev,
+            currentScene: event.state.currentScene,
+            volume: event.state.volume,
+            isConnected: true,
+          }));
+          break;
+
+        case "scene_change":
+          setInstallationState(prev => ({ ...prev, currentScene: event.sceneId }));
+          break;
+
+        case "volume_change":
+          setInstallationState(prev => ({ ...prev, volume: event.volume }));
+          break;
+      }
+    },
+  });
+
+  // Update connection status
+  useEffect(() => {
+    setInstallationState(prev => ({ ...prev, isConnected }));
+  }, [isConnected]);
+
   const handleSceneChange = (sceneId: number) => {
     setInstallationState(prev => ({ ...prev, currentScene: sceneId }));
-    localStorage.setItem('gador-scene-change', sceneId.toString());
-    console.log('📡 Remote: Scene changed to:', sceneId);
+    sendEvent({ type: "scene_change", sceneId });
   };
 
   const handlePhraseTriggered = (phraseText: string, sceneId: number) => {
-    const data = {
-      phraseText,
-      sceneId,
-      timestamp: Date.now()
-    };
-    localStorage.setItem('gador-phrase-trigger', JSON.stringify(data));
-    console.log('📡 Remote: Phrase triggered:', phraseText, 'in scene:', sceneId);
+    sendEvent({ type: "phrase_trigger", phraseText, sceneId });
   };
 
   const handleScene1Complete = () => {
-    localStorage.setItem('gador-scene1-complete', 'true');
-    console.log('📡 Remote: Scene 1 complete! Auto-mode starting...');
+    sendEvent({ type: "scene1_complete" });
   };
 
   const handleVolumeChange = (volume: number) => {
     setInstallationState(prev => ({ ...prev, volume }));
-    localStorage.setItem('gador-volume-change', volume.toString());
-    console.log('📡 Remote: Volume changed to:', volume);
+    sendEvent({ type: "volume_change", volume });
   };
 
   return (
